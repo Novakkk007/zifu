@@ -23,6 +23,47 @@ const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1)
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1)
 
 const CUSTOM_CITY = '__custom__'
+/** 不使用 IANA 时区，回退到固定 UTC 偏移（legacy timezone 字段） */
+const FIXED_OFFSET = '__fixed__'
+
+/**
+ * 常用 IANA 时区（≥20 个，覆盖亚欧美澳常用出生地）。
+ * 选择后服务端按出生当日该时区的历史 UTC 偏移换算（含历史夏令时）。
+ */
+const IANA_TIMEZONES: { value: string; label: string }[] = [
+  { value: 'Asia/Shanghai', label: 'Asia/Shanghai · 中国标准时间（UTC+8）' },
+  { value: 'Asia/Urumqi', label: 'Asia/Urumqi · 新疆（UTC+6，地理时区）' },
+  { value: 'Asia/Hong_Kong', label: 'Asia/Hong_Kong · 香港（UTC+8）' },
+  { value: 'Asia/Taipei', label: 'Asia/Taipei · 台北（UTC+8）' },
+  { value: 'Asia/Singapore', label: 'Asia/Singapore · 新加坡（UTC+8）' },
+  { value: 'Asia/Tokyo', label: 'Asia/Tokyo · 东京（UTC+9）' },
+  { value: 'Asia/Seoul', label: 'Asia/Seoul · 首尔（UTC+9）' },
+  { value: 'Asia/Bangkok', label: 'Asia/Bangkok · 曼谷（UTC+7）' },
+  { value: 'Asia/Jakarta', label: 'Asia/Jakarta · 雅加达（UTC+7）' },
+  { value: 'Asia/Kolkata', label: 'Asia/Kolkata · 印度（UTC+5:30）' },
+  { value: 'Asia/Dubai', label: 'Asia/Dubai · 迪拜（UTC+4）' },
+  { value: 'Europe/Moscow', label: 'Europe/Moscow · 莫斯科（UTC+3）' },
+  { value: 'Europe/Berlin', label: 'Europe/Berlin · 柏林（UTC+1，夏令时）' },
+  { value: 'Europe/Paris', label: 'Europe/Paris · 巴黎（UTC+1，夏令时）' },
+  { value: 'Europe/London', label: 'Europe/London · 伦敦（UTC+0，夏令时）' },
+  { value: 'America/Sao_Paulo', label: 'America/Sao_Paulo · 圣保罗（UTC-3）' },
+  { value: 'America/New_York', label: 'America/New_York · 纽约（UTC-5，夏令时）' },
+  { value: 'America/Chicago', label: 'America/Chicago · 芝加哥（UTC-6，夏令时）' },
+  { value: 'America/Denver', label: 'America/Denver · 丹佛（UTC-7，夏令时）' },
+  { value: 'America/Los_Angeles', label: 'America/Los_Angeles · 洛杉矶（UTC-8，夏令时）' },
+  { value: 'Australia/Sydney', label: 'Australia/Sydney · 悉尼（UTC+10，夏令时）' },
+  { value: 'Pacific/Auckland', label: 'Pacific/Auckland · 奥克兰（UTC+12，夏令时）' },
+]
+
+/** 预设城市 → 建议 IANA 时区（用户可改）；中国大陆城市默认东八区 */
+const CITY_TZ_SUGGESTION: Record<string, string> = {
+  乌鲁木齐: 'Asia/Urumqi',
+  拉萨: 'Asia/Urumqi',
+}
+
+function suggestTimezone(cityName: string): string {
+  return CITY_TZ_SUGGESTION[cityName] ?? 'Asia/Shanghai'
+}
 
 export interface BirthFormState {
   calendar: 'solar' | 'lunar'
@@ -38,6 +79,8 @@ export interface BirthFormState {
   city: string
   customLongitude: number
   timezone: number
+  /** IANA 时区名；FIXED_OFFSET = 不使用 IANA，回退固定 UTC 偏移 */
+  ianaTimezone: string
   useTrueSolarTime: boolean
   dayRollover: 'zichu' | 'midnight'
 }
@@ -55,6 +98,7 @@ export function defaultBirthForm(): BirthFormState {
     city: '北京',
     customLongitude: 120,
     timezone: 8,
+    ianaTimezone: 'Asia/Shanghai',
     useTrueSolarTime: true,
     dayRollover: 'zichu',
   }
@@ -77,6 +121,7 @@ export function toPayload(f: BirthFormState, title?: string): PaipanPayload {
     city: isCustom ? undefined : f.city,
     longitude: isCustom ? f.customLongitude : city?.longitude,
     timezone: f.timezone,
+    ianaTimezone: f.ianaTimezone === FIXED_OFFSET ? undefined : f.ianaTimezone,
     useTrueSolarTime: f.useTrueSolarTime,
     dayRollover: f.dayRollover,
     title: title?.trim() || undefined,
@@ -229,7 +274,11 @@ export default function BirthFormCard({ value, onChange, loading, error, onSubmi
           label="出生城市（决定经度）"
           id="bazi-city"
           value={value.city}
-          onChange={(e) => set('city', e.target.value)}
+          onChange={(e) => {
+            const city = e.target.value
+            // 城市联动建议 IANA 时区（用户仍可手动改）
+            onChange({ ...value, city, ianaTimezone: suggestTimezone(city) })
+          }}
         >
           {CITIES.map((c) => (
             <option key={c.name} value={c.name}>
@@ -255,18 +304,43 @@ export default function BirthFormCard({ value, onChange, loading, error, onSubmi
         </div>
       )}
 
-      {/* 时区 + 真太阳时 + 换日规则 */}
-      <div className="mt-5 grid gap-5 md:grid-cols-3">
+      {/* IANA 时区 + 固定偏移（备用） */}
+      <div className="mt-5 grid gap-5 md:grid-cols-2">
+        <div>
+          <FormSelect
+            label="出生时时区（IANA）"
+            id="bazi-iana-timezone"
+            value={value.ianaTimezone}
+            onChange={(e) => set('ianaTimezone', e.target.value)}
+          >
+            {IANA_TIMEZONES.map((tz) => (
+              <option key={tz.value} value={tz.value}>
+                {tz.label}
+              </option>
+            ))}
+            <option value={FIXED_OFFSET}>不使用 IANA 时区（用右侧固定 UTC 偏移）</option>
+          </FormSelect>
+          {value.ianaTimezone !== FIXED_OFFSET && (
+            <p className="mt-1.5 text-[11.5px] leading-[1.6] text-inkmuted">
+              按出生当日该时区的历史偏移换算，自动处理历史夏令时（如中国 1986–1991、欧美夏令时）。
+            </p>
+          )}
+        </div>
         <FormInput
-          label="时区（UTC 偏移小时）"
+          label="固定 UTC 偏移（小时，未选 IANA 时区时生效）"
           id="bazi-timezone"
           type="number"
           step={1}
           min={-12}
           max={14}
           value={value.timezone}
+          disabled={value.ianaTimezone !== FIXED_OFFSET}
           onChange={(e) => set('timezone', Number(e.target.value))}
         />
+      </div>
+
+      {/* 真太阳时 + 换日规则 */}
+      <div className="mt-5 grid gap-5 md:grid-cols-2">
         <div>
           <span className="mb-2 block font-sans text-[13px] font-medium tracking-[0.08em] text-inkmuted">
             真太阳时修正

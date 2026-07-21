@@ -10,6 +10,7 @@ import BirthFormCard, {
   type BirthFormState,
 } from '@/components/bazi-v2/BirthFormCard'
 import TimeAuditBar from '@/components/bazi-v2/TimeAuditBar'
+import ChartSummaryStrip from '@/components/bazi-v2/ChartSummaryStrip'
 import PillarsSection from '@/components/bazi-v2/PillarsSection'
 import WuxingSection from '@/components/bazi-v2/WuxingSection'
 import DetailTabs from '@/components/bazi-v2/DetailTabs'
@@ -27,7 +28,10 @@ export default function Bazi() {
   const [form, setForm] = useState<BirthFormState>(defaultBirthForm())
   const [chart, setChart] = useState<BaziChartV2 | null>(null)
   const [chartTitle, setChartTitle] = useState<string>('')
+  const [chartId, setChartId] = useState<number | null>(null)
   const [persisted, setPersisted] = useState(false)
+  /** 人生轨迹图「AI 解释此阶段」的阶段标签（接力给 AI 详批区） */
+  const [aiStage, setAiStage] = useState<string | null>(null)
   const resultRef = useRef<HTMLDivElement>(null)
   const detailRef = useRef<HTMLElement>(null)
   const utils = trpc.useUtils()
@@ -40,6 +44,7 @@ export default function Bazi() {
     onSuccess: async (data) => {
       const res = data as unknown as PaipanResponse
       setChart(res.chart)
+      setChartId(res.chartId)
       setPersisted(res.persisted)
       await utils.bazi.history.invalidate()
     },
@@ -59,10 +64,17 @@ export default function Bazi() {
     paipan.mutate(payload as unknown as Parameters<typeof paipan.mutate>[0])
   }
 
-  const restore = (restored: BaziChartV2, title: string) => {
+  const restore = (restored: BaziChartV2, title: string, id: number | null) => {
     setChart(restored)
     setChartTitle(title)
+    setChartId(id)
     setPersisted(true)
+  }
+
+  /** 轨迹节点「AI 解释此阶段」→ 滚动到 AI 详批区并传递阶段语境 */
+  const handleAiExplain = (stageLabel: string) => {
+    setAiStage(stageLabel)
+    detailRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' })
   }
 
   const errorText = paipan.isError
@@ -115,6 +127,9 @@ export default function Bazi() {
                 <p className="text-center text-[12px] text-inkmuted">已自动保存至排盘记录</p>
               )}
 
+              {/* 首屏结果摘要（四柱卡之前） */}
+              <ChartSummaryStrip chart={chart} />
+
               {/* 排盘依据 */}
               <TimeAuditBar chart={chart} />
 
@@ -136,7 +151,7 @@ export default function Bazi() {
               <DetailTabs chart={chart} />
 
               {/* 人生轨迹图 */}
-              <LifeChart chart={chart} />
+              <LifeChart chart={chart} onAiExplain={handleAiExplain} />
 
               {/* 操作行 */}
               <div className="flex flex-wrap items-center justify-center gap-5 pt-2">
@@ -144,7 +159,9 @@ export default function Bazi() {
                   className="border-golddim/50 text-golddim hover:bg-golddim/10"
                   onClick={() => {
                     setChart(null)
+                    setChartId(null)
                     setPersisted(false)
+                    setAiStage(null)
                     paipan.reset()
                     window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
                   }}
@@ -173,7 +190,12 @@ export default function Bazi() {
 
       {/* S5 · AI 详批（深色） */}
       <section ref={detailRef} className="bg-deep2 py-28">
-        <AiReadingSection chart={chart} />
+        <AiReadingSection
+          chart={chart}
+          chartId={chartId}
+          stage={aiStage}
+          onStageConsumed={() => setAiStage(null)}
+        />
       </section>
 
       {/* S6 · 典籍依据 */}

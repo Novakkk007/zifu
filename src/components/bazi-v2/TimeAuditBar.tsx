@@ -14,6 +14,13 @@ export default function TimeAuditBar({ chart }: { chart: BaziChartV2 }) {
           : `农历${a.isLeapMonth ? '（闰月）' : ''} · ${a.lunarYear}年${Math.abs(a.lunarMonth)}月${a.lunarDay}日`,
     },
     { label: '标准时间', value: `${a.standardTime}（UTC${a.timezone >= 0 ? '+' : ''}${a.timezone}）` },
+    {
+      label: '时区',
+      value:
+        a.timezoneSource === 'iana' && a.ianaTimezone
+          ? `${a.ianaTimezone}（IANA · 当日历史偏移，含夏令时）`
+          : `UTC${a.timezone >= 0 ? '+' : ''}${a.timezone}（固定偏移）`,
+    },
   ]
   if (a.useTrueSolarTime) {
     items.push(

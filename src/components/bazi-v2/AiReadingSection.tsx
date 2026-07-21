@@ -1,16 +1,24 @@
 /**
- * AI 详批区（深色区块）：人格 × 深度切换 → trpc.ai.reading。
- * 结果头部明示来源徽章：live · 模型 {model}（金）/ fallback · 演示引擎（灰）。
+ * AI 详批区（深色区块）· v6 鉴权契约：
+ * - ai.reading 仅登录可用；输入 { chartId, persona, depth, idempotencyKey? }，
+ *   命盘摘要由服务端从【已落库】命盘构建，前端一律不发送命盘数据。
+ * - 游客 → 登录引导卡；已登录但命盘未落库（无 chartId）→ 提示重新排盘落库。
+ * - 错误分型：UNAUTHORIZED（重新登录）/ TOO_MANY_REQUESTS（额度或频率）/
+ *   FORBIDDEN（灵签不足）/ BAD_GATEWAY（AI 服务异常，未扣费）/ 其他。
+ * - 结果头部明示来源徽章：live · 模型 {model}（金）/ fallback · 演示引擎（灰）。
+ * - 计费说明：live 每次消耗 1 灵签；fallback 免费；失败不扣费。
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import SectionHeading from '@/components/SectionHeading'
 import { SegmentedControl } from '@/components/FormControls'
-import { GoldButton } from '@/components/Buttons'
+import { DeepButton, GoldButton } from '@/components/Buttons'
 import { trpc } from '@/providers/trpc'
+import { useAuth } from '@/hooks/useAuth'
+import { LOGIN_PATH } from '@/const'
 import { cn } from '@/lib/utils'
 import type { BaziChartV2 } from '@contracts/bazi-core'
-import { buildChartSummary, type ReadingResponse } from './api'
+import type { ReadingResponse } from './api'
 
 type Persona = 'scholar' | 'hermit'
 type Depth = 'pro' | 'plain'
@@ -20,52 +28,164 @@ const PERSONAS: { id: Persona; latin: string; name: string; desc: string }[] = [
   { id: 'hermit', latin: 'HERMIT', name: '幽默隐士', desc: '随性诙谐，妙语点破，围炉夜话' },
 ]
 
+/** 从 tRPC 错误对象提取服务端错误码 */
+function trpcCode(err: unknown): string | null {
+  if (err && typeof err === 'object' && 'data' in err) {
+    const code = (err as { data?: { code?: unknown } }).data?.code
+    if (typeof code === 'string') return code
+  }
+  return null
+}
+
+function newIdempotencyKey(chartId: number): string {
+  const uuid =
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2, 12)}`
+  return `bazi-reading:${chartId}:${uuid}`
+}
+
+/** 错误码 → 明确 UI 状态文案（action 可选登录引导） */
+function errorStateOf(err: unknown): { title: string; desc: string; showLogin: boolean } {
+  const code = trpcCode(err)
+  const serverMsg = err instanceof Error ? err.message : ''
+  switch (code) {
+    case 'UNAUTHORIZED':
+      return {
+        title: '登录态已失效',
+        desc: 'AI 参详仅向登录用户开放，请重新登录后再试。',
+        showLogin: true,
+      }
+    case 'TOO_MANY_REQUESTS':
+      return {
+        title: '额度或频率受限',
+        desc: serverMsg || '今日参详次数已达上限，或请求过于频繁，请稍后再试。',
+        showLogin: false,
+      }
+    case 'FORBIDDEN':
+      return {
+        title: '灵签余额不足',
+        desc: 'live 参详每次消耗 1 灵签。充值通道即将开放，敬请期待；当前可稍后再试演示引擎。',
+        showLogin: false,
+      }
+    case 'BAD_GATEWAY':
+      return {
+        title: 'AI 服务暂不可用',
+        desc: '模型网关异常，本次未扣除任何费用，请稍后重试。',
+        showLogin: false,
+      }
+    case 'NOT_FOUND':
+      return {
+        title: '命盘不存在',
+        desc: '该命盘可能已删除或不属于当前账号，请重新排盘后再参详。',
+        showLogin: false,
+      }
+    default:
+      return {
+        title: '参详失败',
+        desc: serverMsg || 'AI 详批服务暂不可用，本次未扣除费用，请稍后重试。',
+        showLogin: false,
+      }
+  }
+}
+
 function SourceBadge({ result }: { result: ReadingResponse }) {
   if (result.source === 'live') {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-goldbright">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-goldbright" />
-        live · 模型 {result.model ?? '未知'}
+        live · 模型 {result.model ?? '未知'} · 消耗 1 灵签
       </span>
     )
   }
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full border border-silkmuted/40 bg-silktext/5 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-silkmuted">
       <span className="inline-block h-1.5 w-1.5 rounded-full bg-silkmuted" />
-      fallback · 演示引擎（非 AI 生成）
+      fallback · 演示引擎（非 AI 生成，免费）
     </span>
   )
 }
 
-export default function AiReadingSection({ chart }: { chart: BaziChartV2 | null }) {
+type Props = {
+  chart: BaziChartV2 | null
+  /** 落库命盘 ID（persisted 时由 paipan 返回；历史回填时为记录 id） */
+  chartId: number | null
+  /** 来自人生轨迹图的「AI 解释此阶段」请求（阶段标签，仅作 UI 语境展示） */
+  stage: string | null
+  onStageConsumed: () => void
+}
+
+export default function AiReadingSection({ chart, chartId, stage, onStageConsumed }: Props) {
   const reduce = useReducedMotion()
+  const { user, isLoading: authLoading } = useAuth()
   const [persona, setPersona] = useState<Persona>('scholar')
   const [depth, setDepth] = useState<Depth>('pro')
   const [result, setResult] = useState<ReadingResponse | null>(null)
+  const [stageLabel, setStageLabel] = useState<string | null>(null)
 
   const reading = trpc.ai.reading.useMutation({
     onSuccess: (data) => setResult(data as unknown as ReadingResponse),
   })
 
+  const canRun = !!user && chartId !== null && !reading.isPending
+
   const run = () => {
-    if (!chart || reading.isPending) return
+    if (!canRun || chartId === null) return
     setResult(null)
-    reading.mutate({
-      chartType: 'bazi',
-      chartSummary: buildChartSummary(chart),
-      persona,
-      depth,
-    })
+    reading.mutate({ chartId, persona, depth, idempotencyKey: newIdempotencyKey(chartId) })
+  }
+
+  // 轨迹图「AI 解释此阶段」：落到本区并自动发起一次参详（同一 ai.reading 通道，
+  // chartSummary 由服务端按落库命盘构建；阶段语境仅作界面提示）
+  useEffect(() => {
+    if (stage === null) return
+    setStageLabel(stage)
+    onStageConsumed()
+    if (canRun) run()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage])
+
+  /* ---------- 游客引导卡 ---------- */
+  if (!authLoading && !user) {
+    return (
+      <div className="zf-container max-w-[880px]">
+        <SectionHeading
+          eyebrow="AI Reading"
+          title="AI 详批 · 四维交互"
+          sub="两种人格 × 两种深度，基于服务端落库命盘生成；来源明示，降级不伪装"
+          dark
+          className="mb-12"
+        />
+        <div className="rounded-xl border border-gold/40 bg-deep p-10 text-center">
+          <p className="font-serif text-[18px] font-bold tracking-[0.1em] text-silktext">
+            登录后使用 AI 参详
+          </p>
+          <p className="mx-auto mt-3 max-w-[460px] text-[13px] leading-[1.9] text-silkmuted">
+            AI 参详仅向登录用户开放：命盘自动落库，服务端基于落库结果构建摘要，
+            每日 20 次额度；live 参详每次消耗 1 灵签，演示引擎免费，失败不扣费。
+          </p>
+          {stageLabel && (
+            <p className="mt-3 text-[12.5px] text-goldbright">
+              已收到「{stageLabel}」的解读请求，登录排盘后将自动继续。
+            </p>
+          )}
+          <DeepButton to={LOGIN_PATH} className="mt-7 border border-gold/50">
+            前往登录
+          </DeepButton>
+        </div>
+      </div>
+    )
   }
 
   const paragraphs = result ? result.text.split(/\n{2,}|\n/).filter((p) => p.trim().length > 0) : []
+  const errState = reading.isError ? errorStateOf(reading.error) : null
 
   return (
     <div className="zf-container max-w-[880px]">
       <SectionHeading
         eyebrow="AI Reading"
         title="AI 详批 · 四维交互"
-        sub="两种人格 × 两种深度，基于服务端排盘结果生成；来源明示，降级不伪装"
+        sub="两种人格 × 两种深度，服务端基于落库命盘构建摘要；来源明示，降级不伪装"
         dark
         className="mb-12"
       />
@@ -115,19 +235,44 @@ export default function AiReadingSection({ chart }: { chart: BaziChartV2 | null 
         />
       </div>
 
-      <div className="mt-10 text-center">
+      {stageLabel && (
+        <p className="mt-5 text-center text-[12.5px] text-goldbright">
+          岁运语境：{stageLabel} —— AI 将基于您的落库命盘解读当前岁运阶段。
+        </p>
+      )}
+
+      <div className="mt-8 text-center">
         <GoldButton
-          disabled={!chart || reading.isPending}
-          className={cn(!chart && 'cursor-not-allowed opacity-40')}
+          disabled={!canRun}
+          className={cn(!canRun && 'cursor-not-allowed opacity-40')}
           onClick={run}
         >
           {reading.isPending ? '参详中…' : '开始详批'}
         </GoldButton>
         {!chart && <p className="mt-3 text-[12.5px] text-silkmuted">请先在上方完成排盘</p>}
-        {reading.isError && (
-          <p role="alert" className="mt-3 text-[13px] text-[#E0A39A]">
-            {reading.error.message || 'AI 详批服务暂不可用，请稍后重试。'}
+        {chart && chartId === null && (
+          <p className="mt-3 text-[12.5px] text-silkmuted">
+            当前命盘尚未落库（可能排盘时未登录或落库失败）——请在登录状态下重新排盘一次，即可使用 AI 参详。
           </p>
+        )}
+        <p className="mt-3 text-[11.5px] text-silkmuted">
+          live 参详每次消耗 1 灵签；演示引擎（fallback）免费；参详失败不扣费。
+        </p>
+        {errState && (
+          <div
+            role="alert"
+            className="mx-auto mt-5 max-w-[520px] rounded-lg border border-[#B04A3A]/50 bg-[#B04A3A]/10 px-5 py-4"
+          >
+            <p className="font-serif text-[14px] font-bold tracking-[0.08em] text-[#E0A39A]">
+              {errState.title}
+            </p>
+            <p className="mt-1.5 text-[12.5px] leading-[1.8] text-[#E0A39A]/90">{errState.desc}</p>
+            {errState.showLogin && (
+              <DeepButton to={LOGIN_PATH} className="mt-4 border border-gold/40 px-6 py-2 text-[13px]">
+                重新登录
+              </DeepButton>
+            )}
+          </div>
         )}
       </div>
 
@@ -146,6 +291,7 @@ export default function AiReadingSection({ chart }: { chart: BaziChartV2 | null 
               <p className="text-[12px] tracking-[0.14em] text-silkmuted">
                 参详输出 · {persona === 'scholar' ? '严谨学者' : '幽默隐士'} ·{' '}
                 {depth === 'pro' ? '专业级' : '通俗级'}
+                {stageLabel ? ` · ${stageLabel}` : ''}
               </p>
               <SourceBadge result={result} />
             </div>
@@ -164,8 +310,8 @@ export default function AiReadingSection({ chart }: { chart: BaziChartV2 | null 
             </div>
             <p className="mt-7 border-t border-golddim/20 pt-4 text-[12.5px] text-silkmuted">
               {result.source === 'live'
-                ? '本详批由 AI 模型基于排盘结果生成，仅供传统文化参考。'
-                : '当前为演示引擎模板输出（未配置 AI 密钥），非 AI 模型生成，仅供流程演示。'}
+                ? '本详批由 AI 模型基于您的落库命盘生成（已消耗 1 灵签），仅供传统文化参考。'
+                : '当前为演示引擎模板输出（未配置 AI 密钥或余额校验未触发），非 AI 模型生成，不消耗灵签，仅供流程演示。'}
             </p>
           </motion.div>
         )}

@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react'
 import type { BaziChartV2, DayunScore, LiunianScore, ScoreFactor } from '@contracts/bazi-core'
 import { computeLifeScores, FACTOR_WEIGHTS, SCORES_DISCLAIMER } from '@contracts/bazi-core'
 import { cn } from '@/lib/utils'
+import { ganzhiWuxing, luckRelationsWithChart, wuxingActionOnDayMaster } from './luck-relations'
 
 const W = 1100
 const H = 340
@@ -49,11 +50,34 @@ function FactorRows({ factors }: { factors: ScoreFactor[] }) {
   )
 }
 
-function AnnotationCard({ sel, onClose }: { sel: Selection; onClose: () => void }) {
-  const title =
-    sel.kind === 'liunian'
-      ? `流年 ${sel.item.ganzhi} · ${sel.item.year} 年（${sel.item.age} 岁）`
-      : `大运 ${sel.item.ganzhi} · ${sel.item.startAge}–${sel.item.startAge + 9} 岁`
+/** 节点详情卡：干支 / 起止（大运）或年份（流年）/ 五行 / 十神 / 与命局关系 / 三因子子分 / AI 解释入口 */
+function AnnotationCard({
+  sel,
+  chart,
+  onClose,
+  onAiExplain,
+}: {
+  sel: Selection
+  chart: BaziChartV2
+  onClose: () => void
+  onAiExplain?: (stageLabel: string) => void
+}) {
+  const isLiunian = sel.kind === 'liunian'
+  const step = !isLiunian
+    ? chart.dayun.steps.find((s) => s.ganzhi === sel.item.ganzhi && s.startAge === (sel.item as DayunScore).startAge)
+    : undefined
+  const ln = isLiunian
+    ? chart.liunian.find((l) => l.year === (sel.item as LiunianScore).year)
+    : undefined
+
+  const title = isLiunian
+    ? `流年 ${sel.item.ganzhi} · ${(sel.item as LiunianScore).year} 年（${(sel.item as LiunianScore).age} 岁）`
+    : `大运 ${sel.item.ganzhi} · ${step ? `${step.startAge}–${step.endAge}` : `${(sel.item as DayunScore).startAge}–${(sel.item as DayunScore).startAge + 9}`} 岁`
+
+  const wx = ganzhiWuxing(sel.item.ganzhi)
+  const tenGod = isLiunian ? ln?.stemTenGod : step?.stemTenGod
+  const relations = luckRelationsWithChart(sel.item.ganzhi, chart)
+
   return (
     <div className="relative rounded-xl border border-gold/40 bg-deep2 p-5 shadow-card">
       <button
@@ -70,9 +94,78 @@ function AnnotationCard({ sel, onClose }: { sel: Selection; onClose: () => void 
         结构分 <span className="font-serif text-[16px] font-bold text-goldbright">{sel.item.score}</span>
         <span className="ml-1 text-[10.5px]">/ 100（0–100，无量纲）</span>
       </p>
-      <div className="mt-4">
+
+      {/* 干支基础信息 */}
+      <dl className="mt-4 grid gap-x-6 gap-y-2 text-[12px] leading-[1.7] sm:grid-cols-2">
+        <div>
+          <dt className="inline text-silkmuted">干支五行：</dt>
+          <dd className="inline text-silktext">
+            {wx ? `${wx.stem}${wx.stemWuxing} · ${wx.branch}${wx.branchWuxing}` : sel.item.ganzhi}
+          </dd>
+        </div>
+        <div>
+          <dt className="inline text-silkmuted">十神：</dt>
+          <dd className="inline font-medium text-goldbright">{tenGod ?? '—'}</dd>
+        </div>
+        {isLiunian ? (
+          <div>
+            <dt className="inline text-silkmuted">公历年份：</dt>
+            <dd className="inline text-silktext">{(sel.item as LiunianScore).year} 年</dd>
+          </div>
+        ) : (
+          <div>
+            <dt className="inline text-silkmuted">起止年龄：</dt>
+            <dd className="inline text-silktext">
+              {step ? `${step.startAge}–${step.endAge} 岁（约 ${step.startYear}–${step.endYear} 年）` : '—'}
+            </dd>
+          </div>
+        )}
+        {wx && (
+          <div>
+            <dt className="inline text-silkmuted">对日主{chart.dayMaster}{chart.dayMasterWuxing}：</dt>
+            <dd className="inline text-silktext">
+              天干{wx.stemWuxing}（{wuxingActionOnDayMaster(chart.dayMasterWuxing, wx.stemWuxing)}）；
+              地支{wx.branchWuxing}（{wuxingActionOnDayMaster(chart.dayMasterWuxing, wx.branchWuxing)}）
+            </dd>
+          </div>
+        )}
+      </dl>
+
+      {/* 与命局的合冲刑害破 */}
+      <div className="mt-3 border-t border-golddim/15 pt-3">
+        <p className="text-[11px] tracking-[0.14em] text-silkmuted">与命局的合冲刑害破</p>
+        {relations.length > 0 ? (
+          <ul className="mt-1.5 space-y-1">
+            {relations.map((r) => (
+              <li key={r} className="text-[12px] leading-[1.7] text-silktext">
+                · {r}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-1.5 text-[12px] text-silkmuted">与本命四柱无合冲刑害破关系。</p>
+        )}
+      </div>
+
+      {/* 评分构成 */}
+      <div className="mt-4 border-t border-golddim/15 pt-4">
+        <p className="mb-2.5 text-[11px] tracking-[0.14em] text-silkmuted">评分构成（三因子）</p>
         <FactorRows factors={sel.item.factors} />
       </div>
+
+      {onAiExplain && (
+        <div className="mt-5 border-t border-golddim/15 pt-4 text-center">
+          <button
+            onClick={() => onAiExplain(title)}
+            className="zf-btn inline-flex items-center justify-center rounded-full border border-gold/60 bg-transparent px-6 py-2 text-[13px] font-medium tracking-[0.12em] text-goldbright hover:bg-gold/10"
+          >
+            AI 解释此阶段
+          </button>
+          <p className="mt-2 text-[11px] leading-[1.7] text-silkmuted">
+            走 AI 参详同一通道（需登录且命盘已落库），AI 将基于您的命盘按当前岁运解读。
+          </p>
+        </div>
+      )}
     </div>
   )
 }
@@ -81,9 +174,11 @@ type Props = {
   chart: BaziChartV2 | null
   loading?: boolean
   error?: string | null
+  /** 点击详情卡「AI 解释此阶段」：由页面层接力到 AI 详批区（传阶段标签） */
+  onAiExplain?: (stageLabel: string) => void
 }
 
-export default function LifeChart({ chart, loading = false, error = null }: Props) {
+export default function LifeChart({ chart, loading = false, error = null, onAiExplain }: Props) {
   const [yearMode, setYearMode] = useState(false)
   const [sel, setSel] = useState<Selection | null>(null)
   const [tip, setTip] = useState<{ x: number; y: number; text: string } | null>(null)
@@ -301,9 +396,9 @@ export default function LifeChart({ chart, loading = false, error = null }: Prop
           </p>
 
           {/* 注解卡 */}
-          {sel && (
+          {sel && chart && (
             <div className="mt-4">
-              <AnnotationCard sel={sel} onClose={() => setSel(null)} />
+              <AnnotationCard sel={sel} chart={chart} onClose={() => setSel(null)} onAiExplain={onAiExplain} />
             </div>
           )}
         </div>

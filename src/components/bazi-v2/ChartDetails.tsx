@@ -3,7 +3,7 @@
  * 全部数据直接渲染 core 结果（含规则出处），无前端伪造。
  */
 import type { ReactNode } from 'react'
-import type { BaziChartV2 } from '@contracts/bazi-core'
+import type { BaziChartV2, ShenshaHit } from '@contracts/bazi-core'
 import { TEN_GOD_INFO, type TenGod } from '@contracts/bazi-core'
 
 /* ---------- 通用表样式 ---------- */
@@ -132,37 +132,56 @@ export function ShenshaTable({ chart }: { chart: BaziChartV2 }) {
       </div>
     )
   }
+  // 神煞 v2：一柱命中一条记录。按名称归组（保持首次出现顺序），
+  // 同一神煞多柱命中时逐柱分行展示（如 天乙贵人·年支命中 / 天乙贵人·日支命中）。
+  // 前台仅渲染 名称 / 命中柱位 / 命中状态 / 现代化说明；
+  // verse / source / variant / basis 为后台字段，一律不渲染。
+  const groups: { name: string; hits: ShenshaHit[] }[] = []
+  const indexOf = new Map<string, number>()
+  for (const hit of chart.shensha) {
+    const idx = indexOf.get(hit.name)
+    if (idx === undefined) {
+      indexOf.set(hit.name, groups.length)
+      groups.push({ name: hit.name, hits: [hit] })
+    } else {
+      groups[idx].hits.push(hit)
+    }
+  }
   return (
-    <TableShell caption="神煞（按注册表规则命中）">
+    <TableShell caption="神煞（逐柱命中，同一神煞多柱命中分行列出）">
       <thead>
         <tr>
           <th className={thCls}>名称</th>
           <th className={thCls}>命中柱位</th>
-          <th className={thCls}>原始规则</th>
-          <th className={thCls}>传统出处</th>
-          <th className={thCls}>解释</th>
+          <th className={thCls}>命中状态</th>
+          <th className={thCls}>现代化说明</th>
         </tr>
       </thead>
       <tbody>
-        {chart.shensha.map((s) => (
-          <tr key={s.name}>
-            <td className={`${tdCls} font-serif font-bold text-golddim`}>{s.name}</td>
-            <td className={`${tdCls} whitespace-nowrap`}>
-              {s.hitPositions.map((p, i) => (
-                <span key={i} className="mr-1.5 inline-block">
-                  {p}
-                  {s.hitChars[i] ? <span className="text-inkmuted">（{s.hitChars[i]}）</span> : null}
+        {groups.flatMap((g) =>
+          g.hits.map((s, i) => (
+            <tr key={`${g.name}-${s.pillar}-${s.char}-${i}`}>
+              <td className={`${tdCls} font-serif font-bold text-golddim`}>
+                {s.name}
+                {g.hits.length > 1 && (
+                  <span className="ml-1.5 rounded-full border border-golddim/30 px-1.5 py-0.5 align-middle font-sans text-[10px] font-normal text-inkmuted">
+                    {g.hits.length} 柱命中
+                  </span>
+                )}
+              </td>
+              <td className={`${tdCls} whitespace-nowrap`}>
+                {s.pillar}
+                <span className="ml-1 text-inkmuted">（{s.char}）</span>
+              </td>
+              <td className={`${tdCls} whitespace-nowrap`}>
+                <span className="inline-block rounded-full border border-golddim/40 bg-golddim/10 px-2.5 py-0.5 text-[11.5px] tracking-[0.08em] text-golddim">
+                  命中 · {s.name}·{s.pillar}
                 </span>
-              ))}
-            </td>
-            <td className={tdCls}>
-              <span className="block text-[12.5px]">{s.rule}</span>
-              <span className="mt-1 block text-[11.5px] text-inkmuted">{s.basis}</span>
-            </td>
-            <td className={`${tdCls} whitespace-nowrap text-[12px] text-inkmuted`}>{s.source}</td>
-            <td className={tdCls}>{s.explanation}</td>
-          </tr>
-        ))}
+              </td>
+              <td className={tdCls}>{s.modernExplanation}</td>
+            </tr>
+          )),
+        )}
       </tbody>
     </TableShell>
   )

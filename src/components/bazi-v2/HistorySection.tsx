@@ -1,7 +1,10 @@
 /**
- * 历史记录区（登录可见）：trpc.bazi.history 列表 / 回填 / 删除（invalidate）。
+ * 历史记录区（登录可见）：trpc.bazi.history 列表 / 回填 / 重算 / 删除（invalidate）。
+ * 重算走 trpc.bazi.recompute：按落库输入用最新算法复算并写入新版本快照，
+ * 成功后回填展示新结果并提示已生成版本快照。
  * 未登录显示登录引导卡。
  */
+import { useState } from 'react'
 import type { BaziChartV2 } from '@contracts/bazi-core'
 import { trpc } from '@/providers/trpc'
 import { useAuth } from '@/hooks/useAuth'
@@ -17,17 +20,35 @@ type HistoryRow = {
   createdAt: string | Date
 }
 
+type RecomputeResponse = {
+  chart: BaziChartV2
+  chartId: number
+}
+
 export default function HistorySection({
   onRestore,
 }: {
-  onRestore: (chart: BaziChartV2, title: string) => void
+  onRestore: (chart: BaziChartV2, title: string, chartId: number | null) => void
 }) {
   const { user, isLoading: authLoading } = useAuth()
   const utils = trpc.useUtils()
+  const [notice, setNotice] = useState<string | null>(null)
   const history = trpc.bazi.history.useQuery(undefined, { enabled: !!user, retry: false })
   const remove = trpc.bazi.remove.useMutation({
     onSuccess: async () => {
       await utils.bazi.history.invalidate()
+    },
+  })
+  const recompute = trpc.bazi.recompute.useMutation({
+    onSuccess: async (data) => {
+      const res = data as unknown as RecomputeResponse
+      await utils.bazi.history.invalidate()
+      setNotice(`已按最新规则重算（规则版本 ${res.chart.rulesetVersion}），并生成新版本快照。`)
+      const row = ((history.data ?? []) as HistoryRow[]).find((r) => r.id === res.chartId)
+      onRestore(res.chart, row?.title ?? '八字排盘', res.chartId)
+    },
+    onError: (err) => {
+      setNotice(`重算失败：${err.message || '请稍后重试。'}`)
     },
   })
 
@@ -81,7 +102,10 @@ export default function HistorySection({
               <li key={r.id} className="flex flex-wrap items-center gap-3 py-3.5">
                 <button
                   className="min-w-0 flex-1 text-left"
-                  onClick={() => onRestore(r.result as BaziChartV2, r.title)}
+                  onClick={() => {
+                    setNotice(null)
+                    onRestore(r.result as BaziChartV2, r.title, r.id)
+                  }}
                   title="点击回填展示此盘"
                 >
                   <p className="truncate font-serif text-[14.5px] font-bold text-inktext">
@@ -96,6 +120,14 @@ export default function HistorySection({
                   </p>
                 </button>
                 <button
+                  onClick={() => recompute.mutate({ chartId: r.id })}
+                  disabled={recompute.isPending}
+                  title="按最新算法 / 规则重新计算此盘（生成新版本快照）"
+                  className="rounded-full border border-golddim/30 px-3 py-1 text-[11.5px] text-golddim transition-colors hover:border-golddim hover:bg-golddim/10 disabled:opacity-50"
+                >
+                  {recompute.isPending ? '重算中…' : '重算'}
+                </button>
+                <button
                   onClick={() => remove.mutate({ id: r.id })}
                   disabled={remove.isPending}
                   className="rounded-full border border-golddim/30 px-3 py-1 text-[11.5px] text-inkmuted transition-colors hover:border-[#B04A3A]/60 hover:text-[#B04A3A] disabled:opacity-50"
@@ -107,8 +139,13 @@ export default function HistorySection({
           })}
         </ul>
       )}
+      {notice && (
+        <p role="status" className="mt-4 rounded-lg border border-golddim/30 bg-golddim/10 px-4 py-2.5 text-center text-[12.5px] text-golddim">
+          {notice}
+        </p>
+      )}
       <p className="mt-4 text-center text-[11px] text-inkmuted">
-        点击记录可回填展示；删除后立即生效且不可恢复。
+        点击记录可回填展示；「重算」按最新规则复算并留存版本快照；删除后立即生效且不可恢复。
       </p>
     </div>
   )

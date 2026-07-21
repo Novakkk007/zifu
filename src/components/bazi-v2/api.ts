@@ -19,11 +19,22 @@ export interface PaipanResponse {
   persisted: boolean
 }
 
-/** AI 详批响应契约（api/ai-router.ts reading） */
+/** AI 详批响应契约（api/ai-router.ts reading，输出不变） */
 export interface ReadingResponse {
   text: string
   source: 'live' | 'fallback'
   model: string | null
+  promptTokens?: number | null
+  completionTokens?: number | null
+  latencyMs?: number | null
+}
+
+/** AI 详批请求契约（v6：鉴权 + chartId，服务端从落库命盘构建摘要） */
+export interface ReadingPayload {
+  chartId: number
+  persona: 'scholar' | 'hermit'
+  depth: 'pro' | 'plain'
+  idempotencyKey?: string
 }
 
 /**
@@ -43,9 +54,16 @@ export function buildChartSummary(chart: BaziChartV2): string {
   const countText = (['金', '木', '水', '火', '土'] as const)
     .map((w) => `${w}${chart.wuxing.count[w].toFixed(2)}`)
     .join(' ')
+  // 神煞 v2：逐柱一条记录，按名称归组后列出全部命中柱位
+  const byName = new Map<string, string[]>()
+  for (const s of chart.shensha) {
+    const list = byName.get(s.name) ?? []
+    list.push(`${s.pillar}（${s.char}）`)
+    byName.set(s.name, list)
+  }
   const shenshaText =
-    chart.shensha.length > 0
-      ? chart.shensha.map((s) => `${s.name}（命中：${s.hitPositions.join('、')}）`).join('；')
+    byName.size > 0
+      ? [...byName.entries()].map(([name, hits]) => `${name}（命中：${hits.join('、')}）`).join('；')
       : '未命中注册表内神煞'
   const currentDayun = chart.dayun.steps.find((s) => s.isCurrent)
   return [
