@@ -30,12 +30,12 @@ export interface ReadingResult {
 }
 
 export class AiServiceError extends Error {
-  constructor(
-    message: string,
-    public readonly cause?: unknown,
-  ) {
+  readonly cause?: unknown;
+
+  constructor(message: string, cause?: unknown) {
     super(message);
     this.name = "AiServiceError";
+    this.cause = cause;
   }
 }
 
