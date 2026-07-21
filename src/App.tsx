@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from '@/components/Layout'
 import Home from '@/pages/Home'
 import Hecan from '@/pages/Hecan'
@@ -14,10 +14,8 @@ import Toolkit from '@/pages/Toolkit'
 import Wiki from '@/pages/Wiki'
 import Talks from '@/pages/Talks'
 import Terms from '@/pages/Terms'
-import Auth from '@/pages/Auth'
 import NotFound from '@/pages/NotFound'
 import Login from "./pages/Login"
-import NotFound from "./pages/NotFound"
 
 export default function App() {
   return (
@@ -37,8 +35,8 @@ export default function App() {
         <Route path="/wiki" element={<Wiki />} />
         <Route path="/talks" element={<Talks />} />
         <Route path="/terms" element={<Terms />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="*" element={<NotFound />} />
+        {/* 旧 mock 登录页路由 → 统一进入真实 OAuth 登录 */}
+        <Route path="/auth" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

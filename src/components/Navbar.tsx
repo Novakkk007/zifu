@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronDown, Menu, Sparkle, X } from 'lucide-react'
+import { ChevronDown, LogOut, Menu, Sparkle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/hooks/useAuth'
+import { LOGIN_PATH } from '@/const'
 
 const YAN_MENU = [
   { to: '/bazi', label: '八字排盘' },
@@ -28,6 +30,7 @@ export default function Navbar() {
   const [dropOpen, setDropOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const location = useLocation()
+  const { user, isAuthenticated, isLoading, logout } = useAuth()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -120,12 +123,30 @@ export default function Navbar() {
 
         {/* 右：登录 + 汉堡 */}
         <div className="flex items-center gap-3">
-          <Link
-            to="/auth"
-            className="zf-btn rounded-full bg-deep px-5 py-2 font-sans text-[13px] font-medium tracking-[0.12em] text-silk"
-          >
-            登录 / 注册
-          </Link>
+          {isLoading ? (
+            <span className="h-8 w-20 animate-pulse rounded-full bg-silk2" aria-hidden />
+          ) : isAuthenticated && user ? (
+            <div className="flex items-center gap-2">
+              <span className="max-w-[10rem] truncate rounded-full border border-[rgba(199,162,58,0.35)] px-4 py-1.5 font-sans text-[13px] tracking-[0.08em] text-golddim">
+                {user.name || '紫府同参'}
+              </span>
+              <button
+                onClick={logout}
+                aria-label="退出登录"
+                title="退出登录"
+                className="rounded-full p-2 text-inkmuted transition-colors hover:text-golddim"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <Link
+              to={LOGIN_PATH}
+              className="zf-btn rounded-full bg-deep px-5 py-2 font-sans text-[13px] font-medium tracking-[0.12em] text-silk"
+            >
+              登录 / 注册
+            </Link>
+          )}
           <button
             className="p-2 text-inktext lg:hidden"
             onClick={() => setDrawerOpen(true)}
@@ -164,7 +185,9 @@ export default function Navbar() {
                 ...YAN_MENU,
                 ...NAV_LINKS,
                 { to: '/talks', label: '主创说' },
-                { to: '/auth', label: '登录 / 注册' },
+                ...(isAuthenticated
+                  ? [{ to: '/', label: '退出登录', action: 'logout' as const }]
+                  : [{ to: LOGIN_PATH, label: '登录 / 注册' }]),
               ].map((item, i) => (
                 <motion.div
                   key={item.to + item.label}
@@ -172,12 +195,24 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 + i * 0.05, duration: 0.3 }}
                 >
-                  <NavLink
-                    to={item.to}
-                    className="block py-2.5 text-center font-serif text-[22px] tracking-[0.2em] text-silktext transition-colors hover:text-goldbright"
-                  >
-                    {item.label}
-                  </NavLink>
+                  {'action' in item && item.action === 'logout' ? (
+                    <button
+                      onClick={() => {
+                        setDrawerOpen(false)
+                        logout()
+                      }}
+                      className="block py-2.5 text-center font-serif text-[22px] tracking-[0.2em] text-silktext transition-colors hover:text-goldbright"
+                    >
+                      {item.label}
+                    </button>
+                  ) : (
+                    <NavLink
+                      to={item.to}
+                      className="block py-2.5 text-center font-serif text-[22px] tracking-[0.2em] text-silktext transition-colors hover:text-goldbright"
+                    >
+                      {item.label}
+                    </NavLink>
+                  )}
                 </motion.div>
               ))}
             </nav>
