@@ -1,5 +1,13 @@
 import { FormSelect, SegmentedControl } from '@/components/FormControls'
-import { SHICHEN_OPTIONS } from '@/lib/ganzhi'
+import { BRANCHES } from '@contracts/bazi-core'
+
+/** 时辰选项（含钟点） */
+const SHICHEN_OPTIONS = BRANCHES.map((b, i) => {
+  const start = (23 + i * 2) % 24
+  const end = (start + 2) % 24
+  const fmt = (h: number) => String(h).padStart(2, '0')
+  return { value: i, label: `${b}时 ${fmt(start)}–${fmt(end)}` }
+})
 
 export interface PersonFormState {
   gender: 'male' | 'female'

@@ -8,14 +8,32 @@ import SectionHeading from '@/components/SectionHeading'
 import QuoteStrip from '@/components/QuoteStrip'
 import { GhostButton, GoldButton } from '@/components/Buttons'
 import { cn } from '@/lib/utils'
-import type { BaziChart, PillarInfo } from '@/lib/ganzhi'
-import {
-  computeChart,
-  hashString,
-  seededRandom,
-  WUXING_COLORS,
-  wuxingRelation,
-} from '@/lib/ganzhi'
+import type { BaziChartV2, BirthInput, PillarInfo, Wuxing } from '@contracts/bazi-core'
+import { computeChartV2, WUXING_SHENG } from '@contracts/bazi-core'
+import { WUXING_COLORS } from '@/lib/wuxing-style'
+import { hashString, seededRandom } from '@/lib/random'
+
+/** 两五行关系（合盘演示规则） */
+function wuxingRelation(a: Wuxing, b: Wuxing): '比和' | '相生' | '相制' {
+  if (a === b) return '比和'
+  if (WUXING_SHENG[a] === b || WUXING_SHENG[b] === a) return '相生'
+  return '相制'
+}
+
+/** 合盘表单（公历、不校正）→ BirthInput */
+function toBirthInput(p: PersonFormState): BirthInput {
+  return {
+    calendar: 'solar',
+    year: p.year,
+    month: p.month,
+    day: p.day,
+    hour: p.hour === null ? null : (p.hour * 2) % 24,
+    minute: 0,
+    gender: p.gender,
+    useTrueSolarTime: false,
+    dayRollover: 'zichu',
+  }
+}
 
 const HERO_POOL = ['合', '冲', '刑', '害', '会', '缘', '比肩', '鸳鸯']
 
@@ -87,14 +105,14 @@ function ChartGroup({
   indexBase,
 }: {
   name: string
-  chart: BaziChart
+  chart: BaziChartV2
   indexBase: number
 }) {
   const items = [
-    { label: '年柱', pillar: chart.yearP },
-    { label: '月柱', pillar: chart.monthP },
-    { label: '日柱', pillar: chart.dayP, isDay: true },
-    { label: '时柱', pillar: chart.hourP },
+    { label: '年柱', pillar: chart.pillars.year },
+    { label: '月柱', pillar: chart.pillars.month },
+    { label: '日柱', pillar: chart.pillars.day, isDay: true },
+    { label: '时柱', pillar: chart.pillars.hour },
   ]
   return (
     <div>
@@ -119,7 +137,7 @@ function ChartGroup({
 export default function Hepan() {
   const [a, setA] = useState<PersonFormState>(defaultPerson())
   const [b, setB] = useState<PersonFormState>({ ...defaultPerson(), gender: 'female', year: 1992, month: 10, day: 8, hour: 10 })
-  const [result, setResult] = useState<{ ca: BaziChart; cb: BaziChart } | null>(null)
+  const [result, setResult] = useState<{ ca: BaziChartV2; cb: BaziChartV2 } | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [displayScore, setDisplayScore] = useState(0)
   const resultRef = useRef<HTMLDivElement>(null)
@@ -167,13 +185,13 @@ export default function Hepan() {
     const { ca, cb } = result
     const rel = wuxingRelation(ca.dayMasterWuxing, cb.dayMasterWuxing)
     const rawComplement =
-      ca.missing.reduce((s, w) => s + cb.wuxingCount[w], 0) +
-      cb.missing.reduce((s, w) => s + ca.wuxingCount[w], 0)
+      ca.wuxing.missing.reduce((s, w) => s + cb.wuxing.count[w], 0) +
+      cb.wuxing.missing.reduce((s, w) => s + ca.wuxing.count[w], 0)
     const complement = Math.min(100, Math.round((rawComplement / 6) * 100))
-    const missText = (c: BaziChart, other: BaziChart, who: string, otherWho: string) =>
-      c.missing.length > 0
-        ? `${who}盘缺${c.missing.join('、')}，${otherWho}盘中${c.missing
-            .map((w) => `${w} ${other.wuxingCount[w].toFixed(1)}`)
+    const missText = (c: BaziChartV2, other: BaziChartV2, who: string, otherWho: string) =>
+      c.wuxing.missing.length > 0
+        ? `${who}盘缺${c.wuxing.missing.join('、')}，${otherWho}盘中${c.wuxing.missing
+            .map((w) => `${w} ${other.wuxing.count[w].toFixed(1)}`)
             .join('、')}，恰可为补`
         : `${who}五行俱全，不求于外`
     return { rel, complement, p1miss: missText(ca, cb, '甲方', '乙方'), p2miss: missText(cb, ca, '乙方', '甲方') }
@@ -181,8 +199,8 @@ export default function Hepan() {
 
   const submit = () => {
     setResult({
-      ca: computeChart({ year: a.year, month: a.month, day: a.day, hourBranch: a.hour, gender: a.gender }),
-      cb: computeChart({ year: b.year, month: b.month, day: b.day, hourBranch: b.hour, gender: b.gender }),
+      ca: computeChartV2(toBirthInput(a)),
+      cb: computeChartV2(toBirthInput(b)),
     })
   }
 
@@ -303,7 +321,7 @@ export default function Hepan() {
                   <h3 className="mb-5 text-center font-serif text-[17px] font-bold tracking-[0.12em] text-inktext">
                     五行互补
                   </h3>
-                  <WuxingDonut outer={result.ca.wuxingCount} inner={result.cb.wuxingCount} />
+                  <WuxingDonut outer={result.ca.wuxing.count} inner={result.cb.wuxing.count} />
                   <p className="mt-4 text-center text-[12px] leading-[1.8] text-inkmuted">
                     互补度 <span className="font-serif text-[15px] font-bold text-golddim">{analysis.complement}</span>
                     <span className="mx-1.5 text-inkmuted/50">｜</span>
