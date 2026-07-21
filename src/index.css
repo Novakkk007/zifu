@@ -3,7 +3,53 @@
 @tailwind utilities;
 
 @layer base {
+  /* ===== 紫府三主题 · CSS 变量（RGB 三通道，供 rgb(var(--x) / a) 使用） ===== */
+  :root[data-theme='ink'] {
+    --silk: 246 243 230;
+    --silk-2: 237 232 211;
+    --deep: 11 59 57;
+    --deep-2: 7 43 41;
+    --deep-3: 5 32 30;
+    --gold: 199 162 58;
+    --gold-bright: 228 198 106;
+    --gold-dim: 142 118 48;
+    --ink-text: 34 48 44;
+    --ink-muted: 110 123 111;
+    --silk-text: 237 231 210;
+    --silk-muted: 148 163 152;
+  }
+  :root[data-theme='purple'] {
+    --silk: 244 240 233;
+    --silk-2: 234 228 218;
+    --deep: 36 21 55;
+    --deep-2: 26 15 40;
+    --deep-3: 18 10 28;
+    --gold: 199 162 58;
+    --gold-bright: 228 198 106;
+    --gold-dim: 142 118 48;
+    --ink-text: 44 36 52;
+    --ink-muted: 117 108 126;
+    --silk-text: 234 228 214;
+    --silk-muted: 154 146 164;
+  }
+  :root[data-theme='xuan'] {
+    --silk: 236 234 226;
+    --silk-2: 224 221 210;
+    --deep: 16 20 24;
+    --deep-2: 11 14 18;
+    --deep-3: 7 9 12;
+    --gold: 199 162 58;
+    --gold-bright: 228 198 106;
+    --gold-dim: 142 118 48;
+    --ink-text: 35 38 42;
+    --ink-muted: 110 114 118;
+    --silk-text: 230 226 210;
+    --silk-muted: 150 154 156;
+  }
   :root {
+    --hairline: rgba(199, 162, 58, 0.18);
+    --radius: 0.625rem;
+
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
@@ -23,53 +69,126 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
-    --radius: 0.625rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-primary-foreground: 240 5.9% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-}
-
-@layer base {
   * {
     @apply border-border;
   }
+
+  html {
+    scroll-behavior: auto;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-silk text-inktext font-sans antialiased;
+    font-size: 15.5px;
+    line-height: 1.95;
+  }
+
+  /* 主题切换 600ms 过渡（仅颜色类属性） */
+  body,
+  body * {
+    transition-property: background-color, color, border-color, fill, stroke;
+    transition-duration: 600ms;
+    transition-timing-function: ease;
+  }
+
+  ::selection {
+    background: rgb(var(--gold) / 0.28);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgb(var(--deep-3));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--gold) / 0.35);
+    border-radius: 8px;
+  }
+}
+
+@layer components {
+  /* 容器 */
+  .zf-container {
+    @apply mx-auto w-full max-w-[1200px] px-6 md:px-10;
+  }
+
+  /* 金色 hairline 分隔线（56px 居中） */
+  .zf-hairline {
+    width: 56px;
+    height: 1px;
+    background: var(--hairline);
+  }
+
+  /* 浅→深 / 深→浅 渐变过渡带 */
+  .zf-fade-to-deep {
+    background: linear-gradient(to bottom, rgb(var(--silk)), rgb(var(--deep)));
+  }
+  .zf-fade-to-silk {
+    background: linear-gradient(to bottom, rgb(var(--deep-2)), rgb(var(--silk)));
+  }
+
+  /* 绢纸纹理（SVG feTurbulence 内联，3% 透明叠层） */
+  .zf-paper-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='512' height='512' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    background-size: 512px 512px;
+  }
+
+  /* 跑马灯：hover 减速至 90s */
+  .zf-marquee-track {
+    animation: marquee 40s linear infinite;
+  }
+  .zf-marquee:hover .zf-marquee-track {
+    animation-duration: 90s;
+  }
+
+  /* 「了解更多 →」金色下划线展开 */
+  .zf-link-more {
+    position: relative;
+  }
+  .zf-link-more::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    height: 1px;
+    width: 100%;
+    background: rgb(var(--gold));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 300ms ease;
+  }
+  .zf-link-more:hover::after {
+    transform: scaleX(1);
+  }
+  .zf-link-more .zf-arrow {
+    display: inline-block;
+    transition: transform 300ms ease;
+  }
+  .zf-link-more:hover .zf-arrow {
+    transform: translateX(6px);
+  }
+
+  /* 按钮微动效 */
+  .zf-btn {
+    transition: transform 180ms ease, filter 180ms ease, background-color 180ms ease,
+      color 180ms ease, border-color 600ms ease, box-shadow 300ms ease;
+  }
+  .zf-btn:hover {
+    transform: scale(1.03);
+    filter: brightness(1.08);
+  }
+  .zf-btn:active {
+    transform: scale(0.97);
   }
 }

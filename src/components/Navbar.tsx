@@ -1,0 +1,189 @@
+import { useEffect, useState } from 'react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronDown, Menu, Sparkle, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+const YAN_MENU = [
+  { to: '/bazi', label: '八字排盘' },
+  { to: '/bazi/hepan', label: '八字合盘' },
+  { to: '/liuyao', label: '六爻起卦' },
+  { to: '/ziwei', label: '紫微斗数' },
+  { to: '/qizheng', label: '七政四余' },
+  { to: '/qimen', label: '奇门遁甲' },
+  { to: '/daliuren', label: '大六壬' },
+]
+
+const NAV_LINKS = [
+  { to: '/toolkit', label: '百宝袋' },
+  { to: '/daily', label: '每日时令' },
+  { to: '/wiki', label: '藏经阁' },
+]
+
+const linkCls =
+  'font-sans text-[13.5px] tracking-[0.1em] text-inkmuted transition-colors hover:text-golddim'
+
+export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false)
+  const [dropOpen, setDropOpen] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const location = useLocation()
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    setDrawerOpen(false)
+    setDropOpen(false)
+  }, [location.pathname])
+
+  return (
+    <motion.header
+      initial={{ y: -16, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className={cn(
+        'sticky top-0 z-50 h-16 border-b bg-silk/90 backdrop-blur-md transition-[border-color] duration-300',
+        scrolled ? 'border-[rgba(199,162,58,0.18)]' : 'border-transparent',
+      )}
+    >
+      <div className="zf-container flex h-full items-center justify-between">
+        {/* 左：品牌 */}
+        <Link to="/" className="flex items-center gap-2.5">
+          <img src="/assets/logo.png" alt="紫府" className="h-7 w-7" />
+          <span className="bg-gradient-to-br from-goldbright to-gold bg-clip-text font-serif text-[22px] font-black tracking-[0.12em] text-transparent">
+            紫府
+          </span>
+          <span
+            className="hidden font-latin text-[10px] font-medium tracking-[0.3em] text-inkmuted sm:block"
+            style={{ writingMode: 'vertical-rl' }}
+          >
+            ZIFU PALACE
+          </span>
+        </Link>
+
+        {/* 中：桌面导航 */}
+        <nav className="hidden items-center gap-7 lg:flex">
+          <div
+            className="relative"
+            onMouseEnter={() => setDropOpen(true)}
+            onMouseLeave={() => setDropOpen(false)}
+          >
+            <button className={cn(linkCls, 'flex items-center gap-1')}>
+              术数推演
+              <ChevronDown
+                className={cn('h-3.5 w-3.5 transition-transform', dropOpen && 'rotate-180')}
+              />
+            </button>
+            <AnimatePresence>
+              {dropOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.16 }}
+                  className="absolute left-1/2 top-full w-40 -translate-x-1/2 pt-3"
+                >
+                  <div className="overflow-hidden rounded-xl border border-gold/15 bg-silk shadow-card">
+                    {YAN_MENU.map((item) => (
+                      <NavLink
+                        key={item.to}
+                        to={item.to}
+                        className="block px-5 py-2.5 font-sans text-[13.5px] tracking-[0.1em] text-inkmuted transition-colors hover:bg-silk2 hover:text-golddim"
+                      >
+                        {item.label}
+                      </NavLink>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <NavLink
+            to="/hecan"
+            className="flex items-center gap-1.5 font-sans text-[13.5px] tracking-[0.1em] text-inkmuted transition-colors hover:text-golddim"
+          >
+            <Sparkle className="h-3 w-3 text-gold" strokeWidth={2} />
+            三术合参
+          </NavLink>
+          {NAV_LINKS.map((l) => (
+            <NavLink key={l.to} to={l.to} className={linkCls}>
+              {l.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* 右：登录 + 汉堡 */}
+        <div className="flex items-center gap-3">
+          <Link
+            to="/auth"
+            className="zf-btn rounded-full bg-deep px-5 py-2 font-sans text-[13px] font-medium tracking-[0.12em] text-silk"
+          >
+            登录 / 注册
+          </Link>
+          <button
+            className="p-2 text-inktext lg:hidden"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="打开菜单"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* 移动端全屏抽屉 */}
+      <AnimatePresence>
+        {drawerOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.24 }}
+            className="fixed inset-0 z-[60] flex flex-col bg-deep3 lg:hidden"
+          >
+            <div className="flex h-16 items-center justify-between px-6">
+              <span className="font-serif text-[20px] font-black tracking-[0.12em] text-goldbright">
+                紫府
+              </span>
+              <button
+                className="p-2 text-silkmuted"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="关闭菜单"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <nav className="flex flex-1 flex-col items-center justify-center gap-1 overflow-y-auto px-8 pb-16">
+              {[
+                { to: '/hecan', label: '✦ 三术合参' },
+                ...YAN_MENU,
+                ...NAV_LINKS,
+                { to: '/talks', label: '主创说' },
+                { to: '/auth', label: '登录 / 注册' },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.to + item.label}
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 + i * 0.05, duration: 0.3 }}
+                >
+                  <NavLink
+                    to={item.to}
+                    className="block py-2.5 text-center font-serif text-[22px] tracking-[0.2em] text-silktext transition-colors hover:text-goldbright"
+                  >
+                    {item.label}
+                  </NavLink>
+                </motion.div>
+              ))}
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
+  )
+}
