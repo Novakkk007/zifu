@@ -187,7 +187,7 @@ export default function StarRing({ chart }: { chart: QizhengChart }) {
       })}
 
       {/* 圆心：logo + 紫府星盘 */}
-      <image href="/assets/logo.png" x={C - 24} y={C - 30} width={48} height={48} />
+      <image href="/assets/logo-mark.svg" x={C - 24} y={C - 30} width={48} height={48} />
       <text
         x={C}
         y={C + 36}

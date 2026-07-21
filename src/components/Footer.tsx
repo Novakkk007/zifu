@@ -1,3 +1,4 @@
+import BrandLogo from '@/components/BrandLogo'
 import { Link } from 'react-router-dom'
 
 const FOOT_LINKS = [
@@ -11,7 +12,7 @@ export default function Footer() {
     <footer className="bg-deep3 py-16 text-center">
       <div className="zf-container flex flex-col items-center gap-5">
         <Link to="/" className="flex items-center gap-2.5">
-          <img src="/assets/logo.png" alt="紫府" className="h-6 w-6" />
+          <BrandLogo variant="mark" size={24} />
           <span className="font-serif text-[18px] font-bold tracking-[0.14em] text-goldbright">
             紫府 · <span className="font-latin font-medium">Zifu Palace</span>
           </span>

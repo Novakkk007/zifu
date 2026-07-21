@@ -1,10 +1,11 @@
-export type ZifuTheme = 'ink' | 'purple' | 'xuan'
+export type ZifuTheme = 'gold-indigo' | 'ink' | 'purple' | 'xuan'
 
 export const THEME_STORAGE_KEY = 'zifu-theme'
 
-export const THEME_ORDER: ZifuTheme[] = ['ink', 'purple', 'xuan']
+export const THEME_ORDER: ZifuTheme[] = ['gold-indigo', 'ink', 'purple', 'xuan']
 
 export const THEMES: { id: ZifuTheme; name: string; hint: string; swatch: string }[] = [
+  { id: 'gold-indigo', name: '鎏金靛蓝', hint: '深靛蓝底 · 葫芦金', swatch: '#18103A' },
   { id: 'ink', name: '墨青', hint: '深墨青底 · 绢米', swatch: '#0B3B39' },
   { id: 'purple', name: '紫檀', hint: '紫檀夜色 · 绢米', swatch: '#241537' },
   { id: 'xuan', name: '玄墨', hint: '玄墨如夜 · 绢米', swatch: '#101418' },
@@ -13,11 +14,11 @@ export const THEMES: { id: ZifuTheme; name: string; hint: string; swatch: string
 export function getTheme(): ZifuTheme {
   try {
     const t = localStorage.getItem(THEME_STORAGE_KEY)
-    if (t === 'ink' || t === 'purple' || t === 'xuan') return t
+    if (t === 'gold-indigo' || t === 'ink' || t === 'purple' || t === 'xuan') return t
   } catch {
     /* ignore */
   }
-  return 'ink'
+  return 'gold-indigo'
 }
 
 export function applyTheme(theme: ZifuTheme) {

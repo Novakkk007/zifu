@@ -1,13 +1,15 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="ink">
+<html lang="zh-CN" data-theme="gold-indigo">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>紫府 · 古籍数字化 AI 推演平台｜八字 紫微 六爻 周易研究</title>
     <meta name="description" content="紫府 Zifu Palace — 以《周易》《滴天髓》《三命通会》等公版典籍原文为根，AI 逐句引经参详；按次付费，无需订阅。" />
-    <link rel="icon" type="image/png" href="/assets/app-icon.png" />
-    <link rel="apple-touch-icon" href="/assets/app-icon.png" />
-    <link rel="preload" as="image" href="/assets/logo.png" />
+    <meta name="theme-color" content="#100A24" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="icon" type="image/png" href="/assets/app-icon-192.png" />
+    <link rel="apple-touch-icon" href="/assets/app-icon-192.png" />
+    <link rel="preload" as="image" href="/assets/logo-horizontal.svg" />
     <meta property="og:title" content="紫府 ZIFU PALACE · 古籍数字化 AI 推演平台" />
     <meta property="og:description" content="以公版典籍原文为根，AI 逐句引经参详；按次付费，无需订阅。" />
     <meta property="og:image" content="/assets/og-cover.png" />
@@ -22,7 +24,7 @@
       (function () {
         try {
           var t = localStorage.getItem('zifu-theme');
-          if (t === 'ink' || t === 'purple' || t === 'xuan') {
+          if (t === 'gold-indigo' || t === 'ink' || t === 'purple' || t === 'xuan') {
             document.documentElement.setAttribute('data-theme', t);
           }
         } catch (e) {}

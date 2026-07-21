@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 
 const BUBBLE_KEY = 'zifu-fab-bubble-seen'
 
-/** 悬浮助手「紫宸」：右下 56px 圆形，兼作三色主题切换器 */
+/** 悬浮助手「紫宸」：右下 56px 圆形，兼作四色主题切换器 */
 export default function ZifuFab() {
   const [theme, setTheme] = useState<ZifuTheme>(() => getTheme())
   const [menuOpen, setMenuOpen] = useState(false)
@@ -68,7 +68,7 @@ export default function ZifuFab() {
             className="rounded-xl border border-gold/30 bg-deep2 px-4 py-2.5 shadow-card"
           >
             <p className="whitespace-nowrap font-sans text-[12.5px] tracking-[0.08em] text-goldbright">
-              紫府有三色 · 点此切换
+              紫府有四色 · 点此切换
             </p>
             <span className="absolute -bottom-1 right-7 h-2.5 w-2.5 rotate-45 border-b border-r border-gold/30 bg-deep2" />
           </motion.div>

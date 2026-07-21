@@ -3,7 +3,51 @@
 @tailwind utilities;
 
 @layer base {
-  /* ===== 紫府三主题 · CSS 变量（RGB 三通道，供 rgb(var(--x) / a) 使用） ===== */
+  /* 语义色兜底：gold-indigo 主题原生定义，其余主题沿用同值 */
+  :root {
+    --zifu-red: 164 75 77;
+    --zifu-green: 101 128 110;
+    --zifu-blue: 69 91 157;
+  }
+
+  /* ===== 紫府主题 · CSS 变量（RGB 三通道，供 rgb(var(--x) / a) 使用） ===== */
+  /* 鎏金靛蓝 gold-indigo（默认）：葫芦金 × 深靛蓝 */
+  :root[data-theme='gold-indigo'] {
+    /* 原始色板（便于直接使用） */
+    --zifu-indigo-950: 16 10 36; /* #100A24 */
+    --zifu-indigo-900: 24 16 58; /* #18103A */
+    --zifu-indigo-800: 36 17 111; /* #24116F */
+    --zifu-indigo-700: 49 32 140; /* #31208C */
+    --zifu-indigo-600: 75 57 166; /* #4B39A6 */
+    --zifu-gold-900: 139 92 26; /* #8B5C1A */
+    --zifu-gold-800: 154 106 33; /* #9A6A21 */
+    --zifu-gold-700: 185 130 40; /* #B98228 */
+    --zifu-gold-600: 210 163 61; /* #D2A33D */
+    --zifu-gold-500: 229 185 87; /* #E5B957 */
+    --zifu-gold-300: 240 203 105; /* #F0CB69 */
+    --zifu-gold-100: 247 231 170; /* #F7E7AA */
+    --zifu-paper-100: 247 240 228; /* #F7F0E4 */
+    --zifu-paper-200: 237 224 202; /* #EDE0CA */
+    --zifu-paper-300: 220 201 168; /* #DCC9A8 */
+    --zifu-ink: 33 27 45; /* #211B2D */
+    --zifu-muted: 129 117 104; /* #817568 */
+    --zifu-red: 164 75 77; /* #A44B4D */
+    --zifu-green: 101 128 110; /* #65806E */
+    --zifu-blue: 69 91 157; /* #455B9D */
+    /* 映射到既有 token：deep*=靛蓝 gold*=鎏金 silk*=绢纸 */
+    --silk: 247 240 228;
+    --silk-2: 237 224 202;
+    --deep: 24 16 58;
+    --deep-2: 16 10 36;
+    --deep-3: 9 5 20;
+    --gold: 210 163 61;
+    --gold-bright: 229 185 87;
+    --gold-dim: 154 106 33;
+    --ink-text: 33 27 45;
+    --ink-muted: 129 117 104;
+    --silk-text: 247 240 228;
+    --silk-muted: 166 157 184;
+  }
   :root[data-theme='ink'] {
     --silk: 246 243 230;
     --silk-2: 237 232 211;
@@ -190,16 +234,6 @@
   }
   .zf-btn:active {
     transform: scale(0.97);
-  }
-}
-
-@layer base {
-  /* 语义色兜底：gold-indigo 主题在 :root[data-theme='gold-indigo'] 原生定义，
-     其余主题沿用此默认值（与 gold-indigo 同值） */
-  :root {
-    --zifu-red: 164 75 77;
-    --zifu-green: 101 128 110;
-    --zifu-blue: 69 91 157;
   }
 }
 

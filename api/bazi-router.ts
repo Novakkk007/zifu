@@ -30,8 +30,10 @@ const birthInput = z
     city: z.string().trim().max(64).optional(),
     /** 东经度数，缺省 120 */
     longitude: z.number().min(-180).max(180).optional(),
-    /** UTC 偏移小时，缺省 8 */
+    /** UTC 偏移小时，缺省 8（ianaTimezone 的降级项） */
     timezone: z.number().min(-12).max(14).optional(),
+    /** IANA 时区（如 Asia/Shanghai），优先于 timezone，自动处理历史夏令时 */
+    ianaTimezone: z.string().trim().max(64).optional(),
     useTrueSolarTime: z.boolean(),
     dayRollover: z.enum(["zichu", "midnight"]),
     /** 落库标题（可选，不进算法） */

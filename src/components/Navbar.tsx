@@ -5,6 +5,7 @@ import { ChevronDown, LogOut, Menu, Sparkle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { LOGIN_PATH } from '@/const'
+import BrandLogo from '@/components/BrandLogo'
 
 const YAN_MENU = [
   { to: '/bazi', label: '八字排盘' },
@@ -77,7 +78,7 @@ export default function Navbar() {
       <div className="zf-container flex h-full items-center justify-between">
         {/* 左：品牌 */}
         <Link to="/" className="flex items-center gap-2.5">
-          <img src="/assets/logo.png" alt="紫府" className="h-7 w-7" />
+          <BrandLogo variant="mark" size={28} />
           <span className="bg-gradient-to-br from-goldbright to-gold bg-clip-text font-serif text-[22px] font-black tracking-[0.12em] text-transparent">
             紫府
           </span>

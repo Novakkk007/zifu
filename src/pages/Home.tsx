@@ -6,6 +6,7 @@ import SectionHeading from '@/components/SectionHeading'
 import FeatureCard from '@/components/FeatureCard'
 import SiweiDemo from '@/components/SiweiDemo'
 import { GhostButton, GoldButton } from '@/components/Buttons'
+import BrandLogo from '@/components/BrandLogo'
 
 const BOOKS = [
   '周易', '滴天髓', '三命通会', '子平真诠', '穷通宝鉴', '渊海子平',
@@ -177,6 +178,12 @@ export default function Home() {
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
       tl.fromTo(heroFieldRef.current, { opacity: 0 }, { opacity: 1, duration: 1.2 }, 0)
         .fromTo(
+          '.hero-mark',
+          { scale: 1.18, opacity: 0, filter: 'blur(12px)' },
+          { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 1.0 },
+          0.05,
+        )
+        .fromTo(
           '.hero-zi',
           { scale: 1.25, opacity: 0, filter: 'blur(14px)' },
           { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.9 },
@@ -242,27 +249,49 @@ export default function Home() {
         className="relative flex min-h-[100dvh] flex-col overflow-hidden"
         style={{
           background:
-            'linear-gradient(to bottom, rgb(var(--silk)) 0%, rgb(var(--silk)) calc(55% - 110px), rgb(var(--deep)) calc(55% + 110px), rgb(var(--deep)) 100%)',
+            'linear-gradient(to bottom, rgb(var(--deep-2)) 0%, rgb(var(--deep)) 100%)',
         }}
       >
-        {/* 漂浮字场（浅区更淡 / 深区稍亮），外层做 0.15 视差 */}
+        {/* 金箔纹理叠层（10% 透明，纵向渐隐遮罩） */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.12]"
+          style={{
+            backgroundImage: 'url(/assets/gold-foil.webp)',
+            backgroundSize: '512px 512px',
+            maskImage:
+              'radial-gradient(ellipse 90% 75% at 50% 42%, black 30%, transparent 78%)',
+            WebkitMaskImage:
+              'radial-gradient(ellipse 90% 75% at 50% 42%, black 30%, transparent 78%)',
+          }}
+        />
+
+        {/* 漂浮字场（深区稍亮），外层做 0.15 视差 */}
         <div ref={heroFieldRef} className="absolute inset-[-10%] opacity-0">
-          <FloatingGlyphs count={20} onDeep={false} className="bottom-[42%]" />
+          <FloatingGlyphs count={20} onDeep className="bottom-[42%]" />
           <FloatingGlyphs count={28} onDeep className="top-[46%]" />
         </div>
 
         {/* 品牌水印 */}
         <img
-          src="/assets/logo.png"
+          src="/assets/logo-mark.svg"
           alt=""
           aria-hidden
-          className="animate-spin-slow pointer-events-none absolute -bottom-10 -right-10 w-[320px] opacity-[0.07]"
+          className="animate-spin-slow pointer-events-none absolute -bottom-10 -right-10 w-[320px] opacity-[0.1]"
         />
 
-        {/* 品牌区：底部对齐至视口 62%，骑跨米白与墨青交界 */}
-        <div className="hero-brand absolute inset-x-0 top-[62%] flex -translate-y-full flex-col items-center px-6 text-center">
-          <h1 className="flex items-baseline font-serif text-[clamp(110px,20vw,220px)] font-black leading-[1.05]">
-            <span className="hero-zi inline-block text-deep will-change-transform">紫</span>
+        {/* 品牌区：底部对齐至视口 62%，金葫芦母标 + 巨字 + 双 CTA */}
+        <div className="hero-brand absolute inset-x-0 top-[64%] flex -translate-y-full flex-col items-center px-6 text-center sm:top-[62%]">
+          <span className="hero-mark inline-block will-change-transform">
+            <span className="inline-block sm:hidden">
+              <BrandLogo variant="mark" size={64} />
+            </span>
+            <span className="hidden sm:inline-block">
+              <BrandLogo variant="mark" size={132} />
+            </span>
+          </span>
+          <h1 className="mt-3 flex items-baseline font-serif text-[clamp(64px,13vw,148px)] font-black leading-[1.05] sm:mt-5">
+            <span className="hero-zi inline-block text-silktext will-change-transform">紫</span>
             <span className="hero-fu inline-block text-goldbright will-change-transform">府</span>
           </h1>
           <p className="hero-latin mt-2 font-latin text-[13px] font-medium uppercase text-silkmuted">
@@ -433,7 +462,7 @@ export default function Home() {
         <div className="relative mx-auto flex w-full max-w-[640px] flex-col items-center px-6 text-center">
           <div className="gs-app-icon">
             <img
-              src="/assets/app-icon.png"
+              src="/assets/app-icon-512.png"
               alt="紫府 App 图标"
               className="animate-icon-sway h-24 w-24 rounded-[22%] border border-gold/50 shadow-[0_0_40px_-6px_rgba(199,162,58,0.45)]"
             />
