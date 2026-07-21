@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
-import type { Wuxing } from '@/lib/ganzhi'
-import { WUXING_COLORS, WUXING_LIST } from '@/lib/ganzhi'
+import type { Wuxing } from '@contracts/bazi-core'
+import { WUXING_LIST } from '@contracts/bazi-core'
+import { WUXING_COLORS } from '@/lib/wuxing-style'
 
 type WuxingDonutProps = {
   outer: Record<Wuxing, number> // 甲方（外环）

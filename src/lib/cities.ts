@@ -1,0 +1,46 @@
+/** 预设出生城市表（东经度数，用于真太阳时经度修正） */
+export interface CityOption {
+  name: string
+  longitude: number
+}
+
+export const CITIES: CityOption[] = [
+  { name: '北京', longitude: 116.41 },
+  { name: '上海', longitude: 121.47 },
+  { name: '广州', longitude: 113.26 },
+  { name: '深圳', longitude: 114.06 },
+  { name: '成都', longitude: 104.07 },
+  { name: '重庆', longitude: 106.55 },
+  { name: '武汉', longitude: 114.31 },
+  { name: '西安', longitude: 108.94 },
+  { name: '杭州', longitude: 120.16 },
+  { name: '南京', longitude: 118.8 },
+  { name: '天津', longitude: 117.2 },
+  { name: '苏州', longitude: 120.58 },
+  { name: '长沙', longitude: 112.94 },
+  { name: '郑州', longitude: 113.63 },
+  { name: '沈阳', longitude: 123.43 },
+  { name: '哈尔滨', longitude: 126.53 },
+  { name: '长春', longitude: 125.32 },
+  { name: '昆明', longitude: 102.83 },
+  { name: '贵阳', longitude: 106.63 },
+  { name: '乌鲁木齐', longitude: 87.62 },
+  { name: '拉萨', longitude: 91.14 },
+  { name: '兰州', longitude: 103.83 },
+  { name: '西宁', longitude: 101.78 },
+  { name: '银川', longitude: 106.23 },
+  { name: '太原', longitude: 112.55 },
+  { name: '石家庄', longitude: 114.51 },
+  { name: '济南', longitude: 117.12 },
+  { name: '福州', longitude: 119.3 },
+  { name: '厦门', longitude: 118.09 },
+  { name: '南宁', longitude: 108.37 },
+  { name: '海口', longitude: 110.32 },
+  { name: '呼和浩特', longitude: 111.75 },
+  { name: '青岛', longitude: 120.38 },
+  { name: '大连', longitude: 121.61 },
+  { name: '宁波', longitude: 121.55 },
+  { name: '合肥', longitude: 117.28 },
+  { name: '南昌', longitude: 115.86 },
+  { name: '佛山', longitude: 113.12 },
+]

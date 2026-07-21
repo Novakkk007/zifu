@@ -192,3 +192,17 @@
     transform: scale(0.97);
   }
 }
+
+/* ===== prefers-reduced-motion：关闭大位移与循环动画 ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html {
+    scroll-behavior: auto !important;
+  }
+}

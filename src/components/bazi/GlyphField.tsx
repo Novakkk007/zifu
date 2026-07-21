@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react'
 import { cn } from '@/lib/utils'
-import { seededRandom } from '@/lib/ganzhi'
+import { seededRandom } from '@/lib/random'
 
 type GlyphFieldProps = {
   /** 本页字池 */
