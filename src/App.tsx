@@ -15,6 +15,7 @@ import Wiki from '@/pages/Wiki'
 import Talks from '@/pages/Talks'
 import Terms from '@/pages/Terms'
 import NotFound from '@/pages/NotFound'
+import Account from '@/pages/Account'
 import Login from "./pages/Login"
 
 export default function App() {
@@ -38,6 +39,7 @@ export default function App() {
         {/* 旧 mock 登录页路由 → 统一进入真实 OAuth 登录 */}
         <Route path="/auth" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/account" element={<Account />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

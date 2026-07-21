@@ -5,6 +5,7 @@ import FloatingGlyphs from '@/components/FloatingGlyphs'
 import QuoteStrip from '@/components/QuoteStrip'
 import SectionHeading from '@/components/SectionHeading'
 import { FormInput } from '@/components/FormControls'
+import FeatureStatusBadge from '@/components/FeatureStatusBadge'
 import AiReading from '@/components/liuyao/AiReading'
 import CoinToss from '@/components/liuyao/CoinToss'
 import HexagramResult from '@/components/liuyao/HexagramResult'
@@ -103,6 +104,9 @@ export default function Liuyao() {
       </section>
 
       <div className="zf-fade-to-deep h-40 rotate-180" />
+
+      {/* 全站统一真实度标注：演示模式 */}
+      <FeatureStatusBadge kind="demo" />
 
       {/* S2 · 摇卦交互区（浅色） */}
       <section className="relative overflow-hidden bg-silk py-20 md:py-28">

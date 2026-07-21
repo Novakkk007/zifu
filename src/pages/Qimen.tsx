@@ -8,6 +8,7 @@ import SiweiPanel, { type SiweiTexts } from '@/components/sanshi/SiweiPanel'
 import JiugongPlate from '@/components/sanshi/JiugongPlate'
 import { FormInput, FormSelect } from '@/components/FormControls'
 import { GoldButton } from '@/components/Buttons'
+import FeatureStatusBadge from '@/components/FeatureStatusBadge'
 import {
   Drawer,
   DrawerContent,
@@ -133,6 +134,9 @@ export default function Qimen() {
       />
 
       <div className="zf-fade-to-silk h-[180px]" />
+
+      {/* 全站统一真实度标注：演示模式 */}
+      <FeatureStatusBadge kind="demo" />
 
       {/* ===== S2 · 起局表单 ===== */}
       <section className="relative bg-silk pb-24 pt-4">

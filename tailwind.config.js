@@ -18,6 +18,10 @@ module.exports = {
         inkmuted: "rgb(var(--ink-muted) / <alpha-value>)",
         silktext: "rgb(var(--silk-text) / <alpha-value>)",
         silkmuted: "rgb(var(--silk-muted) / <alpha-value>)",
+        /* 语义色（gold-indigo 主题原生定义，其余主题走 :root 兜底值） */
+        zifured: "rgb(var(--zifu-red) / <alpha-value>)",
+        zifugreen: "rgb(var(--zifu-green) / <alpha-value>)",
+        zifublue: "rgb(var(--zifu-blue) / <alpha-value>)",
         /* shadcn 兼容 */
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

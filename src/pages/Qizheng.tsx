@@ -7,6 +7,7 @@ import StarRing from '@/components/sanshi/StarRing'
 import DemoDialog from '@/components/sanshi/DemoDialog'
 import { FormInput, FormSelect, SegmentedControl } from '@/components/FormControls'
 import { GoldButton } from '@/components/Buttons'
+import FeatureStatusBadge from '@/components/FeatureStatusBadge'
 import { BRANCHES, MANSIONS } from '@/components/sanshi/astro'
 import { genQizheng, type QizhengChart } from '@/components/sanshi/qizheng'
 import { cn } from '@/lib/utils'
@@ -79,6 +80,9 @@ export default function Qizheng() {
 
       {/* 深 → 浅 过渡带 */}
       <div className="zf-fade-to-silk h-[180px]" />
+
+      {/* 全站统一真实度标注：近似排算 */}
+      <FeatureStatusBadge kind="approx" />
 
       {/* ===== S2 · 生辰表单 ===== */}
       <section className="relative bg-silk pb-24 pt-4">
