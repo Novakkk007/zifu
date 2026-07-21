@@ -16,6 +16,8 @@ import Talks from '@/pages/Talks'
 import Terms from '@/pages/Terms'
 import Auth from '@/pages/Auth'
 import NotFound from '@/pages/NotFound'
+import Login from "./pages/Login"
+import NotFound from "./pages/NotFound"
 
 export default function App() {
   return (
@@ -36,6 +38,8 @@ export default function App() {
         <Route path="/talks" element={<Talks />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="*" element={<NotFound />} />
+        <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>
