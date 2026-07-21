@@ -9,6 +9,7 @@ import SiweiPanel, { type SiweiTexts } from '@/components/sanshi/SiweiPanel'
 import TiandiPan from '@/components/sanshi/TiandiPan'
 import { FormInput, FormSelect } from '@/components/FormControls'
 import { GoldButton } from '@/components/Buttons'
+import FeatureStatusBadge from '@/components/FeatureStatusBadge'
 import { BRANCHES } from '@/components/sanshi/astro'
 import { genDaliuren, type LiuRenKe } from '@/components/sanshi/daliuren'
 import { cn } from '@/lib/utils'
@@ -107,6 +108,9 @@ export default function Daliuren() {
       />
 
       <div className="zf-fade-to-silk h-[180px]" />
+
+      {/* 全站统一真实度标注：演示模式 */}
+      <FeatureStatusBadge kind="demo" />
 
       {/* ===== S2 · 起课表单 ===== */}
       <section className="relative bg-silk pb-24 pt-4">

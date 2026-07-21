@@ -193,6 +193,16 @@
   }
 }
 
+@layer base {
+  /* 语义色兜底：gold-indigo 主题在 :root[data-theme='gold-indigo'] 原生定义，
+     其余主题沿用此默认值（与 gold-indigo 同值） */
+  :root {
+    --zifu-red: 164 75 77;
+    --zifu-green: 101 128 110;
+    --zifu-blue: 69 91 157;
+  }
+}
+
 /* ===== prefers-reduced-motion：关闭大位移与循环动画 ===== */
 @media (prefers-reduced-motion: reduce) {
   *,

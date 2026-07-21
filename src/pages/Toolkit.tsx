@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import PageHero from '@/components/content/PageHero'
 import SectionHeading from '@/components/SectionHeading'
 import { TagPill } from '@/components/Buttons'
+import FeatureStatusBadge from '@/components/FeatureStatusBadge'
 import {
   GanzhiTool,
   LodgeTool,
@@ -64,6 +65,9 @@ export default function Toolkit() {
 
       {/* 深 → 浅 过渡 */}
       <div className="zf-fade-to-silk h-[160px]" />
+
+      {/* 全站统一真实度标注：演示模式 */}
+      <FeatureStatusBadge kind="demo" />
 
       {/* S2 · 工具矩阵 */}
       <section className="relative bg-silk pb-28 pt-16">

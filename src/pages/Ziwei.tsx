@@ -6,6 +6,7 @@ import QuoteStrip from '@/components/QuoteStrip'
 import SectionHeading from '@/components/SectionHeading'
 import { FormInput, FormSelect, SegmentedControl } from '@/components/FormControls'
 import { GhostButton, GoldButton } from '@/components/Buttons'
+import FeatureStatusBadge from '@/components/FeatureStatusBadge'
 import {
   Dialog,
   DialogContent,
@@ -126,6 +127,9 @@ export default function Ziwei() {
 
       <div className="zf-fade-to-deep h-40 rotate-180" />
 
+      {/* 全站统一真实度标注：演示模式 */}
+      <FeatureStatusBadge kind="demo" />
+
       {/* S2 · 生辰表单（浅色） */}
       <section className="bg-silk py-20 md:py-28">
         <div className="zf-container">
@@ -211,10 +215,11 @@ export default function Ziwei() {
                 <GoldButton onClick={handleSubmit} className="w-full sm:w-auto">
                   安星排盘
                 </GoldButton>
-                <p className="text-[12px] leading-[1.8] text-inkmuted">
-                  演示模式以简化规则安星，星曜位置仅供界面展示
-                  {calendar === 'lunar' ? ' · 农历按同日近似换算' : ''}
-                </p>
+                {calendar === 'lunar' && (
+                  <p className="text-[12px] leading-[1.8] text-inkmuted">
+                    农历按同日近似换算
+                  </p>
+                )}
               </div>
             </div>
           </motion.div>
