@@ -117,11 +117,14 @@ function AuthLayoutContent({
   const activeMenuItem = menuItems.find(item => item.path === location.pathname);
   const isMobile = useIsMobile();
 
-  useEffect(() => {
+  // 折叠时中止拖拽：在渲染期间按上一次折叠状态派生调整，避免 effect 内同步 setState
+  const [wasCollapsed, setWasCollapsed] = useState(isCollapsed);
+  if (wasCollapsed !== isCollapsed) {
+    setWasCollapsed(isCollapsed);
     if (isCollapsed) {
       setIsResizing(false);
     }
-  }, [isCollapsed]);
+  }
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {

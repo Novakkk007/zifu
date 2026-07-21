@@ -109,7 +109,7 @@ export default function ZiweiChart({ chart, onSelect }: ZiweiChartProps) {
             </p>
             <div className="zf-hairline mx-auto mt-3" />
             <p className="mt-3 text-[11.5px] leading-[1.9] text-inkmuted sm:text-[12.5px]">
-              命主 <span className="font-serif text-golddim">{chart.mingZhu}</span>　身主{' '}
+              命主 <span className="font-serif text-golddim">{chart.mingZhu}</span>{'　'}身主{' '}
               <span className="font-serif text-golddim">{chart.shenZhu}</span>
             </p>
             <p className="mt-1 text-[10.5px] tracking-[0.08em] text-inkmuted/80 sm:text-[11.5px]">

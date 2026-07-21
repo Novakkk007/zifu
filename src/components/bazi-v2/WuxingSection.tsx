@@ -335,9 +335,8 @@ function StrengthCard({ chart }: { chart: BaziChartV2 }) {
   )
 }
 
-function YongShenCard({ chart }: { chart: BaziChartV2 }) {
-  const y = chart.yongshen
-  const Chip = ({ w, tone }: { w: Wuxing; tone: 'yong' | 'xi' | 'ji' }) => (
+function Chip({ w, tone }: { w: Wuxing; tone: 'yong' | 'xi' | 'ji' }) {
+  return (
     <span
       className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-serif text-[14px] font-bold"
       style={{
@@ -349,6 +348,10 @@ function YongShenCard({ chart }: { chart: BaziChartV2 }) {
       {WUXING_ICONS[w]} {w}
     </span>
   )
+}
+
+function YongShenCard({ chart }: { chart: BaziChartV2 }) {
+  const y = chart.yongshen
   return (
     <div className="rounded-xl border border-golddim/25 bg-silk2 p-6 shadow-card">
       <p className="text-center font-serif text-[15px] font-bold tracking-[0.12em] text-inktext">

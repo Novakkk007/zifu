@@ -26,7 +26,7 @@ const linkCls =
   'font-sans text-[13.5px] tracking-[0.1em] text-inkmuted transition-colors hover:text-golddim'
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false)
+  const [scrolled, setScrolled] = useState(() => window.scrollY > 40)
   const [dropOpen, setDropOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const location = useLocation()
@@ -34,15 +34,17 @@ export default function Navbar() {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
-    onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => {
+  // 路由变化时收起菜单：在渲染期间按上一次路径派生调整，避免 effect 内同步 setState
+  const [prevPath, setPrevPath] = useState(location.pathname)
+  if (prevPath !== location.pathname) {
+    setPrevPath(location.pathname)
     setDrawerOpen(false)
     setDropOpen(false)
-  }, [location.pathname])
+  }
 
   return (
     <motion.header

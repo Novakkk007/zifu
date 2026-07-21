@@ -25,14 +25,19 @@ function Ring({
 }) {
   const circ = 2 * Math.PI * radius
   const total = WUXING_LIST.reduce((s, w) => s + data[w], 0) || 1
+  // 先算好各段起始角度，避免在渲染闭包中改写累加变量
+  const segments: { w: Wuxing; index: number; frac: number; startAngle: number }[] = []
   let acc = 0
+  for (let i = 0; i < WUXING_LIST.length; i++) {
+    const w = WUXING_LIST[i]
+    const frac = data[w] / total
+    const startAngle = (acc / total) * 360 - 90
+    acc += data[w]
+    if (frac > 0) segments.push({ w, index: i, frac, startAngle })
+  }
   return (
     <>
-      {WUXING_LIST.map((w, i) => {
-        const frac = data[w] / total
-        const startAngle = (acc / total) * 360 - 90
-        acc += data[w]
-        if (frac <= 0) return null
+      {segments.map(({ w, index: i, frac, startAngle }) => {
         const len = frac * circ
         return (
           <motion.circle
