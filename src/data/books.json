@@ -1,0 +1,160 @@
+[
+  {
+    "id": "zhouyi",
+    "title": "周易",
+    "dynasty": "先秦",
+    "author": "姬昌（传）",
+    "category": "易占",
+    "intro": "群经之首，六十四卦立象尽意",
+    "route": "/liuyao",
+    "excerpts": [
+      { "text": "乾：元，亨，利，贞。", "source": "《周易·乾卦》" },
+      { "text": "天行健，君子以自强不息。", "source": "《周易·乾·象传》" },
+      { "text": "地势坤，君子以厚德载物。", "source": "《周易·坤·象传》" }
+    ]
+  },
+  {
+    "id": "zengshan",
+    "title": "增删卜易",
+    "dynasty": "清",
+    "author": "野鹤老人",
+    "category": "易占",
+    "intro": "六爻实战之书，以验卦删订古法",
+    "route": "/liuyao",
+    "excerpts": [
+      { "text": "质证古今卜筮诸书，验者存之，不验者删之。", "source": "《增删卜易·自序》" },
+      { "text": "是书讲解甚明，初学者不用投师，即知占卜。", "source": "《增删卜易·自序》" }
+    ]
+  },
+  {
+    "id": "bushi",
+    "title": "卜筮正宗",
+    "dynasty": "清",
+    "author": "王洪绪",
+    "category": "易占",
+    "intro": "纳甲筮法正统，十八问答提纲挈领",
+    "route": "/liuyao",
+    "excerpts": [
+      { "text": "动静阴阳，反复迁变。虽万象之纷纭，须一理而融贯。", "source": "《卜筮正宗·黄金策总断千金赋》" },
+      { "text": "生扶拱合，时雨滋苗；克害刑冲，秋霜杀草。", "source": "《卜筮正宗·黄金策总断千金赋》" }
+    ]
+  },
+  {
+    "id": "ditiansui",
+    "title": "滴天髓",
+    "dynasty": "宋",
+    "author": "京图（传）",
+    "category": "子平",
+    "intro": "命理诗诀之宗，言简而理深",
+    "route": "/bazi",
+    "excerpts": [
+      { "text": "欲识三元万法宗，先观帝载与神功。", "source": "《滴天髓·天道》" },
+      { "text": "五阳从气不从势，五阴从势无情义。", "source": "《滴天髓·天干》" },
+      { "text": "甲木参天，脱胎要火。", "source": "《滴天髓·天干》" }
+    ]
+  },
+  {
+    "id": "ziping",
+    "title": "子平真诠",
+    "dynasty": "清",
+    "author": "沈孝瞻",
+    "category": "子平",
+    "intro": "论格局专求月令，条贯分明",
+    "route": "/bazi",
+    "excerpts": [
+      { "text": "天地之间，一气而已。惟有动静，遂分阴阳。", "source": "《子平真诠·论十干十二支》" },
+      { "text": "八字用神，专求月令。", "source": "《子平真诠·论用神》" }
+    ]
+  },
+  {
+    "id": "qiongtong",
+    "title": "穷通宝鉴",
+    "dynasty": "清",
+    "author": "余春台（编）",
+    "category": "子平",
+    "intro": "调候为纲，按月论十干之宜忌",
+    "route": "/bazi",
+    "excerpts": [
+      { "text": "正月甲木，初春尚有余寒，得丙癸透，富贵双全。", "source": "《穷通宝鉴·三春甲木》" },
+      { "text": "癸藏丙透，名寒木向阳，主大富贵。", "source": "《穷通宝鉴·三春甲木》" }
+    ]
+  },
+  {
+    "id": "sanming",
+    "title": "三命通会",
+    "dynasty": "明",
+    "author": "万民英",
+    "category": "子平",
+    "intro": "集大成之作，兼收并蓄",
+    "route": "/bazi",
+    "excerpts": [
+      { "text": "五行相克，子皆能为母，复雠也。", "source": "《三命通会·论五行生克》" },
+      { "text": "互能相生，乃其始也；互能相克，乃其终也。", "source": "《三命通会·论五行生克》" }
+    ]
+  },
+  {
+    "id": "yuanhai",
+    "title": "渊海子平",
+    "dynasty": "宋",
+    "author": "徐子平（托名）",
+    "category": "子平",
+    "intro": "子平一系祖本，渊源最早",
+    "route": "/bazi",
+    "excerpts": [
+      { "text": "人禀天地，命属阴阳，生居覆载之内，尽在五行之中。", "source": "《渊海子平·继善篇》" },
+      { "text": "甲木天干作首排，原无枝叶与根荄。", "source": "《渊海子平·十干体象》" }
+    ]
+  },
+  {
+    "id": "ziweishu",
+    "title": "紫微斗数全书",
+    "dynasty": "宋",
+    "author": "陈抟（托名）",
+    "category": "星命",
+    "intro": "斗数根本经典，宫位星曜之宗",
+    "route": "/ziwei",
+    "excerpts": [
+      { "text": "斗数至玄至微，理旨难明。", "source": "《紫微斗数全书·太微赋》" },
+      { "text": "其星分布一十二垣，数定乎三十六位，入庙为奇，失度为虚。", "source": "《紫微斗数全书·太微赋》" }
+    ]
+  },
+  {
+    "id": "guolao",
+    "title": "果老星宗",
+    "dynasty": "唐",
+    "author": "张果（托名）",
+    "category": "星命",
+    "intro": "七政四余圭臬，恒星制论命",
+    "route": "/qizheng",
+    "excerpts": [
+      { "text": "福禄相随，田财俱旺。", "source": "《果老星宗·通元赋》" },
+      { "text": "三方有曜，必须参详；四角无星，未为凶断。", "source": "《果老星宗·通元赋》" }
+    ]
+  },
+  {
+    "id": "liuren",
+    "title": "六壬大全",
+    "dynasty": "明",
+    "author": "郭载騋（辑）",
+    "category": "三式",
+    "intro": "六壬课传之渊薮",
+    "route": "/daliuren",
+    "excerpts": [
+      { "text": "甲课寅兮乙课辰，丙戊课巳不须论。", "source": "《六壬大全·十干寄宫歌》" },
+      { "text": "癸课原来丑宫坐，分明不用四正神。", "source": "《六壬大全·十干寄宫歌》" }
+    ]
+  },
+  {
+    "id": "yanbo",
+    "title": "烟波钓叟歌",
+    "dynasty": "宋",
+    "author": "托名",
+    "category": "三式",
+    "intro": "奇门遁甲歌诀之祖",
+    "route": "/qimen",
+    "excerpts": [
+      { "text": "阴阳顺逆妙难穷，二至还乡一九宫。", "source": "《烟波钓叟歌》" },
+      { "text": "若能了达阴阳理，天地都来一掌中。", "source": "《烟波钓叟歌》" }
+    ]
+  }
+]
