@@ -105,7 +105,7 @@ export default function HexagramResult({ tosses, question }: HexagramResultProps
           </div>
         )}
         <footer className="mt-5 text-[12.5px] tracking-[0.1em] text-inkmuted">
-          ——《周易》{bian ? `　之《${bian.name}》` : ''}
+          ——《周易》{bian ? ` 之《${bian.name}》` : ''}
         </footer>
       </motion.div>
 
@@ -124,7 +124,7 @@ export default function HexagramResult({ tosses, question }: HexagramResultProps
               className="flex items-center justify-between rounded-md px-4 py-1.5 text-[13px] odd:bg-silk/60"
             >
               <span className="w-14 tracking-[0.12em] text-inkmuted">{YAO_NAMES[row.pos]}</span>
-              <span className="font-serif tracking-[0.1em] text-inktext">{row.branch}　{row.qin}</span>
+              <span className="font-serif tracking-[0.1em] text-inktext">{row.branch}{'　'}{row.qin}</span>
               <span className="w-10 text-right">
                 {row.mark && (
                   <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-gold/60 font-serif text-[12px] font-bold text-golddim">

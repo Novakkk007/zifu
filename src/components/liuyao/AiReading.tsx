@@ -20,8 +20,13 @@ type Depth = 'pro' | 'plain'
 function Typewriter({ paragraphs, charMs = 22 }: { paragraphs: string[]; charMs?: number }) {
   const total = useMemo(() => paragraphs.reduce((n, p) => n + p.length, 0), [paragraphs])
   const [typed, setTyped] = useState(0)
-  useEffect(() => {
+  // 文本变化时重置打字进度：在渲染期间按上一次总字数派生调整，避免 effect 内同步 setState
+  const [prevTotal, setPrevTotal] = useState(total)
+  if (prevTotal !== total) {
+    setPrevTotal(total)
     setTyped(0)
+  }
+  useEffect(() => {
     const timer = window.setInterval(() => {
       setTyped((v) => {
         if (v >= total) {
@@ -34,12 +39,17 @@ function Typewriter({ paragraphs, charMs = 22 }: { paragraphs: string[]; charMs?
     return () => window.clearInterval(timer)
   }, [total, charMs])
 
+  // 先算好每段应显示的字数，避免在渲染闭包中改写剩余额度
+  const shownCounts: number[] = []
   let left = typed
+  for (const p of paragraphs) {
+    shownCounts.push(Math.max(0, Math.min(p.length, left)))
+    left -= p.length
+  }
   return (
     <div className="space-y-4">
       {paragraphs.map((p, i) => {
-        const shown = Math.max(0, Math.min(p.length, left))
-        left -= p.length
+        const shown = shownCounts[i]
         if (shown === 0) return null
         return (
           <p key={i} className="font-serif text-[15.5px] leading-[2.1] text-silktext">
