@@ -445,16 +445,19 @@ function computeShensha(pillars: BaziChartV2['pillars']): ShenshaHit[] {
   }
   const hits: ShenshaHit[] = []
   for (const def of SHENSHA_REGISTRY) {
-    const found = def.find(ctx)
-    if (found.length > 0) {
+    // 多命中策略 list-all：每个命中柱位产出一条独立记录，不合并布尔
+    for (const f of def.find(ctx)) {
       hits.push({
+        ruleId: def.ruleId,
         name: def.name,
-        hitPositions: found.map((f) => f.position),
-        hitChars: found.map((f) => f.char),
-        rule: def.rule,
+        pillar: f.position,
+        char: f.char,
+        variant: def.variant,
         basis: def.basis,
+        verse: def.verse,
         source: def.source,
-        explanation: def.explanation,
+        modernExplanation: def.modernExplanation,
+        rulesetVersion: def.rulesetVersion,
       })
     }
   }

@@ -76,7 +76,7 @@ describe('真太阳时修正', () => {
     expect(chart.timeAudit.useTrueSolarTime).toBe(true)
     expect(chart.timeAudit.standardTime).not.toBe(chart.timeAudit.effectiveTime)
     expect(chart.timeAudit.equationOfTimeMin).not.toBe(0)
-    expect(chart.timeAudit.rulesetVersion).toBe('1.0.0')
+    expect(chart.timeAudit.rulesetVersion).toBe('1.1.0')
     expect(chart.timeAudit.eotFormulaVersion).toContain('EoT')
   })
 

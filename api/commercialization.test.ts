@@ -292,7 +292,7 @@ function seedChart(userId: number, id = 1): Row {
     title: "八字排盘",
     input: JSON.stringify(solarInput),
     result: JSON.stringify(MINIMAL_CHART),
-    rulesetVersion: "1.0.0",
+    rulesetVersion: "1.1.0",
     algorithmVersion: "computeChartV2@1",
     createdAt: new Date(),
   };
@@ -300,7 +300,7 @@ function seedChart(userId: number, id = 1): Row {
 
 /** chartSummaryForAi 所需的最小命盘结构 */
 const MINIMAL_CHART = {
-  rulesetVersion: "1.0.0",
+  rulesetVersion: "1.1.0",
   pillars: {
     year: { label: "年柱", ganzhi: "己卯" },
     month: { label: "月柱", ganzhi: "丙子" },
@@ -465,7 +465,7 @@ describe("ai.reading 加固", () => {
     const log = fake.tables.aiReadings.at(0);
     expect(log?.chartId).toBe(1);
     expect(log?.chartType).toBe("bazi");
-    expect(log?.rulesetVersion).toBe("1.0.0");
+    expect(log?.rulesetVersion).toBe("1.1.0");
     expect(JSON.stringify(log)).not.toContain("2000");
   });
 
@@ -555,12 +555,12 @@ describe("命盘版本与重算", () => {
     const res = await caller.bazi.paipan(solarInput);
     expect(res.persisted).toBe(true);
     const chartRow = fake.tables.charts.at(0);
-    expect(chartRow?.rulesetVersion).toBe("1.0.0");
+    expect(chartRow?.rulesetVersion).toBe("1.1.0");
     expect(chartRow?.algorithmVersion).toBe("computeChartV2@1");
     expect(fake.tables.chartVersions).toHaveLength(1);
     const v = fake.tables.chartVersions.at(0);
     expect(v?.chartId).toBe(res.chartId);
-    expect(v?.rulesetVersion).toBe("1.0.0");
+    expect(v?.rulesetVersion).toBe("1.1.0");
     expect(JSON.parse(v?.inputSnapshot as string)).toMatchObject({
       year: 2000,
     });

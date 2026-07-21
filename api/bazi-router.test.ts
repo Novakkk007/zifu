@@ -42,9 +42,9 @@ describe("bazi.paipan API（bazi-core v2）", () => {
 
   it("公历输入 happy path：返回完整 V2 命盘与规则版本、时间审计", async () => {
     const res = await caller.bazi.paipan(solarInput);
-    expect(res.chart.rulesetVersion).toBe("1.0.0");
+    expect(res.chart.rulesetVersion).toBe("1.1.0");
     expect(res.chart.timeAudit).toBeDefined();
-    expect(res.chart.timeAudit.rulesetVersion).toBe("1.0.0");
+    expect(res.chart.timeAudit.rulesetVersion).toBe("1.1.0");
     expect(res.chart.timeAudit.inputCalendar).toBe("solar");
     expect(res.chart.pillars.day.ganzhi).toBe("戊午");
     expect(res.chart.pillars.year.ganzhi).toBe("己卯"); // 立春前，仍属己卯年

@@ -27,8 +27,15 @@ export interface BirthInput {
   city?: string
   /** 东经度数，缺省 120（东八区中央经线） */
   longitude?: number
-  /** UTC 偏移小时，缺省 8 */
+  /** UTC 偏移小时，缺省 8（legacy 字段；ianaTimezone 提供时被忽略） */
   timezone?: number
+  /**
+   * IANA 时区名（如 'Asia/Shanghai'、'America/New_York'）。
+   * 提供时优先于 legacy timezone 数字：按出生当日该时区的历史 UTC 偏移
+   * 换算（含夏令时，如中国 1986-1991 夏令时），通过 Intl API 实现，无新增依赖。
+   * 不提供时回退到 timezone ?? 8（固定偏移，等价于不考虑夏令时的 Asia/Shanghai）。
+   */
+  ianaTimezone?: string
   /** 是否启用真太阳时修正 */
   useTrueSolarTime: boolean
   /** 子时换日规则：zichu=子初(23:00)换日；midnight=0 点换日 */
@@ -43,8 +50,12 @@ export interface TimeAudit {
   isLeapMonth: boolean
   /** 标准时间（换算到东八区墙钟后的公历时刻，YYYY-MM-DD HH:mm） */
   standardTime: string
-  /** 出生标准时区 UTC 偏移（小时） */
+  /** 出生标准时区 UTC 偏移（小时）；IANA 模式下为当日实际偏移（含夏令时） */
   timezone: number
+  /** IANA 时区名（未提供为 null） */
+  ianaTimezone: string | null
+  /** 时区偏移来源：iana = Intl 按当日历史偏移；fixed-offset = legacy 固定偏移 */
+  timezoneSource: 'iana' | 'fixed-offset'
   /** 使用经度（东经度数） */
   longitude: number
   /** 经度修正量（分钟）：(经度-120°)×4 */
@@ -174,20 +185,31 @@ export interface TenGodEntry {
   layer: 'stem' | 'hidden'
 }
 
+/**
+ * 神煞命中条目（v2，list-all 策略）：
+ * 同一神煞命中多柱时产生多条记录（每柱一条），禁止合并为布尔。
+ * 例如天乙贵人同时命中年支与日支 → shensha 数组中出现两条 name='天乙贵人'。
+ */
 export interface ShenshaHit {
+  /** 规则标识（对应注册表 ruleId） */
+  ruleId: string
   name: string
-  /** 命中柱位（如 ['日支','时支']） */
-  hitPositions: string[]
+  /** 命中柱位（如 '年支' / '日支' / '时干'） */
+  pillar: string
   /** 命中字（如「丑」「酉」） */
-  hitChars: string[]
-  /** 原始规则口诀 */
-  rule: string
-  /** 起例依据（如「以日干甲起例」） */
+  char: string
+  /** 流派变体标注 */
+  variant: string
+  /** 起例依据（如「以日干起例，四柱地支见之为命中」） */
   basis: string
-  /** 传统出处 */
+  /** 原始规则口诀（后台字段，前端可选择不展示） */
+  verse: string
+  /** 传统出处（后台字段，前端可选择不展示） */
   source: string
-  /** 解释文案 */
-  explanation: string
+  /** 前台简洁现代化说明（原创，注明传统说法） */
+  modernExplanation: string
+  /** 规则集版本 */
+  rulesetVersion: string
 }
 
 export interface BoneWeight {

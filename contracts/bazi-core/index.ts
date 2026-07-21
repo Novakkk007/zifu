@@ -3,11 +3,20 @@
  * 纯 TypeScript，无 React / 无 DB / 无网络。前后端共用。
  */
 export * from './types'
-export { RULESET_VERSION } from './rules'
+export { RULESET_VERSION, ALGORITHM_VERSION } from './rules'
 export * from './rules/stems-branches'
 export { tenGod, TEN_GOD_INFO } from './rules/tengods'
 export type { TenGod } from './rules/tengods'
-export { SHENSHA_REGISTRY } from './rules/shensha'
+export { SHENSHA_REGISTRY, SHENSHA_RULESET_VERSION } from './rules/shensha'
+export type {
+  ShenshaDef,
+  ShenshaContext,
+  ShenshaHitRaw,
+  ShenshaInputBasis,
+  ShenshaTargetPosition,
+  ShenshaFixtureInput,
+  ShenshaTestFixture,
+} from './rules/shensha'
 export * as chengguRules from './rules/chenggu'
 export {
   solarToLunar,
@@ -15,6 +24,8 @@ export {
   equationOfTimeMinutes,
   getPrevNextJie,
   resolveBirthTime,
+  ianaOffsetMinutesAt,
+  ianaWallClockToUtcMs,
   toPseudoMs,
   fromPseudoMs,
   fmtYmdHm,

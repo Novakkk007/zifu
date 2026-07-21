@@ -119,6 +119,47 @@ export function getPrevNextJie(pseudoMs: number): { prev: JieMoment; next: JieMo
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* IANA 时区 / 夏令时（Intl API，无新增依赖）                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 求 IANA 时区在给定 UTC 时刻的偏移（分钟，含历史夏令时）。
+ * 方法：用 Intl.DateTimeFormat(timeZone) 把该 UTC 时刻格式化为当地墙钟字段，
+ * 与「同字段按 UTC 解释」的毫秒差即为偏移。时区数据库由运行时 ICU 提供，
+ * 覆盖历史规则（如中国 1986-1991 夏令时 offset=+9，美国各州 DST 切换）。
+ */
+export function ianaOffsetMinutesAt(ianaTimezone: string, utcMs: number): number {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone: ianaTimezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  })
+  const parts = dtf.formatToParts(new Date(utcMs))
+  const get = (type: string) => Number(parts.find((p) => p.type === type)!.value)
+  const wallAsUtcMs = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'))
+  return (wallAsUtcMs - utcMs) / 60_000
+}
+
+/**
+ * IANA 时区当地墙钟（字段）→ 真实 UTC 毫秒。
+ * 双程法：先按 UTC 解释墙钟得 guess，查 guess 处偏移得 utc；
+ * 再在 utc 处复查一次偏移以覆盖 DST 切换临界点。
+ */
+export function ianaWallClockToUtcMs(ianaTimezone: string, t: CivilDateTime & { second?: number }): number {
+  const guess = Date.UTC(t.year, t.month - 1, t.day, t.hour, t.minute, t.second ?? 0)
+  const offset1 = ianaOffsetMinutesAt(ianaTimezone, guess)
+  let utcMs = guess - offset1 * 60_000
+  const offset2 = ianaOffsetMinutesAt(ianaTimezone, utcMs)
+  if (offset2 !== offset1) utcMs = guess - offset2 * 60_000
+  return utcMs
+}
+
 export interface ResolvedBirthTime {
   /** 输入换算后的公历墙钟（输入时区） */
   civil: CivilDateTime
@@ -140,14 +181,16 @@ export interface ResolvedBirthTime {
 /**
  * 解析 BirthInput → 统一时刻：
  * 1. 农历输入先转公历（含闰月）；
- * 2. 输入时区墙钟 → 东八区墙钟；
+ * 2. 输入时区墙钟 → 东八区墙钟：
+ *    - 提供 ianaTimezone 时，用 Intl 按出生当日的历史 UTC 偏移换算
+ *      （含夏令时，如中国 1986-1991 夏令时）；
+ *    - 否则回退 legacy timezone 数字（缺省 8，固定偏移）。
  * 3. useTrueSolarTime 时追加 经度修正 + 均时差。
  * hour 为 null 时以正午 12:00 作为换算基准（时柱不排）。
  */
 export function resolveBirthTime(input: BirthInput): ResolvedBirthTime {
   const hour = input.hour ?? 12
   const minute = input.minute
-  const timezone = input.timezone ?? 8
   const longitude = input.longitude ?? 120
 
   let civil: CivilDateTime
@@ -163,7 +206,20 @@ export function resolveBirthTime(input: BirthInput): ResolvedBirthTime {
   }
 
   // 输入时区墙钟 → 东八区墙钟
-  const standardMs = toPseudoMs(civil) + (8 - timezone) * 3600_000
+  let timezone: number
+  let timezoneSource: 'iana' | 'fixed-offset'
+  let standardMs: number
+  if (input.ianaTimezone) {
+    // IANA 模式：当地墙钟 → 真实 UTC（按当日历史偏移，含 DST）→ 东八区伪毫秒
+    const utcMs = ianaWallClockToUtcMs(input.ianaTimezone, civil)
+    timezone = ianaOffsetMinutesAt(input.ianaTimezone, utcMs) / 60
+    timezoneSource = 'iana'
+    standardMs = utcMs + 8 * 3600_000
+  } else {
+    timezone = input.timezone ?? 8
+    timezoneSource = 'fixed-offset'
+    standardMs = toPseudoMs(civil) + (8 - timezone) * 3600_000
+  }
 
   // 真太阳时 = 东八区标准时 + (经度-120°)×4分钟 + 均时差
   const longitudeCorrectionMin = (longitude - 120) * 4
@@ -179,6 +235,8 @@ export function resolveBirthTime(input: BirthInput): ResolvedBirthTime {
     isLeapMonth: lunar.isLeapMonth,
     standardTime: fmtYmdHm(standardMs),
     timezone,
+    ianaTimezone: input.ianaTimezone ?? null,
+    timezoneSource,
     longitude,
     longitudeCorrectionMin: Math.round(longitudeCorrectionMin * 100) / 100,
     equationOfTimeMin: Math.round(equationOfTimeMin * 100) / 100,
