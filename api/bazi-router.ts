@@ -7,6 +7,9 @@ import type { BaziChartV2, BirthInput } from "@contracts/bazi-core";
 import { getDb } from "./queries/connection";
 import { createRouter, publicQuery, authedQuery } from "./middleware";
 
+/** 算法引擎版本标识（随 computeChartV2 引擎升级而 bump） */
+export const ALGORITHM_VERSION = "computeChartV2@1";
+
 /**
  * 新版出生输入（与 @contracts/bazi-core 的 BirthInput 对齐，RULESET_VERSION 1.0.0）。
  * 额外允许 title 用于落库标题。
@@ -92,17 +95,33 @@ export const baziRouter = createRouter({
       let chartId: number | null = null;
       if (ctx.user) {
         try {
+          const inputJson = JSON.stringify(birth satisfies BirthInput);
+          const resultJson = JSON.stringify(chart);
           const inserted = await getDb()
             .insert(schema.charts)
             .values({
               userId: ctx.user.id,
               chartType: "bazi",
               title: title ?? "八字排盘",
-              input: JSON.stringify(birth satisfies BirthInput),
-              result: JSON.stringify(chart),
+              input: inputJson,
+              result: resultJson,
+              rulesetVersion: chart.rulesetVersion,
+              algorithmVersion: ALGORITHM_VERSION,
             })
             .$returningId();
           chartId = inserted.at(0)?.id ?? null;
+          if (chartId !== null) {
+            // 每次排盘均写入一条版本快照（可追溯、可重放）
+            await getDb()
+              .insert(schema.chartVersions)
+              .values({
+                chartId,
+                rulesetVersion: chart.rulesetVersion,
+                algorithmVersion: ALGORITHM_VERSION,
+                inputSnapshot: inputJson,
+                resultSnapshot: resultJson,
+              });
+          }
         } catch (err) {
           // 落库失败不阻塞排盘结果返回，但记录日志便于排查
           console.error("[bazi.paipan] persist failed:", err);
@@ -142,5 +161,69 @@ export const baziRouter = createRouter({
       }
       await getDb().delete(schema.charts).where(eq(schema.charts.id, input.id));
       return { success: true };
+    }),
+
+  /**
+   * 重算：按命盘落库输入重新运行算法（算法 / 规则升级后复算），
+   * 写入一条新的 chart_versions 快照并更新 charts 主表，返回新鲜命盘。
+   * 校验归属（他人命盘 → NOT_FOUND）。
+   */
+  recompute: authedQuery
+    .input(z.object({ chartId: z.number().int().positive() }))
+    .mutation(async ({ input, ctx }) => {
+      const rows = await getDb()
+        .select()
+        .from(schema.charts)
+        .where(eq(schema.charts.id, input.chartId))
+        .limit(1);
+      const row = rows.at(0);
+      if (!row || row.userId !== ctx.user.id) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "记录不存在。" });
+      }
+
+      let birth: BirthInput;
+      try {
+        birth = JSON.parse(row.input) as BirthInput;
+      } catch {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "命盘输入数据异常，无法重算。",
+        });
+      }
+
+      let chart: BaziChartV2;
+      try {
+        chart = computeChartV2(birth);
+      } catch (err) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `无法重算：${err instanceof Error ? err.message : String(err)}`,
+        });
+      }
+
+      const resultJson = JSON.stringify(chart);
+      try {
+        await getDb()
+          .update(schema.charts)
+          .set({
+            result: resultJson,
+            rulesetVersion: chart.rulesetVersion,
+            algorithmVersion: ALGORITHM_VERSION,
+          })
+          .where(eq(schema.charts.id, row.id));
+        await getDb()
+          .insert(schema.chartVersions)
+          .values({
+            chartId: row.id,
+            rulesetVersion: chart.rulesetVersion,
+            algorithmVersion: ALGORITHM_VERSION,
+            inputSnapshot: row.input,
+            resultSnapshot: resultJson,
+          });
+      } catch (err) {
+        console.error("[bazi.recompute] persist failed:", err);
+      }
+
+      return { chart, chartId: row.id };
     }),
 });

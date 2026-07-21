@@ -181,24 +181,17 @@ describe("bazi.history", () => {
   });
 });
 
-describe("ai.reading API", () => {
-  const caller = appRouter.createCaller(guestCtx());
-
-  it("无密钥环境下走降级模板并保持契约", async () => {
-    delete process.env.AI_API_KEY;
-    const res = await caller.ai.reading({
-      chartType: "bazi",
-      chartSummary: "甲子年 丙寅月 戊午日 壬子时",
-      persona: "hermit",
-      depth: "plain",
-    });
-    expect(res.source).toBe("fallback");
-    expect(res.text.length).toBeGreaterThan(0);
-  });
-
-  it("Zod 校验拦截空摘要", async () => {
+describe("ai.reading API（鉴权）", () => {
+  it("未登录访问返回 UNAUTHORIZED", async () => {
+    const caller = appRouter.createCaller(guestCtx());
     await expect(
-      caller.ai.reading({ chartType: "bazi", chartSummary: "", persona: "scholar", depth: "pro" }),
-    ).rejects.toThrow();
+      caller.ai.reading({
+        chartId: 1,
+        persona: "hermit",
+        depth: "plain",
+        idempotencyKey: "guest-key-1",
+      }),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    expect(getDbMock).not.toHaveBeenCalled();
   });
 });
