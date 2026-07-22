@@ -14,7 +14,7 @@ export const ALGORITHM_VERSION = "computeChartV2@1";
  * 新版出生输入（与 @contracts/bazi-core 的 BirthInput 对齐，RULESET_VERSION 1.1.0）。
  * 额外允许 title 用于落库标题。
  */
-const birthInput = z
+export const birthInput = z
   .object({
     calendar: z.enum(["solar", "lunar"]),
     year: z.number().int().min(1900).max(2100),

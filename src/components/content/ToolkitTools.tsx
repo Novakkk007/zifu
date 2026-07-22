@@ -1,10 +1,16 @@
 /**
- * 百宝袋 6 个小工具面板（全部确定性 / 真实算法，前端本地计算）
+ * 百宝袋 6 个小工具面板
+ * 前五为确定性 / 真实算法（前端本地计算）；灵签一抽走服务端真实随机通道（draws.lingqian）。
  */
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
 import { RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { trpc } from '@/providers/trpc'
+import { useAuth } from '@/hooks/useAuth'
+import { LOGIN_PATH } from '@/const'
+import type { GuanyinSign } from '@contracts/engines/draws-core'
 import {
   BRANCHES,
   BRANCH_WUXING,
@@ -265,73 +271,53 @@ export function LodgeTool() {
   )
 }
 
-/* ================= 5 · 灵签一抽 ================= */
+/* ================= 5 · 灵签一抽（服务端真实随机） ================= */
 
-type Qian = { name: string; grade: string; poem: string[]; note: string }
-
-const QIAN_POOL: Qian[] = [
-  {
-    name: '云开见月',
-    grade: '上吉',
-    poem: ['云散中天月一轮', '清光何处不照人', '行藏但凭初心定', '自有东风送此身'],
-    note: '守正待时，云翳自散；所求之事，渐见光明。',
-  },
-  {
-    name: '溪流入海',
-    grade: '中吉',
-    poem: ['细流不舍终成海', '跬步相积可至遥', '莫问前程多少里', '且行且惜此朝朝'],
-    note: '贵在有恒。小事持续做，远胜一时猛进。',
-  },
-  {
-    name: '松间鹤',
-    grade: '上平',
-    poem: ['鹤立松间不染尘', '闲看云起又云沉', '守得清心无挂碍', '世事由来不负人'],
-    note: '以静制动。心定则事定，不必急于表态。',
-  },
-  {
-    name: '渡头舟',
-    grade: '中平',
-    poem: ['渡头舟小莫争流', '待得潮平自在游', '急桨翻教波浪起', '缓行一日到汀洲'],
-    note: '时机未至，缓一程反而是捷径。',
-  },
-  {
-    name: '春信',
-    grade: '上吉',
-    poem: ['一枝先破江南春', '消息传来最有神', '旧岁耕耘今岁发', '花开不负种花人'],
-    note: '先前的铺垫要结果了，宜主动迎上去。',
-  },
-  {
-    name: '灯下书',
-    grade: '中吉',
-    poem: ['灯下翻书夜正长', '古人与我两相望', '莫言纸上无真味', '一寸心光抵月光'],
-    note: '宜进修、宜请教。答案在书里，也在师友处。',
-  },
-  {
-    name: '雾中行',
-    grade: '平平',
-    poem: ['雾重山高路未明', '且收脚步听泉声', '云开自有来时径', '不必彷徨问路人'],
-    note: '信息不足时，停一停比乱撞好。',
-  },
-  {
-    name: '归雁',
-    grade: '中吉',
-    poem: ['归雁南飞字一行', '长风万里信相望', '故园春色年年在', '只待归人理旧装'],
-    note: '宜回归、宜修复旧关系；故人处有助力。',
-  },
-]
+type QianDraw = { signNo: number; sign: GuanyinSign; idempotentReplay: boolean }
 
 export function QianTool() {
-  const [drawn, setDrawn] = useState<Qian | null>(null)
+  const { user, isAuthenticated, isLoading } = useAuth()
+  const [drawn, setDrawn] = useState<QianDraw | null>(null)
   const [shaking, setShaking] = useState(false)
 
+  const lingqian = trpc.draws.lingqian.useMutation({
+    onSuccess: (data) => {
+      setDrawn(data.result.data as unknown as QianDraw)
+      setShaking(false)
+    },
+    onError: () => setShaking(false),
+  })
+
   const draw = () => {
-    if (shaking) return
+    if (shaking || !user) return
     setShaking(true)
     setDrawn(null)
+    const t = new Date()
+    const dateKey = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
+    // 摇筒动画与服务端抽签并行；每日幂等键保证同日同签
     window.setTimeout(() => {
-      setDrawn(QIAN_POOL[Math.floor(Math.random() * QIAN_POOL.length)])
-      setShaking(false)
+      lingqian.mutate({ idempotencyKey: `${user.id}-${dateKey}` })
     }, 620)
+  }
+
+  if (!isAuthenticated && !isLoading) {
+    return (
+      <div>
+        <PanelTitle>每日一签 · 随缘自取</PanelTitle>
+        <div className="flex flex-col items-center">
+          <p className="max-w-[420px] text-center font-sans text-[13.5px] leading-[2] text-inkmuted">
+            观音灵签一百首，签号由服务端加密随机数（CSPRNG）均匀抽取；
+            登录后每日一签，同日重抽仍为该签。
+          </p>
+          <Link
+            to={LOGIN_PATH}
+            className="mt-6 inline-flex items-center justify-center rounded-lg border border-gold/60 px-10 py-3 font-serif text-[15px] font-bold tracking-[0.14em] text-golddim transition-colors hover:bg-golddim/10"
+          >
+            登录后抽签
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -372,7 +358,7 @@ export function QianTool() {
         <AnimatePresence mode="wait">
           {drawn && (
             <motion.div
-              key={drawn.name}
+              key={drawn.signNo}
               initial={{ opacity: 0, y: -30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 12 }}
@@ -381,22 +367,25 @@ export function QianTool() {
             >
               <div className="flex items-center justify-center gap-3">
                 <span className="rounded-full border border-gold/50 px-3 py-0.5 font-sans text-[11px] font-medium tracking-[0.14em] text-golddim">
-                  {drawn.grade}
+                  {drawn.sign.grade}
                 </span>
                 <span className="font-serif text-[20px] font-bold tracking-[0.14em] text-inktext">
-                  {drawn.name}
+                  第 {drawn.signNo} 签
                 </span>
               </div>
               <div className="zf-hairline mx-auto mt-4" />
               <div className="mt-4 space-y-1">
-                {drawn.poem.map((line) => (
+                {drawn.sign.poem.map((line) => (
                   <p key={line} className="font-serif text-[16px] leading-[2.1] text-inktext">
                     {line}
                   </p>
                 ))}
               </div>
               <p className="mt-4 font-sans text-[13px] leading-[1.9] text-inkmuted">
-                解曰：{drawn.note}
+                简注：{drawn.sign.note}
+              </p>
+              <p className="mt-3 font-sans text-[11px] tracking-[0.06em] text-inkmuted/70">
+                观音灵签通行本 · 服务端 CSPRNG 抽取 · 每日一签 · 仅供文化体验
               </p>
             </motion.div>
           )}
@@ -408,7 +397,7 @@ export function QianTool() {
             onClick={draw}
             className="zf-link-more mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium tracking-[0.1em] text-golddim"
           >
-            <RefreshCw className="h-3.5 w-3.5" /> 再抽一签 <span className="zf-arrow">→</span>
+            <RefreshCw className="h-3.5 w-3.5" /> 再摇签筒（今日之签不变） <span className="zf-arrow">→</span>
           </button>
         )}
       </div>

@@ -1,11 +1,10 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Sparkle } from 'lucide-react'
 import { GoldButton, GhostButton } from '@/components/Buttons'
 import { FormInput, FormSelect, SegmentedControl } from '@/components/FormControls'
 import ConfidenceBadge from '@/components/hecan/ConfidenceBadge'
-import type { ConfidenceTier } from '@/components/hecan/ConfidenceBadge'
 import {
   Dialog,
   DialogContent,
@@ -13,16 +12,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-
-/* ================= 确定性 mock 数据池 ================= */
-
-const STEMS = '甲乙丙丁戊己庚辛壬癸'.split('')
-const BRANCHES = '子丑寅卯辰巳午未申酉戌亥'.split('')
-const ZIWEI_STARS = [
-  '紫微', '天机', '太阳', '武曲', '天同', '廉贞', '天府',
-  '太阴', '贪狼', '巨门', '天相', '天梁', '七杀', '破军',
-]
-const MANSIONS = '角亢氐房心尾箕斗牛女虚危室壁奎娄胃昴毕觜参井鬼柳星张翼轸'.split('')
+import { trpc } from '@/providers/trpc'
+import type { BaziChartV2, BirthInput } from '@contracts/bazi-core'
+import type { EngineResult } from '@contracts/engines/engine-result'
+import type { ArtPrecision, HecanReport } from '@contracts/engines/hecan-core/types'
 
 const HOURS = [
   { v: '子', t: '23:00–01:00' }, { v: '丑', t: '01:00–03:00' },
@@ -33,84 +26,30 @@ const HOURS = [
   { v: '戌', t: '19:00–21:00' }, { v: '亥', t: '21:00–23:00' },
 ]
 
-/** FNV-1a 散列：同一生辰输入必得同一结果 */
-function hashStr(s: string): number {
-  let h = 2166136261
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i)
-    h = Math.imul(h, 16777619)
-  }
-  return h >>> 0
-}
-
-function pick<T>(pool: T[], h: number, salt: number): T {
-  return pool[Math.abs(h + salt * 2654435761) % pool.length]
-}
-
-/** 年柱为真实推算 (year-4)%60，其余三柱由散列确定性生成（mock） */
-function ganzhiOf(index: number): string {
-  return STEMS[index % 10] + BRANCHES[index % 12]
-}
-
-type BirthInput = {
-  name: string
-  gender: 'qian' | 'kun'
-  calendar: 'solar' | 'lunar'
-  year: number
-  month: number
-  day: number
-  hour: string
-}
-
-type MockResult = {
-  pillars: string[]
-  ziweiStar: string
-  ziweiPalace: string
-  mansion: string
-  degree: number
-}
-
-function computeResult(input: BirthInput): MockResult {
-  const seed = `${input.name}|${input.gender}|${input.calendar}|${input.year}-${input.month}-${input.day}|${input.hour}`
-  const h = hashStr(seed)
-  const yearPillar = ganzhiOf((((input.year - 4) % 60) + 60) % 60)
-  return {
-    pillars: [
-      yearPillar,
-      pick(STEMS, h, 1) + pick(BRANCHES, h, 2),
-      pick(STEMS, h, 3) + pick(BRANCHES, h, 5),
-      pick(STEMS, h, 7) + pick(BRANCHES, h, 11),
-    ],
-    ziweiStar: pick(ZIWEI_STARS, h, 13),
-    ziweiPalace: pick(BRANCHES, h, 17),
-    mansion: pick(MANSIONS, h, 19),
-    degree: (h % 30) + 1,
-  }
-}
-
-/* ================= 合参示例报告（固定示例，原创文案） ================= */
-
-const REPORT: { tier: ConfidenceTier; text: string; source: string }[] = [
-  {
-    tier: 'triple',
-    text: '金水相生而秀——八字金水成势，紫微太阴居命，七政月躔壁宿：主心思清润，宜文职。',
-    source: '《滴天髓》·《紫微斗数全书》·《果老星宗》',
-  },
-  {
-    tier: 'double',
-    text: '中年运转南方，八字火土暖局、紫微大限逢禄——三十九岁后气象渐开。',
-    source: '《三命通会》·《紫微斗数全书》',
-  },
-  {
-    tier: 'single',
-    text: '七政见紫气照命，或主孤高之好；仅此一见，存而不论。',
-    source: '《果老星宗》',
-  },
-]
-
 const PILLAR_LABELS = ['年柱', '月柱', '日柱', '时柱']
 
-/* ================= 组件 ================= */
+type HecanResponse = {
+  result: EngineResult<HecanReport>
+  chart: BaziChartV2
+  chartId: number | null
+  persisted: boolean
+}
+
+/** 术精度徽章：validated 已验证 / approximate 近似 / demo 演示 / unavailable 未接入 */
+function PrecisionBadge({ precision }: { precision: ArtPrecision }) {
+  const meta: Record<ArtPrecision, { label: string; cls: string }> = {
+    validated: { label: '已验证', cls: 'border-gold/60 bg-gold/10 text-goldbright' },
+    approximate: { label: '近似', cls: 'border-[#A9B2AC]/50 bg-[#A9B2AC]/10 text-[#A9B2AC]' },
+    demo: { label: '演示', cls: 'border-[#C98F58]/50 bg-[#C98F58]/10 text-[#C98F58]' },
+    unavailable: { label: '未接入', cls: 'border-silkmuted/30 bg-silkmuted/5 text-silkmuted' },
+  }
+  const m = meta[precision]
+  return (
+    <span className={`rounded-full border px-2 py-px font-sans text-[10.5px] tracking-[0.14em] ${m.cls}`}>
+      {m.label}
+    </span>
+  )
+}
 
 export default function HecanForm() {
   const [name, setName] = useState('')
@@ -120,21 +59,44 @@ export default function HecanForm() {
   const [month, setMonth] = useState(6)
   const [day, setDay] = useState(15)
   const [hour, setHour] = useState('子')
-  const [submitted, setSubmitted] = useState<BirthInput | null>(null)
+  const [result, setResult] = useState<HecanResponse | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const resultRef = useRef<HTMLDivElement>(null)
 
-  const result = useMemo(() => (submitted ? computeResult(submitted) : null), [submitted])
+  const analyze = trpc.hecan.analyze.useMutation({
+    onSuccess: (data) => setResult(data as unknown as HecanResponse),
+  })
+
+  useEffect(() => {
+    if (result) {
+      requestAnimationFrame(() => {
+        resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      })
+    }
+  }, [result])
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
-    setSubmitted({ name, gender, calendar, year, month, day, hour })
-    requestAnimationFrame(() => {
-      resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    })
+    const hourIdx = HOURS.findIndex((h) => h.v === hour)
+    const payload: BirthInput & { title?: string } = {
+      calendar,
+      year,
+      month,
+      day,
+      hour: hourIdx < 0 ? 0 : (hourIdx * 2) % 24,
+      minute: 0,
+      gender: gender === 'qian' ? 'male' : 'female',
+      useTrueSolarTime: false,
+      dayRollover: 'zichu',
+      title: name.trim() || undefined,
+    }
+    setResult(null)
+    analyze.mutate(payload)
   }
 
   const labelCls = 'text-silkmuted'
+  const report = result?.result.data ?? null
+  const chart = result?.chart ?? null
 
   return (
     <div className="mx-auto w-full max-w-[720px]">
@@ -229,136 +191,131 @@ export default function HecanForm() {
             ))}
           </FormSelect>
         </div>
-        <GoldButton type="submit" className="mt-8 w-full">
-          起三盘 · 免费概览
+        <GoldButton type="submit" className="mt-8 w-full" disabled={analyze.isPending}>
+          {analyze.isPending ? '三盘并起中…' : '起三盘 · 免费概览'}
         </GoldButton>
+        {analyze.isError && (
+          <p className="mt-3 text-center text-[13px] text-[#C98F58]">
+            起盘失败，请检查生辰信息后重试
+          </p>
+        )}
         <p className="mt-4 text-center text-[12px] tracking-[0.08em] text-silkmuted">
           提交即于本页生成三盘概览 · 详参 36 灵签 / 次
         </p>
       </form>
 
-      {/* ===== 结果区（mock，确定性生成） ===== */}
+      {/* ===== 合参报告区（服务端真实返回） ===== */}
       <AnimatePresence>
-        {result && (
+        {result && report && chart && (
           <motion.div
             ref={resultRef}
+            id="hecan-report"
             key="hc-result"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="overflow-hidden"
+            className="scroll-mt-16 overflow-hidden"
           >
             <div className="pt-10">
-              {/* 三列迷你盘摘要 */}
+              {/* 三术卡片 */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <motion.div
-                  initial={{ y: 24, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  className="rounded-xl border border-gold/15 bg-deep2/70 p-5"
-                >
-                  <p className="font-latin text-[11px] uppercase tracking-[0.3em] text-gold">
-                    Bazi
-                  </p>
-                  <h4 className="mt-1 font-serif text-[16px] font-bold text-silktext">
-                    八字 · 四柱
-                  </h4>
-                  <div className="mt-4 flex justify-between gap-2">
-                    {result.pillars.map((p, i) => (
-                      <div key={i} className="flex flex-col items-center gap-1.5">
-                        <span className="text-[10px] tracking-[0.2em] text-silkmuted">
-                          {PILLAR_LABELS[i]}
-                        </span>
-                        <span className="flex flex-col rounded-md border border-gold/25 px-2 py-1.5 font-serif text-[18px] font-bold leading-[1.4] text-goldbright">
-                          <span>{p[0]}</span>
-                          <span>{p[1]}</span>
-                        </span>
+                {report.arts.map((art, i) => (
+                  <motion.div
+                    key={art.art}
+                    initial={{ y: 24, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.1 + i * 0.1 }}
+                    className="rounded-xl border border-gold/15 bg-deep2/70 p-5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="font-latin text-[11px] uppercase tracking-[0.3em] text-gold">
+                        {art.art}
+                      </p>
+                      <PrecisionBadge precision={art.precision} />
+                    </div>
+                    <h4 className="mt-1 font-serif text-[16px] font-bold text-silktext">
+                      {art.artName}
+                      <span className="ml-2 font-sans text-[11px] font-normal tracking-[0.08em] text-silkmuted">
+                        {art.ruleVariant}
+                      </span>
+                    </h4>
+                    {art.art === 'bazi' && (
+                      <div className="mt-4 flex justify-between gap-2">
+                        {[chart.pillars.year.ganzhi, chart.pillars.month.ganzhi, chart.pillars.day.ganzhi, chart.pillars.hour?.ganzhi ?? '—'].map(
+                          (p, pi) => (
+                            <div key={PILLAR_LABELS[pi]} className="flex flex-col items-center gap-1.5">
+                              <span className="text-[10px] tracking-[0.2em] text-silkmuted">
+                                {PILLAR_LABELS[pi]}
+                              </span>
+                              <span className="flex flex-col rounded-md border border-gold/25 px-2 py-1.5 font-serif text-[18px] font-bold leading-[1.4] text-goldbright">
+                                <span>{p[0]}</span>
+                                <span>{p[1] ?? ''}</span>
+                              </span>
+                            </div>
+                          ),
+                        )}
                       </div>
-                    ))}
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ y: 24, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="rounded-xl border border-gold/15 bg-deep2/70 p-5"
-                >
-                  <p className="font-latin text-[11px] uppercase tracking-[0.3em] text-gold">
-                    Ziwei
-                  </p>
-                  <h4 className="mt-1 font-serif text-[16px] font-bold text-silktext">
-                    紫微 · 命宫
-                  </h4>
-                  <div className="mt-4 flex flex-col items-center gap-2 pt-1">
-                    <span className="flex h-14 w-14 items-center justify-center rounded-full border border-gold/30 font-serif text-[22px] font-black text-goldbright">
-                      {result.ziweiPalace}
-                    </span>
-                    <p className="font-serif text-[17px] font-bold tracking-[0.2em] text-silktext">
-                      {result.ziweiStar}
-                    </p>
-                    <p className="text-[11.5px] text-silkmuted">命宫坐{result.ziweiPalace} · 主星</p>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ y: 24, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="rounded-xl border border-gold/15 bg-deep2/70 p-5"
-                >
-                  <p className="font-latin text-[11px] uppercase tracking-[0.3em] text-gold">
-                    Qizheng
-                  </p>
-                  <h4 className="mt-1 font-serif text-[16px] font-bold text-silktext">
-                    七政 · 宿度
-                  </h4>
-                  <div className="mt-4 flex flex-col items-center gap-2 pt-1">
-                    <span className="flex h-14 w-14 items-center justify-center rounded-full border border-gold/30 font-serif text-[22px] font-black text-goldbright">
-                      {result.mansion}
-                    </span>
-                    <p className="font-serif text-[17px] font-bold tracking-[0.1em] text-silktext">
-                      {result.mansion}宿 {result.degree} 度
-                    </p>
-                    <p className="text-[11.5px] text-silkmuted">命宫宿度 · 恒星制</p>
-                  </div>
-                </motion.div>
+                    )}
+                    {art.precision === 'unavailable' ? (
+                      <p className="mt-4 text-[12px] leading-[1.9] text-silkmuted">
+                        {art.summary}
+                      </p>
+                    ) : (
+                      <ul className="mt-4 space-y-1.5">
+                        {(art.art === 'bazi' ? art.keyPoints.slice(1) : art.keyPoints).map((k) => (
+                          <li key={k} className="flex items-start gap-1.5 text-[12px] leading-[1.8] text-silktext/90">
+                            <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-gold/70" />
+                            {k}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </motion.div>
+                ))}
               </div>
 
-              {/* 合参示例报告 */}
+              {/* 交叉互证 */}
               <motion.div
                 initial={{ y: 28, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.55, delay: 0.45 }}
                 className="mt-6 rounded-xl border border-gold/20 bg-deep2 p-7 md:p-9"
               >
-                <div className="flex items-center gap-2.5">
-                  <Sparkle className="h-4 w-4 text-goldbright" strokeWidth={1.5} />
-                  <h4 className="font-serif text-[20px] font-bold tracking-[0.1em] text-silktext">
-                    合参示例 · 概览三条
-                  </h4>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <Sparkle className="h-4 w-4 text-goldbright" strokeWidth={1.5} />
+                    <h4 className="font-serif text-[20px] font-bold tracking-[0.1em] text-silktext">
+                      交叉互证 · 信度分档
+                    </h4>
+                  </div>
+                  <ConfidenceBadge tier={report.overallTier} size={26} />
                 </div>
                 <div className="zf-hairline mt-4" />
                 <ul className="mt-6 flex flex-col gap-5">
-                  {REPORT.map((item, i) => (
+                  {report.crossChecks.map((check, i) => (
                     <motion.li
-                      key={item.tier}
+                      key={check.topic}
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ duration: 0.45, delay: 0.55 + i * 0.12 }}
                       className="rounded-lg border border-gold/10 bg-deep/50 p-5"
                     >
-                      <ConfidenceBadge tier={item.tier} size={26} />
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="font-serif text-[14px] font-bold tracking-[0.1em] text-goldbright">
+                          {check.topic}
+                        </p>
+                        <ConfidenceBadge tier={check.tier} size={20} />
+                      </div>
                       <p className="mt-3 font-serif text-[15px] leading-[2] text-silktext">
-                        {item.text}
-                      </p>
-                      <p className="mt-2 text-[12px] tracking-[0.06em] text-silkmuted">
-                        参详出处：{item.source}
+                        {check.text}
                       </p>
                     </motion.li>
                   ))}
                 </ul>
+                <p className="mt-6 text-[12px] leading-[1.9] text-silkmuted">
+                  {report.disclaimer}
+                </p>
                 <div className="mt-8 flex flex-col items-center gap-3">
                   <GhostButton onClick={() => setDialogOpen(true)}>
                     解锁完整详参 · 36 灵签
@@ -373,7 +330,7 @@ export default function HecanForm() {
         )}
       </AnimatePresence>
 
-      {/* 余额提示 Dialog（mock） */}
+      {/* 余额提示 Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="border-gold/25 bg-deep2 text-silktext sm:max-w-md">
           <DialogHeader>

@@ -6,6 +6,9 @@ import { ziweiRouter } from "./ziwei-router";
 import { daliurenRouter } from "./daliuren-router";
 import { qizhengRouter } from "./qizheng-router";
 import { qimenRouter } from "./qimen-router";
+import { hepanRouter } from "./hepan-router";
+import { hecanRouter } from "./hecan-router";
+import { drawsRouter } from "./draws-router";
 import { billingRouter } from "./billing-router";
 import { accountRouter } from "./account-router";
 import { createRouter, publicQuery } from "./middleware";
@@ -19,6 +22,9 @@ export const appRouter = createRouter({
   daliuren: daliurenRouter,
   qizheng: qizhengRouter,
   qimen: qimenRouter,
+  hepan: hepanRouter,
+  hecan: hecanRouter,
+  draws: drawsRouter,
   ai: aiRouter,
   billing: billingRouter,
   account: accountRouter,

@@ -1,8 +1,13 @@
 import type { ReactNode } from 'react'
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { trpc } from '@/providers/trpc'
+import { useAuth } from '@/hooks/useAuth'
+import { LOGIN_PATH } from '@/const'
+import type { GuanyinSign } from '@contracts/engines/draws-core'
 import PageHero from '@/components/content/PageHero'
 import SectionHeading from '@/components/SectionHeading'
 import { FormSelect } from '@/components/FormControls'
@@ -129,7 +134,7 @@ function YijiCards({ dayGz }: { dayGz: number }) {
       </div>
       <Reveal className="mt-4 text-center">
         <p className="text-[12.5px] tracking-[0.06em] text-inkmuted">
-          宜忌依传统择日类目 mock 生成，供文化体验
+          宜忌依日柱轮换择日类目 —— 传统宜忌规则演示，供文化体验
         </p>
       </Reveal>
     </div>
@@ -231,6 +236,91 @@ function HourGrid({ dayGz, now }: { dayGz: number; now: Date }) {
           </motion.p>
         )}
       </AnimatePresence>
+    </div>
+  )
+}
+
+/* ================= S3.5 · 今日灵签 ================= */
+
+type LingqianDraw = { signNo: number; sign: GuanyinSign; idempotentReplay: boolean }
+
+function LingqianSection() {
+  const { user, isAuthenticated, isLoading } = useAuth()
+  const [draw, setDraw] = useState<LingqianDraw | null>(null)
+  const lingqian = trpc.draws.lingqian.useMutation({
+    onSuccess: (data) => setDraw(data.result.data as unknown as LingqianDraw),
+  })
+
+  const todayKey = (uid: number) => {
+    const t = new Date()
+    return `${uid}-${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
+  }
+
+  const submit = () => {
+    if (!user) return
+    lingqian.mutate({ idempotencyKey: todayKey(user.id) })
+  }
+
+  return (
+    <div className="mx-auto flex w-full max-w-[560px] flex-col items-center">
+      {!isAuthenticated && !isLoading ? (
+        <Reveal className="flex flex-col items-center">
+          <p className="text-center font-sans text-[14px] leading-[2] text-inkmuted">
+            观音灵签一百首，每日一签——签号由服务端加密随机数均匀抽取，
+            登录后今日之签恒定如一。
+          </p>
+          <Link
+            to={LOGIN_PATH}
+            className="mt-6 inline-flex items-center justify-center rounded-lg border border-gold/60 px-10 py-3 font-serif text-[15px] font-bold tracking-[0.14em] text-golddim transition-colors hover:bg-golddim/10"
+          >
+            登录后抽今日灵签
+          </Link>
+        </Reveal>
+      ) : (
+        <Reveal className="flex w-full flex-col items-center">
+          <GoldButton onClick={submit} disabled={lingqian.isPending} className="px-12">
+            {lingqian.isPending ? '抽签中…' : draw ? '查看今日灵签' : '今日灵签'}
+          </GoldButton>
+          {lingqian.isError && (
+            <p className="mt-3 text-[13px] text-[#A8433C]">抽签失败，请稍后重试</p>
+          )}
+          <AnimatePresence mode="wait">
+            {draw && (
+              <motion.div
+                key={draw.signNo}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 12 }}
+                transition={{ duration: 0.5, ease: easeOut }}
+                className="mt-7 w-full rounded-xl border border-golddim/30 bg-silk2 p-7 text-center"
+              >
+                <div className="flex items-center justify-center gap-3">
+                  <span className="rounded-full border border-gold/50 px-3 py-0.5 font-sans text-[11px] font-medium tracking-[0.14em] text-golddim">
+                    {draw.sign.grade}
+                  </span>
+                  <span className="font-serif text-[20px] font-bold tracking-[0.14em] text-inktext">
+                    第 {draw.signNo} 签
+                  </span>
+                </div>
+                <div className="zf-hairline mx-auto mt-4" />
+                <div className="mt-4 space-y-1">
+                  {draw.sign.poem.map((line) => (
+                    <p key={line} className="font-serif text-[16px] leading-[2.1] text-inktext">
+                      {line}
+                    </p>
+                  ))}
+                </div>
+                <p className="mt-4 font-sans text-[13px] leading-[1.9] text-inkmuted">
+                  简注：{draw.sign.note}
+                </p>
+                <p className="mt-3 font-sans text-[11.5px] tracking-[0.06em] text-inkmuted/70">
+                  观音灵签通行本 · 服务端 CSPRNG 均匀抽取 · 每人每日一签（同一日内重抽仍为该签）· 仅供文化体验
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Reveal>
+      )}
     </div>
   )
 }
@@ -695,6 +785,20 @@ export default function Daily() {
           />
           <div className="mt-14">
             <HourGrid dayGz={dayGz} now={now} />
+          </div>
+        </div>
+      </section>
+
+      {/* S3.5 · 今日灵签（服务端真实随机） */}
+      <section className="relative bg-silk pb-24 pt-4">
+        <div className="relative zf-container">
+          <SectionHeading
+            eyebrow="Daily Oracle"
+            title="今日灵签"
+            sub="观音灵签一百首 · 服务端真实随机，每日一签，同日不复抽"
+          />
+          <div className="mt-14">
+            <LingqianSection />
           </div>
         </div>
       </section>
