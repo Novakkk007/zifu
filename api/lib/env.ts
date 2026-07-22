@@ -17,6 +17,16 @@ function appEnv(): AppEnv {
   return "development";
 }
 
+/** 支付闸门纯函数：preview/development 强制关闭（可单测，不依赖进程环境） */
+export function computePaymentEnabled(envName: AppEnv, flag?: string): boolean {
+  return envName !== "preview" && envName !== "development" && flag === "true";
+}
+
+/** AI 计费闸门纯函数：preview/development 强制免费（可单测，不依赖进程环境） */
+export function computeAiBillingEnabled(envName: AppEnv, flag?: string): boolean {
+  return envName !== "preview" && envName !== "development" && flag !== "false";
+}
+
 export const env = {
   appId: required("APP_ID"),
   appSecret: required("APP_SECRET"),
@@ -37,13 +47,19 @@ export const env = {
     process.env.SOURCE_VERSION ??
     "unknown",
   /**
-   * 支付总闸：PAYMENT_ENABLED=false 时充值/支付回调一律拒绝。
-   * 缺省关闭——支付渠道本就是预留状态，显式设为 "true" 才放开（预览环境绝不放开）。
+   * 支付总闸（fail-closed）：
+   * 仅当 APP_ENV 为 staging/production 且 PAYMENT_ENABLED 显式为 "true" 才开放；
+   * preview / development 环境无论 PAYMENT_ENABLED 配什么都强制关闭，
+   * 防止错误配置在预览环境打开真实支付。
    */
-  paymentEnabled: process.env.PAYMENT_ENABLED === "true",
+  paymentEnabled: computePaymentEnabled(appEnv(), process.env.PAYMENT_ENABLED),
   /**
-   * AI 计费闸：AI_BILLING_ENABLED=false 时 live 参详不扣灵签（预览环境默认免费体验）。
-   * 缺省开启（向后兼容 V6/V7 行为），预览环境应显式设为 "false"。
+   * AI 计费闸（fail-closed）：
+   * preview / development 环境强制免费（live 参详不扣灵签）；
+   * staging / production 缺省开启，可显式 AI_BILLING_ENABLED=false 关闭。
    */
-  aiBillingEnabled: process.env.AI_BILLING_ENABLED !== "false",
+  aiBillingEnabled: computeAiBillingEnabled(
+    appEnv(),
+    process.env.AI_BILLING_ENABLED,
+  ),
 };

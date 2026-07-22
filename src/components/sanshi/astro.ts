@@ -1,6 +1,7 @@
 /**
- * 三术页共享术数工具：干支、二十八宿、确定性哈希随机。
- * mock 原则：同一输入 → 同一结果（前端内嵌，无后端）。
+ * 三术页共享静态数据与 SVG 几何工具。
+ * 排盘算法已全部迁至服务端真实引擎（contracts/engines/*），
+ * 本文件只保留展示层所需的干支/五行表、二十八宿名与环上几何。
  */
 
 export const STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'] as const
@@ -14,38 +15,12 @@ export const MANSIONS = [
   '井', '鬼', '柳', '星', '张', '翼', '轸',
 ] as const
 
-/** 四象（每象七宿） */
-export const XIANG = ['东方苍龙', '北方玄武', '西方白虎', '南方朱雀'] as const
-
-/** 二十八宿对应的星兽（角木蛟…轸水蚓） */
-export const MANSION_BEAST = [
-  '木蛟', '金龙', '土貉', '日兔', '月狐', '火虎', '水豹',
-  '木獬', '金牛', '土蝠', '日鼠', '月燕', '火猪', '水貐',
-  '木狼', '金狗', '土雉', '日鸡', '月乌', '火猴', '水猿',
-  '木犴', '金羊', '土獐', '日马', '月鹿', '火蛇', '水蚓',
-] as const
-
 export type Wuxing = '木' | '火' | '土' | '金' | '水'
 
 export const STEM_WUXING: Wuxing[] = ['木', '木', '火', '火', '土', '土', '金', '金', '水', '水']
 export const BRANCH_WUXING: Wuxing[] = ['水', '土', '木', '木', '土', '火', '火', '土', '金', '金', '土', '水']
 
-/** 五行相克：KE[x] = x 所克 */
-export const KE: Record<Wuxing, Wuxing> = { 木: '土', 土: '水', 水: '火', 火: '金', 金: '木' }
-/** 五行相生：SHENG[x] = x 所生 */
-export const SHENG: Record<Wuxing, Wuxing> = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' }
-
-/** FNV-1a 字符串哈希（确定性种子） */
-export function hashSeed(str: string): number {
-  let h = 0x811c9dc5
-  for (let i = 0; i < str.length; i++) {
-    h ^= str.charCodeAt(i)
-    h = Math.imul(h, 0x01000193)
-  }
-  return h >>> 0
-}
-
-/** mulberry32 确定性伪随机序列 */
+/** mulberry32 确定性伪随机序列（仅用于背景星点等装饰，不参与任何排盘） */
 export function rng(seed: number): () => number {
   let a = seed >>> 0
   return () => {
@@ -56,39 +31,9 @@ export function rng(seed: number): () => number {
   }
 }
 
-export function pick<T>(rand: () => number, arr: readonly T[]): T {
-  return arr[Math.floor(rand() * arr.length)]
-}
-
-export type Pillar = { stem: number; branch: number; label: string }
-
-/** 日柱：以 1900-01-01（甲戌日，干支序 10）为锚累加 */
-export function dayPillar(year: number, month: number, day: number): Pillar {
-  const days = Math.floor((Date.UTC(year, month - 1, day) - Date.UTC(1900, 0, 1)) / 86400000)
-  const idx = (((10 + days) % 60) + 60) % 60
-  const stem = idx % 10
-  const branch = idx % 12
-  return { stem, branch, label: `${STEMS[stem]}${BRANCHES[branch]}` }
-}
-
 /** 时支：23:00–00:59 为子时 */
 export function hourBranchOf(hour: number): number {
   return Math.floor(((hour + 1) % 24) / 2)
-}
-
-/** 时干：五鼠遁（甲己还加甲） */
-export function hourStemOf(dayStem: number, hourBranch: number): number {
-  return ((dayStem % 5) * 2 + hourBranch) % 10
-}
-
-export function hourPillar(dayStem: number, hourBranch: number): Pillar {
-  const stem = hourStemOf(dayStem, hourBranch)
-  return { stem, branch: hourBranch, label: `${STEMS[stem]}${BRANCHES[hourBranch]}` }
-}
-
-/** 年内第几天（1 起） */
-export function dayOfYear(year: number, month: number, day: number): number {
-  return Math.floor((Date.UTC(year, month - 1, day) - Date.UTC(year, 0, 1)) / 86400000) + 1
 }
 
 /** 极角 → SVG 坐标（y 轴向下，角度以度计） */
@@ -119,3 +64,32 @@ export function wedgePath(
     'Z',
   ].join(' ')
 }
+
+/* ---------------- 二十八宿环上几何（汉宿度近似，用于星盘 SVG 布点） ---------------- */
+
+/** 各宿中心的环上角度（SVG 极角，冬至点锚斗宿 127.5°） */
+export const MANSION_ANGLE = [
+  217.5, 202.5, 190, 180, 170, 157.5, 142.5,
+  127.5, 112.5, 100, 90, 80, 67.5, 52.5,
+  37.5, 22.5, 10, 0, 350, 337.5, 322.5,
+  307.5, 292.5, 280, 270, 260, 247.5, 232.5,
+]
+
+/** 各宿的环上进度 u（自角宿 0 起递增，一周 360） */
+const MANSION_U = MANSION_ANGLE.map((a) => ((217.5 - a) % 360 + 360) % 360)
+/** 宿界（28+1 条） */
+const BOUNDS: number[] = (() => {
+  const b: number[] = []
+  for (let m = 0; m < 28; m++) {
+    const prev = m === 0 ? MANSION_U[27] - 360 : MANSION_U[m - 1]
+    b.push((prev + MANSION_U[m]) / 2)
+  }
+  b.push(MANSION_U[27] + (360 - MANSION_U[27] + MANSION_U[0]) / 2)
+  return b
+})()
+
+/** 各宿扇区的环角边界 [aStart, aEnd]（aStart > aEnd，顺时针） */
+export const MANSION_WEDGES: [number, number][] = Array.from({ length: 28 }, (_, m) => [
+  217.5 - BOUNDS[m],
+  217.5 - BOUNDS[m + 1],
+])

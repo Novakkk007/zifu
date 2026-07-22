@@ -271,6 +271,8 @@ export const feedback = mysqlTable("feedback", {
   status: mysqlEnum("status", ["open", "triaged", "fixed", "wontfix"])
     .default("open")
     .notNull(),
+  /** 管理员处理备注 */
+  adminNote: text("adminNote"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -289,3 +291,32 @@ export type InsertFeedback = typeof feedback.$inferInsert;
 //
 // Note: FK columns referencing a serial() PK must use:
 //   bigint("columnName", { mode: "number", unsigned: true }).notNull()
+
+/**
+ * OAuth 一次性 state — 登录 CSRF 防护。
+ * 服务端生成随机 state，绑定 redirectUri 与过期时间；回调时原子消费（usedAt），
+ * 重放/过期/伪造一律拒绝。
+ */
+export const oauthStates = mysqlTable("oauth_states", {
+  state: varchar("state", { length: 64 }).primaryKey(),
+  redirectUri: varchar("redirectUri", { length: 512 }).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OAuthState = typeof oauthStates.$inferSelect;
+
+/**
+ * 可撤销登录会话 — access JWT 短期（2h），会话行承载真实有效期（30d）与撤销点。
+ * 登出/删除账户即撤销；refresh 只认未撤销未过期的会话。
+ */
+export const sessions = mysqlTable("sessions", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userId: bigint("userId", { mode: "number", unsigned: true }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  revokedAt: timestamp("revokedAt"),
+});
+
+export type AuthSession = typeof sessions.$inferSelect;

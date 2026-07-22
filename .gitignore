@@ -9,7 +9,7 @@ dist
 *.db
 *.sqlite
 *.sqlite3
-db/migrations/*.sql
+# migrations SQL 必须入库（V8 正式 migration 链路）
 # TypeScript cache
 *.tsbuildinfo
 # Build outputs

@@ -2,6 +2,7 @@ import type { Context } from "hono";
 import { setCookie } from "hono/cookie";
 import * as jose from "jose";
 import * as cookie from "cookie";
+import { randomBytes, randomUUID } from "node:crypto";
 import { env } from "../lib/env";
 import { getSessionCookieOptions } from "../lib/cookies";
 import { Session } from "@contracts/constants";
@@ -9,6 +10,14 @@ import { Errors } from "@contracts/errors";
 import { signSessionToken, verifySessionToken } from "./session";
 import { users as kimiUsers } from "./platform";
 import { findUserByUnionId, upsertUser } from "../queries/users";
+import {
+  consumeOAuthState,
+  createAuthSession,
+  createOAuthState,
+  findOAuthState,
+  findValidAuthSession,
+  pruneExpiredOAuthStates,
+} from "../queries/auth-sessions";
 import type { TokenResponse } from "./types";
 
 async function exchangeAuthCode(
@@ -64,11 +73,50 @@ export async function authenticateRequest(headers: Headers) {
   if (!claim) {
     throw Errors.forbidden("Invalid authentication token.");
   }
+  // access JWT 只证明身份；会话行（未撤销、未过期）才是登录态的裁决者
+  const authSession = await findValidAuthSession(claim.sid);
+  if (!authSession) {
+    throw Errors.forbidden("Session expired or revoked. Please re-login.");
+  }
   const user = await findUserByUnionId(claim.unionId);
   if (!user) {
     throw Errors.forbidden("User not found. Please re-login.");
   }
   return user;
+}
+
+/** 从请求推导本站回调地址（只信自己的 origin，不信客户端传入） */
+function selfRedirectUri(req: Request): string {
+  const url = new URL(req.url);
+  const proto =
+    req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || url.protocol.replace(":", "");
+  const host = req.headers.get("x-forwarded-host")?.split(",")[0]?.trim() || url.host;
+  return `${proto}://${host}/api/oauth/callback`;
+}
+
+function buildAuthorizeUrl(redirectUri: string, state: string): string {
+  const url = new URL(`${env.kimiAuthUrl}/api/oauth/authorize`);
+  url.searchParams.set("client_id", env.appId);
+  url.searchParams.set("redirect_uri", redirectUri);
+  url.searchParams.set("response_type", "code");
+  url.searchParams.set("scope", "profile");
+  url.searchParams.set("state", state);
+  return url.toString();
+}
+
+/**
+ * OAuth 起点（GET /api/oauth/begin）：
+ * 服务端生成 CSPRNG 随机 state 并落库（10 分钟有效、一次性），
+ * 然后 302 到授权页——state 不再由前端构造，登录 CSRF 防线的第一环。
+ */
+export function createOAuthBeginHandler() {
+  return async (c: Context) => {
+    const redirectUri = selfRedirectUri(c.req.raw);
+    const state = randomBytes(32).toString("hex");
+    await createOAuthState(state, redirectUri);
+    void pruneExpiredOAuthStates();
+    return c.redirect(buildAuthorizeUrl(redirectUri, state), 302);
+  };
 }
 
 export function createOAuthCallbackHandler() {
@@ -92,8 +140,25 @@ export function createOAuthCallbackHandler() {
       return c.json({ error: "code and state are required" }, 400);
     }
 
+    // --- state 校验：存在、未过期、未使用；原子消费防重放 ---
+    const row = await findOAuthState(state);
+    if (!row) {
+      return c.json({ error: "invalid state" }, 400);
+    }
+    if (row.usedAt || row.expiresAt.getTime() <= Date.now()) {
+      return c.json({ error: "state expired or already used" }, 400);
+    }
+    const consumed = await consumeOAuthState(state);
+    if (consumed !== 1) {
+      return c.json({ error: "state replay detected" }, 400);
+    }
+    // redirect_uri 必须等于 begin 时本站推导并绑定的地址
+    const redirectUri = row.redirectUri;
+    if (redirectUri !== selfRedirectUri(c.req.raw)) {
+      return c.json({ error: "redirect uri mismatch" }, 400);
+    }
+
     try {
-      const redirectUri = atob(state);
       const tokenResp = await exchangeAuthCode(code, redirectUri);
       const { userId } = await verifyAccessToken(tokenResp.access_token);
       const userProfile = await kimiUsers.getProfile(tokenResp.access_token);
@@ -107,10 +172,18 @@ export function createOAuthCallbackHandler() {
         avatar: userProfile.avatar_url,
         lastSignInAt: new Date(),
       });
+      const user = await findUserByUnionId(userId);
+      if (!user) {
+        throw new Error("User provisioning failed");
+      }
 
+      // 建可撤销会话（30d）+ 短期 access JWT（2h）
+      const sid = randomUUID();
+      await createAuthSession(sid, user.id);
       const token = await signSessionToken({
         unionId: userId,
         clientId: env.appId,
+        sid,
       });
 
       const cookieOpts = getSessionCookieOptions(c.req.raw.headers);

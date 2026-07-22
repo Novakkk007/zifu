@@ -7,7 +7,7 @@ import { appRouter } from "./router";
 import { createContext } from "./context";
 import { env } from "./lib/env";
 import { getDb } from "./queries/connection";
-import { createOAuthCallbackHandler } from "./kimi/auth";
+import { createOAuthBeginHandler, createOAuthCallbackHandler } from "./kimi/auth";
 import { Paths } from "@contracts/constants";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
@@ -64,12 +64,14 @@ app.get("/readyz", async (c) => {
     checks.database = "up";
     return c.json({ ok: true, ...checks });
   } catch (err) {
+    // 脱敏：不向访客暴露数据库异常原文（含连接串/主机等敏感信息），仅记录服务端日志
+    console.error("[readyz] database check failed:", err);
     checks.database = "down";
-    checks.databaseError = err instanceof Error ? err.message : String(err);
     return c.json({ ok: false, ...checks }, 503);
   }
 });
 
+app.get("/api/oauth/begin", createOAuthBeginHandler());
 app.get(Paths.oauthCallback, createOAuthCallbackHandler());
 app.use("/api/trpc/*", async (c) => {
   return fetchRequestHandler({

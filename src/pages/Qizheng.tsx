@@ -47,9 +47,9 @@ type Depth = 'pro' | 'plain'
 
 function newIdempotencyKey(chartId: number): string {
   const uuid =
-    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
       ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2, 12)}`
+      : `${Date.now().toString(36)}-${Math.trunc(performance.now() * 1000).toString(36)}`
   return `qizheng-reading:${chartId}:${uuid}`
 }
 

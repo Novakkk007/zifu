@@ -4,6 +4,14 @@
  * - generateReading 以 vi.mock 替换，不触网
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// 计费测试需要「支付/AI 计费可开启」的环境语义：
+// env.ts 对 preview/development 强制 fail-closed，故本文件以 production 环境运行。
+// vi.hoisted 保证在所有 import（含 env.ts 求值）之前生效。
+vi.hoisted(() => {
+  process.env.APP_ENV = "production";
+});
+
 import type { User } from "@db/schema";
 import * as schema from "@db/schema";
 import { appRouter } from "./router";
@@ -31,6 +39,9 @@ type TableKey =
   | "users"
   | "charts"
   | "chartVersions"
+  | "feedback"
+  | "oauthStates"
+  | "sessions"
   | "aiReadings"
   | "wallets"
   | "walletTransactions"
@@ -48,6 +59,9 @@ const TABLE_MAP: Record<TableKey, unknown> = {
   orders: schema.orders,
   paymentEvents: schema.paymentEvents,
   auditLogs: schema.auditLogs,
+  feedback: schema.feedback,
+  oauthStates: schema.oauthStates,
+  sessions: schema.sessions,
 };
 
 interface Filter {
@@ -223,12 +237,30 @@ function createFakeDb(seed?: Partial<Record<TableKey, Row[]>>) {
       set: (v: Row) => ({
         where: (cond: unknown) => {
           const key = keyOf(t);
+          // SQL 片段 set（如 balance = balance + delta）：提取数值参数做算术
+          const applySet = (r: Row) => {
+            for (const [col, val] of Object.entries(v)) {
+              const sqlFrag = val as { queryChunks?: unknown[] } | null;
+              if (sqlFrag && typeof sqlFrag === "object" && Array.isArray(sqlFrag.queryChunks)) {
+                const delta = (sqlFrag.queryChunks as unknown[]).find(
+                  (c) => typeof c === "number",
+                ) as number | undefined;
+                r[col] = Number(r[col] ?? 0) + (delta ?? 0);
+              } else {
+                r[col] = val;
+              }
+            }
+          };
+          let affected = 0;
           tables[key].forEach((r) => {
-            if (matchRow(r, cond)) Object.assign(r, v);
+            if (matchRow(r, cond)) {
+              applySet(r);
+              affected++;
+            }
           });
           return {
             then: (res: (v: unknown) => unknown) =>
-              Promise.resolve(undefined).then(res),
+              Promise.resolve([{ affectedRows: affected }]).then(res),
           };
         },
       }),
@@ -245,7 +277,13 @@ function createFakeDb(seed?: Partial<Record<TableKey, Row[]>>) {
         };
       },
     }),
+  } as unknown as Record<string, unknown> & {
+    transaction: (fn: (tx: unknown) => Promise<unknown>) => Promise<unknown>;
   };
+  // 事务透传：tx 即假 db 本身（内存假库无并发，单线程语义天然一致）
+  (db as { transaction: unknown }).transaction = async (
+    fn: (tx: unknown) => Promise<unknown>,
+  ) => fn(db);
 
   return { db, tables, deleteLog };
 }

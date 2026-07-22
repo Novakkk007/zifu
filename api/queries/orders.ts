@@ -1,9 +1,9 @@
 import { randomBytes } from "node:crypto";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import * as schema from "@db/schema";
 import type { Order, PaymentEvent } from "@db/schema";
 import { getDb } from "./connection";
-import { applyTransaction } from "./wallets";
+import { applyTransactionTx, getOrCreateWallet } from "./wallets";
 
 /** 生成订单号（≤32 字符）：Z + 时间戳 base36 + 8 位随机 */
 function generateOrderNo(): string {
@@ -88,7 +88,10 @@ export interface ProcessPaymentEventResult {
 }
 
 /**
- * 处理支付回调（幂等）：
+ * 处理支付回调（单事务 + 幂等 + 条件状态机）：
+ * - 「查重 eventId → 落事件 → 条件更新订单状态 → 充值入账」全部在一个事务内，
+ *   任一步失败整体回滚，不会出现「钱到了订单没转 paid」之类的半状态
+ * - 状态迁移用条件 UPDATE（where 当前状态 = 前置状态），并发回调下只有一个能生效
  * - eventId 已存在 → 返回既有事件与订单，不重复变更状态 / 入账
  * - status=paid 且订单仍为 created → 置 paid 并按订单灵签数入账
  *   （入账幂等键 order-recharge:{orderNo}）
@@ -110,57 +113,76 @@ export async function processPaymentEvent(
     return { order, event: dup[0], applied: false };
   }
 
-  const inserted = await db
-    .insert(schema.paymentEvents)
-    .values({
-      orderId: order.id,
-      eventId: input.eventId,
-      payload: input.payload ?? null,
-      verified: input.verified ?? true,
-      status: input.status,
-    })
-    .$returningId();
-  const event: PaymentEvent = {
-    id: inserted.at(0)?.id ?? 0,
-    orderId: order.id,
-    eventId: input.eventId,
-    payload: input.payload ?? null,
-    verified: input.verified ?? true,
-    status: input.status,
-    createdAt: new Date(),
-  };
+  try {
+    return await db.transaction(async (tx) => {
+      const inserted = await tx
+        .insert(schema.paymentEvents)
+        .values({
+          orderId: order.id,
+          eventId: input.eventId,
+          payload: input.payload ?? null,
+          verified: input.verified ?? true,
+          status: input.status,
+        })
+        .$returningId();
+      const event: PaymentEvent = {
+        id: inserted.at(0)?.id ?? 0,
+        orderId: order.id,
+        eventId: input.eventId,
+        payload: input.payload ?? null,
+        verified: input.verified ?? true,
+        status: input.status,
+        createdAt: new Date(),
+      };
 
-  let nextStatus = order.status;
-  if (input.status === "paid" && order.status === "created") {
-    nextStatus = "paid";
-    await db
-      .update(schema.orders)
-      .set({ status: "paid" })
-      .where(eq(schema.orders.id, order.id));
-    // 充值入账（幂等：同一订单只入账一次）
-    await applyTransaction({
-      userId: order.userId,
-      changeAmount: order.lingqianAmount,
-      reason: "recharge",
-      refType: "order",
-      refId: order.orderNo,
-      idempotencyKey: `order-recharge:${order.orderNo}`,
+      // 条件状态机：仅当订单处于允许的前置状态时才迁移（并发安全）
+      const transition = async (
+        from: Order["status"],
+        to: Order["status"],
+      ): Promise<boolean> => {
+        const res = await tx
+          .update(schema.orders)
+          .set({ status: to })
+          .where(and(eq(schema.orders.id, order.id), eq(schema.orders.status, from)));
+        return Number(res[0]?.affectedRows ?? 0) === 1;
+      };
+
+      let nextStatus = order.status;
+      if (input.status === "paid" && order.status === "created") {
+        if (await transition("created", "paid")) {
+          nextStatus = "paid";
+          // 充值入账（同事务；幂等：同一订单只入账一次）
+          const wallet = await getOrCreateWallet(order.userId);
+          await applyTransactionTx(tx, wallet, {
+            userId: order.userId,
+            changeAmount: order.lingqianAmount,
+            reason: "recharge",
+            refType: "order",
+            refId: order.orderNo,
+            idempotencyKey: `order-recharge:${order.orderNo}`,
+          });
+        }
+      } else if (input.status === "failed" && order.status === "created") {
+        if (await transition("created", "failed")) nextStatus = "failed";
+      } else if (input.status === "refunded" && order.status === "paid") {
+        if (await transition("paid", "refunded")) nextStatus = "refunded";
+      }
+
+      return { order: { ...order, status: nextStatus }, event, applied: true };
     });
-  } else if (input.status === "failed" && order.status === "created") {
-    nextStatus = "failed";
-    await db
-      .update(schema.orders)
-      .set({ status: "failed" })
-      .where(eq(schema.orders.id, order.id));
-  } else if (input.status === "refunded" && order.status === "paid") {
-    nextStatus = "refunded";
-    await db
-      .update(schema.orders)
-      .set({ status: "refunded" })
-      .where(eq(schema.orders.id, order.id));
+  } catch (err) {
+    // 并发撞 eventId 唯一键（事务回滚）：返回既有事件
+    const again = await db
+      .select()
+      .from(schema.paymentEvents)
+      .where(eq(schema.paymentEvents.eventId, input.eventId))
+      .limit(1);
+    if (again.at(0)) {
+      const fresh = await findOrderByNo(input.orderNo);
+      return { order: fresh ?? order, event: again[0], applied: false };
+    }
+    throw err;
   }
-
-  return { order: { ...order, status: nextStatus }, event, applied: true };
 }
 
 /** 我的订单（按时间倒序，上限 50 条） */

@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { BRANCHES, MANSIONS, polar, rng, wedgePath } from '@/components/sanshi/astro'
-import { MANSION_ANGLE, MANSION_WEDGES } from '@/components/sanshi/qizheng'
+import { BRANCHES, MANSIONS, MANSION_ANGLE, MANSION_WEDGES, polar, rng, wedgePath } from '@/components/sanshi/astro'
 
 /** 星盘环输入（真实星历）：星曜按宿序 + 宿内进度布点 */
 export interface StarRingStar {

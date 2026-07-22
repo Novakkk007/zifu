@@ -75,6 +75,8 @@ export default function FeedbackWidget() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [steps, setSteps] = useState('')
+  const [expected, setExpected] = useState('')
+  const [actual, setActual] = useState('')
   const [doneId, setDoneId] = useState<number | null>(null)
 
   const submit = trpc.feedback.submit.useMutation({
@@ -97,6 +99,8 @@ export default function FeedbackWidget() {
       title: title.trim(),
       description: description.trim(),
       stepsToReproduce: steps.trim() || undefined,
+      expectedResult: expected.trim() || undefined,
+      actualResult: actual.trim() || undefined,
       browser: navigator.userAgent.slice(0, 250),
       device: `${window.innerWidth}x${window.innerHeight}`,
     })
@@ -206,6 +210,17 @@ export default function FeedbackWidget() {
                 rows={2}
                 maxLength={2000}
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-1.5">
+                <Label htmlFor="fb-expected">期望结果（可选）</Label>
+                <Textarea id="fb-expected" value={expected} onChange={(e) => setExpected(e.target.value)} rows={2} maxLength={1000} />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="fb-actual">实际结果（可选）</Label>
+                <Textarea id="fb-actual" value={actual} onChange={(e) => setActual(e.target.value)} rows={2} maxLength={1000} />
+              </div>
             </div>
 
             {submit.isError && (

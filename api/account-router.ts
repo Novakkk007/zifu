@@ -18,44 +18,59 @@ export const accountRouter = createRouter({
     const db = getDb();
     const userId = ctx.user.id;
 
-    // 先取关联主键，再按依赖顺序删除
-    const chartRows = await db
-      .select({ id: schema.charts.id })
-      .from(schema.charts)
-      .where(eq(schema.charts.userId, userId));
-    const chartIds = chartRows.map((r) => r.id);
+    // 整个删除链路在一个事务内：任一步失败整体回滚，不留半删除状态。
+    // 反馈不物理删除——按 Codex 审计口径匿名化（断开用户关联，保留内容供产品改进）。
+    const { chartCount, orderCount } = await db.transaction(async (tx) => {
+      // 先取关联主键，再按依赖顺序删除
+      const chartRows = await tx
+        .select({ id: schema.charts.id })
+        .from(schema.charts)
+        .where(eq(schema.charts.userId, userId));
+      const chartIds = chartRows.map((r) => r.id);
 
-    const orderRows = await db
-      .select({ id: schema.orders.id })
-      .from(schema.orders)
-      .where(eq(schema.orders.userId, userId));
-    const orderIds = orderRows.map((r) => r.id);
+      const orderRows = await tx
+        .select({ id: schema.orders.id })
+        .from(schema.orders)
+        .where(eq(schema.orders.userId, userId));
+      const orderIds = orderRows.map((r) => r.id);
 
-    if (chartIds.length > 0) {
-      await db
-        .delete(schema.chartVersions)
-        .where(inArray(schema.chartVersions.chartId, chartIds));
-    }
-    if (orderIds.length > 0) {
-      await db
-        .delete(schema.paymentEvents)
-        .where(inArray(schema.paymentEvents.orderId, orderIds));
-    }
-    await db.delete(schema.aiReadings).where(eq(schema.aiReadings.userId, userId));
-    await db
-      .delete(schema.walletTransactions)
-      .where(eq(schema.walletTransactions.userId, userId));
-    await db.delete(schema.wallets).where(eq(schema.wallets.userId, userId));
-    await db.delete(schema.orders).where(eq(schema.orders.userId, userId));
-    await db.delete(schema.charts).where(eq(schema.charts.userId, userId));
-    await db.delete(schema.users).where(eq(schema.users.id, userId));
+      if (chartIds.length > 0) {
+        await tx
+          .delete(schema.chartVersions)
+          .where(inArray(schema.chartVersions.chartId, chartIds));
+      }
+      if (orderIds.length > 0) {
+        await tx
+          .delete(schema.paymentEvents)
+          .where(inArray(schema.paymentEvents.orderId, orderIds));
+      }
+      await tx.delete(schema.aiReadings).where(eq(schema.aiReadings.userId, userId));
+      await tx
+        .delete(schema.walletTransactions)
+        .where(eq(schema.walletTransactions.userId, userId));
+      await tx.delete(schema.wallets).where(eq(schema.wallets.userId, userId));
+      await tx.delete(schema.orders).where(eq(schema.orders.userId, userId));
+      await tx.delete(schema.charts).where(eq(schema.charts.userId, userId));
+      // 会话全部撤销（强制下线）
+      await tx
+        .delete(schema.sessions)
+        .where(eq(schema.sessions.userId, userId));
+      // 反馈匿名化：断开 userId 关联
+      await tx
+        .update(schema.feedback)
+        .set({ userId: null })
+        .where(eq(schema.feedback.userId, userId));
+      await tx.delete(schema.users).where(eq(schema.users.id, userId));
+
+      return { chartCount: chartIds.length, orderCount: orderIds.length };
+    });
 
     await writeAuditLog({
       userId,
       action: "account.delete",
       targetType: "user",
       targetId: String(userId),
-      meta: { charts: chartIds.length, orders: orderIds.length },
+      meta: { charts: chartCount, orders: orderCount },
     });
 
     // 清除会话 Cookie

@@ -5,51 +5,67 @@
 
 > 古籍数字化 · AI 参详 — 仅供文化研究与体验，不构成任何决策建议。
 
+当前版本：**v8**（2026-07-22）—— V7 全引擎真实化 + V8 预览环境/安全硬化。功能真实度总表见 `docs/feature-status.md`。
+
 ## 技术栈
 
 | 层 | 技术 |
 |---|---|
 | 前端 | React 19 · TypeScript · Vite 7 · Tailwind CSS 3.4 · shadcn/ui · Framer Motion · GSAP · Lenis |
 | 后端 | Hono · tRPC 11 · superjson |
-| 数据库 | MySQL · Drizzle ORM |
-| 鉴权 | OAuth 2.0（JWT 会话） |
-| 算法 | `contracts/bazi-core/` 前后端共用纯函数库 · lunar-typescript（真实节气/农历） |
+| 数据库 | MySQL · Drizzle ORM（正式 migrations：`db/migrations/`） |
+| 鉴权 | OAuth 2.0 · 服务端一次性 state（防 CSRF/重放）· 短期 JWT（2h）+ 可撤销会话（30d）+ refresh 旋转 |
+| 算法 | `contracts/bazi-core/` + `contracts/engines/`（liuyao/ziwei/qimen/daliuren/qizheng/hecan/hepan/draws 八引擎，前后端共用纯函数库）· lunar-typescript · astronomy-engine（VSOP87 级星历） |
 | AI | OpenAI 兼容协议适配器（环境变量驱动，未配置密钥自动降级模板引擎） |
-| 测试 | Vitest（算法边界 + API + 适配器） |
+| 测试 | Vitest（342 项：算法边界 + API + 适配器 + 安全硬化 + 商业化事务） |
 
 ## 快速开始
 
 ```bash
-npm install
-cp .env.example .env   # 填入数据库与 OAuth 凭据
-npm run db:push        # 同步表结构
-npm run dev            # 开发（前后端一体，:3000）
+npm ci               # 锁定依赖（部署环境必须使用 ci，不用 install）
+cp .env.example .env # 填入数据库与 OAuth 凭据
+npm run db:push      # 同步表结构（或 db:generate + 执行 db/migrations/*.sql）
+npm run dev          # 开发（前后端一体，:3000）
 ```
 
 ```bash
-npm run build          # 生产构建（前端 dist/ + 服务端 dist/boot.js）
-npm start              # 生产运行
+npm run build        # 生产构建（前端 dist/ + 服务端 dist/boot.js）
+npm start            # 生产运行
 ```
+
+## 环境闸门（V8）
+
+| 变量 | 说明 |
+|---|---|
+| `APP_ENV` | `preview` / `development` / `production`；preview/development 下支付与 AI 计费 **fail-closed 强制关闭**，与开关配置无关 |
+| `PAYMENT_ENABLED` | 支付闸门（仅 production 且显式 `true` 才开启） |
+| `AI_BILLING_ENABLED` | AI 计费闸门（preview/development 强制关闭） |
+| `COMMIT_SHA` | 部署版本标识（兼容 `RENDER_GIT_COMMIT`），显示于 /healthz 与页脚 |
+
+部署探针：`GET /healthz`（存活+版本）· `GET /readyz`（DB 连通 + 路由注册表 + 闸门状态，异常原文脱敏只进服务端日志）。
 
 ## 验收命令
 
 ```bash
-npm run check          # TypeScript 全量类型检查
-npm run lint           # ESLint
-npm run test           # Vitest（算法边界/权限/AI 适配器）
-npm run build          # 构建正确性门禁
+npm run check        # TypeScript 全量类型检查
+npm run lint         # ESLint
+npm run test         # Vitest（342 项全绿为门禁）
+npm run build        # 构建正确性门禁
 ```
 
 ## 目录结构
 
 ```
 contracts/            前后端共享边界
-  bazi-core/          八字算法核心库（单一算法源，RULESET_VERSION 版本化规则注册表）
-src/                  前端（页面/组件/主题系统）
+  bazi-core/          八字算法核心库（RULESET_VERSION 1.1.0 版本化规则注册表）
+  engines/            八引擎：liuyao/ziwei/qimen/daliuren/qizheng/hecan/hepan/draws-core
+src/                  前端（页面/组件/主题系统/反馈 widget/预览横幅）
 api/                  后端 tRPC 路由与服务
-  router.ts           路由注册表（见 docs/api-routes.md）
-  services/           AI 适配器等
-db/                   Drizzle schema 与迁移
+  router.ts           路由注册表（14 路由，见 docs/api-routes.md）
+  kimi/               OAuth（一次性 state）/ 会话（短期 JWT + refresh 旋转）
+  queries/            事务化数据访问（钱包/订单/会话）
+  services/           AI 适配器 · chart-summary 统一引擎摘要注册表
+db/                   Drizzle schema 与正式 migrations
 docs/                 项目文档
 ```
 
@@ -60,10 +76,13 @@ docs/                 项目文档
 五虎遁/五鼠遁、大运顺逆与精确起运、十神/藏干/纳音/十二长生（阳顺阴逆）、
 合冲刑害破、日主旺衰量化、扶抑用神、神煞注册表、袁天罡称骨。
 
+其余七术引擎（六爻/紫微/奇门/大六壬/七政/合盘/合参/灵签）均为服务端真实计算，
+版本常量落库于各 chart 的 `algorithmVersion` 字段，全量对照见 `docs/feature-status.md`。
+
 结构评分类可视化（人生轨迹图）为**传统规则结构可视化，不是客观财富、健康或人生结果预测**。
 
 ## 演示模式声明
 
-以下模块当前为演示级实现并在页面显著标注，未冒充真实：
-七政四余（星历近似）、奇门遁甲、大六壬、紫微斗数安星、六爻随机源（客户端）。
+仅「每日时令/百宝袋」小工具为演示级实现并在页面标注。
 AI 参详在未配置 `AI_API_KEY` 时输出降级模板，界面明示 `fallback` 状态。
+preview/development 环境下支付与 AI 计费强制关闭（fail-closed），预览横幅明示。

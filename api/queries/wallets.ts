@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
 import * as schema from "@db/schema";
 import type { Wallet, WalletTransaction } from "@db/schema";
 import { getDb } from "./connection";
@@ -71,67 +71,71 @@ export interface ApplyTransactionResult {
   applied: boolean;
 }
 
+type Tx = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
+
 /**
- * 应用一笔钱包流水（幂等）：
- * - 同一 idempotencyKey 已存在流水 → 直接返回既有流水，不重复增减余额
- * - 余额不足（出账后 < 0）→ 抛 InsufficientBalanceError，不落流水
+ * 事务内记账核心（供 applyTransaction 与 processPaymentEvent 复用）。
+ * - 扣减用条件 UPDATE（balance >= 扣减额）保证并发下余额不为负
+ * - 同一 idempotencyKey 已存在流水 → 返回既有流水，不重复记账
+ * - 余额不足 → 抛 InsufficientBalanceError，外层事务回滚
  */
-export async function applyTransaction(
+export async function applyTransactionTx(
+  tx: Tx,
+  wallet: Wallet,
   input: ApplyTransactionInput,
 ): Promise<ApplyTransactionResult> {
-  const db = getDb();
+  // 快照基准余额（在条件更新之前读取，避免任何原地修改污染计算）
+  const baseBalance = wallet.balanceLingqian;
 
-  const dup = await db
+  const dup = await tx
     .select()
     .from(schema.walletTransactions)
     .where(eq(schema.walletTransactions.idempotencyKey, input.idempotencyKey))
     .limit(1);
   if (dup.at(0)) {
-    const wallet = await getOrCreateWallet(input.userId);
     return { wallet, transaction: dup[0], applied: false };
   }
 
-  const wallet = await getOrCreateWallet(input.userId);
-  const balanceAfter = wallet.balanceLingqian + input.changeAmount;
-  if (balanceAfter < 0) throw new InsufficientBalanceError();
-
-  let txId: number | null = null;
-  try {
-    const inserted = await db
-      .insert(schema.walletTransactions)
-      .values({
-        userId: input.userId,
-        walletId: wallet.id,
-        changeAmount: input.changeAmount,
-        balanceAfter,
-        reason: input.reason,
-        refType: input.refType ?? null,
-        refId: input.refId ?? null,
-        idempotencyKey: input.idempotencyKey,
+  // 原子条件扣减：并发下数据库保证 balance 不为负
+  if (input.changeAmount < 0) {
+    const res = await tx
+      .update(schema.wallets)
+      .set({
+        balanceLingqian: sql`${schema.wallets.balanceLingqian} + ${input.changeAmount}`,
       })
-      .$returningId();
-    txId = inserted.at(0)?.id ?? null;
-  } catch (err) {
-    // 并发撞幂等键：返回既有流水
-    const again = await db
-      .select()
-      .from(schema.walletTransactions)
-      .where(eq(schema.walletTransactions.idempotencyKey, input.idempotencyKey))
-      .limit(1);
-    if (again.at(0)) {
-      return {
-        wallet: (await findWalletByUserId(input.userId)) ?? wallet,
-        transaction: again[0],
-        applied: false,
-      };
+      .where(
+        and(
+          eq(schema.wallets.id, wallet.id),
+          gte(schema.wallets.balanceLingqian, -input.changeAmount),
+        ),
+      );
+    if (Number(res[0]?.affectedRows ?? 0) !== 1) {
+      throw new InsufficientBalanceError();
     }
-    throw err;
+  } else {
+    await tx
+      .update(schema.wallets)
+      .set({
+        balanceLingqian: sql`${schema.wallets.balanceLingqian} + ${input.changeAmount}`,
+      })
+      .where(eq(schema.wallets.id, wallet.id));
   }
 
-  await db
-    .update(schema.wallets)
-    .set({ balanceLingqian: balanceAfter })
-    .where(eq(schema.wallets.id, wallet.id));
+  const balanceAfter = baseBalance + input.changeAmount;
+  const inserted = await tx
+    .insert(schema.walletTransactions)
+    .values({
+      userId: input.userId,
+      walletId: wallet.id,
+      changeAmount: input.changeAmount,
+      balanceAfter,
+      reason: input.reason,
+      refType: input.refType ?? null,
+      refId: input.refId ?? null,
+      idempotencyKey: input.idempotencyKey,
+    })
+    .$returningId();
+  const txId = inserted.at(0)?.id ?? null;
 
   const transaction: WalletTransaction = {
     id: txId ?? 0,
@@ -150,6 +154,37 @@ export async function applyTransaction(
     transaction,
     applied: true,
   };
+}
+
+/**
+ * 应用一笔钱包流水（自带事务包装）。
+ * 需要与订单/支付事件同事务时请改用外层事务 + applyTransactionTx。
+ */
+export async function applyTransaction(
+  input: ApplyTransactionInput,
+): Promise<ApplyTransactionResult> {
+  const db = getDb();
+  const wallet = await getOrCreateWallet(input.userId);
+
+  try {
+    return await db.transaction(async (tx) => applyTransactionTx(tx, wallet, input));
+  } catch (err) {
+    if (err instanceof InsufficientBalanceError) throw err;
+    // 并发撞幂等键（唯一约束冲突导致事务回滚）：返回既有流水
+    const again = await db
+      .select()
+      .from(schema.walletTransactions)
+      .where(eq(schema.walletTransactions.idempotencyKey, input.idempotencyKey))
+      .limit(1);
+    if (again.at(0)) {
+      return {
+        wallet: (await findWalletByUserId(input.userId)) ?? wallet,
+        transaction: again[0],
+        applied: false,
+      };
+    }
+    throw err;
+  }
 }
 
 /** 最近流水（默认 20 条，按时间倒序） */

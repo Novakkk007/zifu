@@ -9,6 +9,8 @@ export type TokenResponse = {
 export type SessionPayload = {
   unionId: string;
   clientId: string;
+  /** 可撤销会话行 id（sessions 表主键） */
+  sid: string;
 };
 
 export type UserProfile = {

@@ -606,10 +606,9 @@ function SidebarMenuSkeleton({
 }: React.ComponentProps<"div"> & {
   showIcon?: boolean
 }) {
-  // Random width between 50 to 90%.
+  // 骨架屏占位宽度（固定值）
   const width = React.useMemo(() => {
-    // eslint-disable-next-line react-hooks/purity -- 骨架屏占位宽度刻意随机，useMemo 保证挂载后稳定
-    return `${Math.floor(Math.random() * 40) + 50}%`
+    return `40%`
   }, [])
 
   return (
