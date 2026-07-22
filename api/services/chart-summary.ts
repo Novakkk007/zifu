@@ -193,6 +193,91 @@ function daliurenSummaryForAi(result: EngineResult<DaliurenChartSummary>): strin
 }
 
 /* ------------------------------------------------------------------ */
+/* 合盘摘要（落库外壳为 { compatibility: EngineResult<HepanReport> }）    */
+/* ------------------------------------------------------------------ */
+
+interface HepanReportSummary {
+  dimensions: { name: string; score: number; weight: number; findings: string[] }[];
+  totalScore: number;
+  dayMasterRelation: string;
+  zodiacRelation: string;
+  crossRelations: { type: string; positions: string; chars: string }[];
+}
+
+function hepanSummaryForAi(result: EngineResult<HepanReportSummary>): string {
+  const d = result.data;
+  const lines: string[] = [];
+  lines.push(`术数：八字合盘（${result.meta.ruleVariant}）`);
+  lines.push(
+    `综合分：${d.totalScore}/100（公开权重模型加权和，非古籍定数）；日主关系：${d.dayMasterRelation}；生肖年支：${d.zodiacRelation}`,
+  );
+  lines.push(
+    `分维：${d.dimensions
+      .map((dim) => {
+        const f = dim.findings.slice(0, 2).join("；");
+        return `${dim.name} ${dim.score}分${f ? `（${f}）` : ""}`;
+      })
+      .join("；")}`,
+  );
+  if (d.crossRelations.length > 0) {
+    lines.push(
+      `跨盘干支：${d.crossRelations
+        .slice(0, 4)
+        .map((c) => `${c.type}（${c.positions}：${c.chars}）`)
+        .join("；")}`,
+    );
+  }
+  return lines.join("\n");
+}
+
+/* ------------------------------------------------------------------ */
+/* 三术合参摘要（落库外壳为 { result: EngineResult<HecanReport> }）       */
+/* ------------------------------------------------------------------ */
+
+interface HecanReportSummary {
+  arts: {
+    artName: string;
+    precision: string;
+    reason?: string;
+    keyPoints: string[];
+  }[];
+  crossChecks: { topic: string; verdict: string; text: string }[];
+  overallTier: string;
+  availableArts: number;
+}
+
+const HECAN_VERDICT_ZH: Record<string, string> = {
+  consistent: "一致",
+  divergent: "分歧",
+  insufficient: "证据不足",
+};
+
+function hecanSummaryForAi(result: EngineResult<HecanReportSummary>): string {
+  const d = result.data;
+  const lines: string[] = [];
+  lines.push(`术数：三术合参（${result.meta.ruleVariant}）`);
+  lines.push(`可用术数：${d.availableArts}/3；综合信度：${d.overallTier}`);
+  lines.push(
+    `各术要点：${d.arts
+      .map((a) => {
+        if (a.precision === "unavailable") {
+          return `${a.artName}（不可用：${a.reason ?? "输入不足"}）`;
+        }
+        return `${a.artName}（${a.precision}）：${a.keyPoints.slice(0, 2).join("；")}`;
+      })
+      .join("；")}`,
+  );
+  if (d.crossChecks.length > 0) {
+    lines.push(
+      `互证：${d.crossChecks
+        .map((c) => `${c.topic}【${HECAN_VERDICT_ZH[c.verdict] ?? c.verdict}】${c.text}`)
+        .join("；")}`,
+    );
+  }
+  return lines.join("\n");
+}
+
+/* ------------------------------------------------------------------ */
 /* 注册表与分发                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -208,22 +293,43 @@ const ENGINE_SUMMARIZERS: Record<string, EngineSummarizer> = {
   liuyao: liuyaoSummaryForAi as EngineSummarizer,
   ziwei: ziweiSummaryForAi as EngineSummarizer,
   daliuren: daliurenSummaryForAi as EngineSummarizer,
+  hepan: hepanSummaryForAi as EngineSummarizer,
+  hecan: hecanSummaryForAi as EngineSummarizer,
 };
 
-/** 非八字命盘（EngineResult 信封等）→ 摘要；未登记引擎给占位摘要避免 500 */
+/**
+ * 落库外壳拆包：hepan 落库为 { compatibility: 信封 }、hecan 为 { result: 信封 }，
+ * 其余引擎直接落信封。统一拆出 EngineResult 后再按 meta.engine 分发。
+ */
+function unwrapEngineEnvelope(chart: unknown): EngineResult<unknown> | null {
+  if (!chart || typeof chart !== "object") return null;
+  const obj = chart as Record<string, unknown>;
+  for (const key of ["compatibility", "result"] as const) {
+    const inner = obj[key];
+    if (inner && typeof inner === "object" && "meta" in inner && "data" in inner) {
+      return inner as EngineResult<unknown>;
+    }
+  }
+  if ("meta" in obj && "data" in obj) {
+    return chart as EngineResult<unknown>;
+  }
+  return null;
+}
+
+/** 非八字命盘（EngineResult 信封及其落库外壳）→ 摘要；未登记引擎给占位摘要避免 500 */
 function fallbackSummaryForAi(chart: unknown): string {
-  if (chart && typeof chart === "object" && "meta" in chart && "data" in chart) {
-    const r = chart as EngineResult<unknown>;
-    const engine = String(r.meta?.engine ?? "");
+  const envelope = unwrapEngineEnvelope(chart);
+  if (envelope) {
+    const engine = String(envelope.meta?.engine ?? "");
     const summarizer = ENGINE_SUMMARIZERS[engine];
     if (summarizer) {
       try {
-        return summarizer(r as EngineResult<never>);
+        return summarizer(envelope as EngineResult<never>);
       } catch {
         // fallthrough → 通用摘要
       }
     }
-    return `术数：${engine || "未知"}（${String(r.meta?.ruleVariant ?? "")}）\n（该引擎暂不支持结构化摘要，AI 参详基于通用模板。）`;
+    return `术数：${engine || "未知"}（${String(envelope.meta?.ruleVariant ?? "")}）\n（该引擎暂不支持结构化摘要，AI 参详基于通用模板。）`;
   }
   return "（命盘数据格式无法识别，AI 参详基于通用模板。）";
 }

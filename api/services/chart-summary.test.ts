@@ -87,4 +87,58 @@ describe("chartSummaryForAi", () => {
     expect(s).toContain("火六局");
     expect(s).toContain("丙寅");
   });
+
+  it("hepan 落库外壳 { compatibility }：拆壳后走合盘摘要", () => {
+    const stored = {
+      compatibility: {
+        meta: { engine: "hepan", ruleVariant: "紫府公开量化模型 v1" },
+        data: {
+          dimensions: [
+            { name: "五行互补", score: 82, weight: 0.3, findings: ["甲方木旺补乙方木缺"] },
+            { name: "日主关系", score: 90, weight: 0.25, findings: ["甲乙日主相生"] },
+          ],
+          totalScore: 85,
+          dayMasterRelation: "相生",
+          zodiacRelation: "六合",
+          crossRelations: [{ type: "天干五合", positions: "甲年干×乙月干", chars: "甲己" }],
+        },
+      },
+    };
+    const s = chartSummaryForAi(stored as unknown as Parameters<typeof chartSummaryForAi>[0]);
+    expect(s).toContain("八字合盘");
+    expect(s).toContain("85/100");
+    expect(s).toContain("相生");
+    expect(s).toContain("六合");
+    expect(s).toContain("五行互补 82分");
+    expect(s).toContain("天干五合");
+    expect(s).not.toContain("无法识别");
+  });
+
+  it("hecan 落库外壳 { result }：拆壳后走合参摘要（含 unavailable 术标注）", () => {
+    const stored = {
+      result: {
+        meta: { engine: "hecan", ruleVariant: "三术合参 v1" },
+        data: {
+          arts: [
+            { artName: "八字", precision: "validated", keyPoints: ["日主丙火身旺", "用神为水"] },
+            { artName: "紫微", precision: "validated", keyPoints: ["命宫在戌", "紫微坐命"] },
+            { artName: "七政", precision: "unavailable", reason: "时辰未知", keyPoints: [] },
+          ],
+          crossChecks: [
+            { topic: "五行结论一致性", verdict: "consistent", text: "八字与紫微同指火旺" },
+          ],
+          overallTier: "银",
+          availableArts: 2,
+        },
+      },
+    };
+    const s = chartSummaryForAi(stored as unknown as Parameters<typeof chartSummaryForAi>[0]);
+    expect(s).toContain("三术合参");
+    expect(s).toContain("2/3");
+    expect(s).toContain("银");
+    expect(s).toContain("日主丙火身旺");
+    expect(s).toContain("不可用：时辰未知");
+    expect(s).toContain("五行结论一致性【一致】");
+    expect(s).not.toContain("无法识别");
+  });
 });
