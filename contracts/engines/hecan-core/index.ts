@@ -51,7 +51,7 @@ function asProtocolModule(mod: unknown): HecanEngineModule | null {
  */
 export const defaultEngineLoader: HecanEngineLoader = async (art) => {
   try {
-    const req = createRequire(import.meta.url)
+    const req = nodeCreateRequire(import.meta.url)
     for (const spec of [`../${art}-core`, `../${art}-core/index`]) {
       try {
         const mod = asProtocolModule(req(spec))
