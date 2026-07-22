@@ -68,9 +68,11 @@ module.exports = {
         },
       },
       fontFamily: {
-        serif: ['"Noto Serif SC"', 'Songti SC', 'serif'],
-        sans: ['"Noto Sans SC"', 'PingFang SC', 'sans-serif'],
-        latin: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        // 回退栈跨平台覆盖：Apple(Songti/PingFang) → Windows(SimSun/YaHei) → Linux/安卓(Noto CJK/思源)
+        // Google Fonts 不可达时排版不崩、气质不失
+        serif: ['"Noto Serif SC"', '"Songti SC"', 'STSong', 'SimSun', '"Source Han Serif SC"', '"Noto Serif CJK SC"', 'serif'],
+        sans: ['"Noto Sans SC"', '"PingFang SC"', '"Microsoft YaHei"', '"Source Han Sans SC"', '"Noto Sans CJK SC"', 'sans-serif'],
+        latin: ['"Cormorant Garamond"', 'Georgia', '"Times New Roman"', 'serif'],
       },
       borderRadius: {
         xl: "12px",

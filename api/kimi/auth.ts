@@ -37,14 +37,24 @@ async function exchangeAuthCode(
   return resp.json() as Promise<TokenResponse>;
 }
 
-const jwks = jose.createRemoteJWKSet(
-  new URL(`${env.kimiAuthUrl}/api/.well-known/jwks.json`),
-);
+/**
+ * JWKS 惰性构造：模块加载时 env.kimiAuthUrl 可能为空（本地开发/测试环境未配
+ * OAuth），顶层直接 new URL 会令整个 import 链崩溃。延迟到首次验签时构造。
+ */
+let jwks: ReturnType<typeof jose.createRemoteJWKSet> | null = null;
+function getJwks() {
+  if (!jwks) {
+    jwks = jose.createRemoteJWKSet(
+      new URL(`${env.kimiAuthUrl}/api/.well-known/jwks.json`),
+    );
+  }
+  return jwks;
+}
 
 async function verifyAccessToken(
   accessToken: string,
 ): Promise<{ userId: string; clientId: string }> {
-  const { payload } = await jose.jwtVerify(accessToken, jwks);
+  const { payload } = await jose.jwtVerify(accessToken, getJwks());
   const userId = payload.user_id as string;
   const clientId = payload.client_id as string;
   if (!userId) {
