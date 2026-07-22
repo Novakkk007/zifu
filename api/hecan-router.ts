@@ -6,7 +6,9 @@ import {
   HECAN_ALGORITHM_VERSION,
   HECAN_RULESET_VERSION,
 } from "@contracts/engines/hecan-core";
-import type { HecanReport } from "@contracts/engines/hecan-core";
+import type { HecanReport, HecanEngineLoader } from "@contracts/engines/hecan-core";
+import { hecanSynthesize as ziweiSynthesize } from "@contracts/engines/ziwei-core";
+import { hecanSynthesize as qizhengSynthesize } from "@contracts/engines/qizheng-core";
 import { wrapResult } from "@contracts/engines/engine-result";
 import type { EngineResult } from "@contracts/engines/engine-result";
 import { getDb } from "./queries/connection";
