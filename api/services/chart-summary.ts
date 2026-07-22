@@ -11,10 +11,61 @@
  *   请勿将整个 chart 对象直接发给 AI，应只发送本函数产出字段对应的内容）。
  */
 import type { BaziChartV2, Wuxing } from "@contracts/bazi-core";
+import type { EngineResult } from "@contracts/engines/engine-result";
+import type { QizhengChartData } from "@contracts/engines/qizheng-core";
 
 const WUXING_ORDER: Wuxing[] = ["金", "木", "水", "火", "土"];
 
+/** 七政四余 EngineResult → 结构化摘要（不含原始出生时刻，仅排盘结果） */
+function qizhengSummaryForAi(result: EngineResult<QizhengChartData>): string {
+  const d = result.data;
+  const lines: string[] = [];
+  lines.push(`术数：七政四余（${result.meta.ruleVariant}）`);
+  lines.push(
+    `十一曜躔度：${d.stars
+      .map(
+        (s) =>
+          `${s.name}在${s.zodiac}${s.zodiacDegree.toFixed(1)}°·${s.mansion}宿${s.mansionDegree.toFixed(2)}度${s.retrograde ? "（逆）" : ""}`,
+      )
+      .join("；")}`,
+  );
+  lines.push(`命宫：${d.minggong.branch}（${d.minggong.zodiac}，${d.minggong.mansion}宿）；身宫：${d.shengong.branch}；命主星：${d.mingzhu}`);
+  return lines.join("\n");
+}
+
+/**
+ * 非八字引擎摘要注册表（按 EngineResult.meta.engine 分发）。
+ * 集成点：liuyao/ziwei/qimen/daliuren/hecan 等引擎的摘要函数
+ * 在此登记即可接入 ai.reading，无需改动分发逻辑。
+ */
+type EngineSummarizer = (result: EngineResult<never>) => string;
+const ENGINE_SUMMARIZERS: Record<string, EngineSummarizer> = {
+  qizheng: qizhengSummaryForAi as EngineSummarizer,
+};
+
+/** 非八字命盘（EngineResult 信封等）→ 摘要；无法识别时给占位摘要避免 500 */
+function fallbackSummaryForAi(chart: unknown): string {
+  if (chart && typeof chart === "object" && "meta" in chart && "data" in chart) {
+    const r = chart as EngineResult<unknown>;
+    const engine = String(r.meta?.engine ?? "");
+    const summarizer = ENGINE_SUMMARIZERS[engine];
+    if (summarizer) {
+      try {
+        return summarizer(r as EngineResult<never>);
+      } catch {
+        // fallthrough → 通用摘要
+      }
+    }
+    return `术数：${engine || "未知"}（${String(r.meta?.ruleVariant ?? "")}）\n（该引擎暂不支持结构化摘要，AI 参详基于通用模板。）`;
+  }
+  return "（命盘数据格式无法识别，AI 参详基于通用模板。）";
+}
+
 export function chartSummaryForAi(chart: BaziChartV2): string {
+  // 兼容非八字引擎的落库结果（如七政四余 EngineResult 信封）
+  if (!chart || typeof chart !== "object" || !("pillars" in chart)) {
+    return fallbackSummaryForAi(chart);
+  }
   const { pillars } = chart;
   const pillarParts = [pillars.year, pillars.month, pillars.day, pillars.hour]
     .filter((p): p is NonNullable<typeof p> => p !== null)
