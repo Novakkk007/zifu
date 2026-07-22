@@ -1,17 +1,20 @@
+/**
+ * AI 参详区（深色区块）· v6 鉴权契约：
+ * - ai.reading 仅登录可用；输入 { chartId, persona, depth, idempotencyKey? }，
+ *   摘要由服务端从【已落库】卦例构建，前端一律不发送卦盘数据。
+ * - 游客 / 未落库 → 登录引导卡；错误分型处理（UNAUTHORIZED/TOO_MANY_REQUESTS/
+ *   FORBIDDEN/BAD_GATEWAY/NOT_FOUND）。
+ * - 来源徽章：live · 模型（金）/ fallback · 演示引擎（灰），降级不伪装。
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { GhostButton } from '@/components/Buttons'
 import SectionHeading from '@/components/SectionHeading'
 import { SegmentedControl } from '@/components/FormControls'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import type { Hexagram } from '@/components/liuyao/logic'
+import { DeepButton, GoldButton } from '@/components/Buttons'
+import { trpc } from '@/providers/trpc'
+import { useAuth } from '@/hooks/useAuth'
+import { LOGIN_PATH } from '@/const'
+import { trpcCode, type ReadingResponse } from '@/components/liuyao/api'
 
 type Persona = 'scholar' | 'hermit'
 type Depth = 'pro' | 'plain'
@@ -39,7 +42,6 @@ function Typewriter({ paragraphs, charMs = 22 }: { paragraphs: string[]; charMs?
     return () => window.clearInterval(timer)
   }, [total, charMs])
 
-  // 先算好每段应显示的字数，避免在渲染闭包中改写剩余额度
   const shownCounts: number[] = []
   let left = typed
   for (const p of paragraphs) {
@@ -62,76 +64,119 @@ function Typewriter({ paragraphs, charMs = 22 }: { paragraphs: string[]; charMs?
   )
 }
 
-function buildReading(
-  persona: Persona,
-  depth: Depth,
-  ben: Hexagram,
-  bian: Hexagram | null,
-  movingIdx: number[],
-  question: string,
-): string[] {
-  const movingTexts = movingIdx.map((i) => ben.yao[i])
-  const q = question ? `所问「${question}」，` : ''
-  if (persona === 'scholar') {
-    if (depth === 'pro') {
-      const p1 = `${q}得《${ben.name}》${bian ? `之《${bian.name}` : '，六爻安静'}。卦辞云：「${ben.gua}」——《周易》立象，先观卦体之大义。`
-      const p2 = movingIdx.length
-        ? `动在${movingIdx.map((i) => `第${['一', '二', '三', '四', '五', '六'][i]}爻`).join('、')}，爻辞曰：「${movingTexts.join('」「')}」。《增删卜易》论动爻之用，重在生克冲合；动者为事之机，变者为事之归。`
-        : '六爻安静，无动爻可取。《卜筮正宗》云：卦成而后，先观世应——静卦以世爻为枢，观其所临生克。'
-      const p3 = bian
-        ? `变出《${bian.name}》，乃事势之转向。学者之参，当以本卦为体、变卦为用，体用相参，其义自见。`
-        : '卦体静定，事多守成，宜循其常而勿轻动。'
-      return [p1, p2, p3]
-    }
-    const p1 = `${q}这一卦是《${ben.name}》${bian ? `，动而之《${bian.name}` : '，六爻安静'}。卦辞说：「${ben.gua}」`
-    const p2 = movingIdx.length
-      ? `关键的动爻讲：「${movingTexts[0]}」——把这一句放在所问之事上读，重点就清楚了。`
-      : '全卦安静，没有特别变动的信号，多主按部就班。'
-    return [p1, p2]
+function newReadingKey(chartId: number): string {
+  return `liuyao-reading:${chartId}:${crypto.randomUUID()}`
+}
+
+/** 错误码 → 明确 UI 状态文案 */
+function errorStateOf(err: unknown): { title: string; desc: string; showLogin: boolean } {
+  const code = trpcCode(err)
+  const serverMsg = err instanceof Error ? err.message : ''
+  switch (code) {
+    case 'UNAUTHORIZED':
+      return { title: '登录态已失效', desc: 'AI 参详仅向登录用户开放，请重新登录后再试。', showLogin: true }
+    case 'TOO_MANY_REQUESTS':
+      return {
+        title: '额度或频率受限',
+        desc: serverMsg || '今日参详次数已达上限，或请求过于频繁，请稍后再试。',
+        showLogin: false,
+      }
+    case 'FORBIDDEN':
+      return { title: '灵签余额不足', desc: 'live 参详每次消耗 1 灵签，请先充值或稍后再试。', showLogin: false }
+    case 'BAD_GATEWAY':
+      return { title: 'AI 服务暂不可用', desc: '模型网关异常，本次未扣除任何费用，请稍后重试。', showLogin: false }
+    case 'NOT_FOUND':
+      return { title: '卦例不存在', desc: '该卦例可能已删除或不属于当前账号，请重新起卦后再参详。', showLogin: false }
+    default:
+      return { title: '参详失败', desc: serverMsg || 'AI 参详服务暂不可用，本次未扣除费用，请稍后重试。', showLogin: false }
   }
-  // hermit
-  if (depth === 'pro') {
-    const p1 = `${q}卦落《${ben.name}》${bian ? `，一转身成了《${bian.name}` : '，纹丝不动'}。老话讲「${ben.gua}」——听着玄，其实就一层窗户纸。`
-    const p2 = movingIdx.length
-      ? `妙在那${movingIdx.length === 1 ? '一' : '几'}根动爻：「${movingTexts[0]}」。动爻一响，事情就活了一半，剩下的看你怎么接。`
-      : '六爻都懒得动，说明这事急不得，茶要一口一口喝。'
-    return [p1, p2]
+}
+
+function SourceBadge({ result }: { result: ReadingResponse }) {
+  if (result.source === 'live') {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-goldbright">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-goldbright" />
+        live · 模型 {result.model ?? '未知'} · 消耗 1 灵签
+      </span>
+    )
   }
-  const p1 = `${q}手里捧着的卦是《${ben.name}》。卦在提醒一句：顺势的时候别端得太满。`
-  const p2 = bian
-    ? `走着走着会变成《${bian.name}》的局面——收着点，反而顺。`
-    : '卦也安静，人也别急，守住眼前这一亩三分地就好。'
-  return [p1, p2]
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-silkmuted/40 bg-silktext/5 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-silkmuted">
+      <span className="inline-block h-1.5 w-1.5 rounded-full bg-silkmuted" />
+      fallback · 演示引擎（非 AI 生成，免费）
+    </span>
+  )
 }
 
 type AiReadingProps = {
-  ben: Hexagram
-  bian: Hexagram | null
-  movingIdx: number[]
-  question: string
+  /** 落库卦例 ID（persisted 时由 cast 返回）；null = 未落库 */
+  chartId: number | null
+  benName: string
+  bianName: string | null
 }
 
-/** S4 · AI 参详（深色）：人格 × 深度 → mock 输出 */
-export default function AiReading({ ben, bian, movingIdx, question }: AiReadingProps) {
+/** S4 · AI 参详（深色）：人格 × 深度 → ai.reading（chartId 契约） */
+export default function AiReading({ chartId, benName, bianName }: AiReadingProps) {
+  const { user, isLoading: authLoading } = useAuth()
   const [persona, setPersona] = useState<Persona>('scholar')
   const [depth, setDepth] = useState<Depth>('pro')
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [started, setStarted] = useState(false)
+  const [result, setResult] = useState<ReadingResponse | null>(null)
 
-  const paragraphs = useMemo(
-    () => buildReading(persona, depth, ben, bian, movingIdx, question),
-    [persona, depth, ben, bian, movingIdx, question],
+  const reading = trpc.ai.reading.useMutation({
+    onSuccess: (data) => setResult(data as unknown as ReadingResponse),
+  })
+
+  const canRun = !!user && chartId !== null && !reading.isPending
+
+  const run = () => {
+    if (!canRun || chartId === null) return
+    setResult(null)
+    reading.mutate({ chartId, persona, depth, idempotencyKey: newReadingKey(chartId) })
+  }
+
+  const heading = (
+    <SectionHeading
+      dark
+      eyebrow="AI READING"
+      title="AI 参详"
+      sub="两种人格 × 两种深度，基于服务端落库卦例生成；来源明示，降级不伪装"
+    />
   )
+
+  /* ---------- 游客 / 未落库引导卡 ---------- */
+  if ((!authLoading && !user) || chartId === null) {
+    return (
+      <div>
+        {heading}
+        <div className="mx-auto mt-12 max-w-3xl rounded-xl border border-gold/40 bg-deep p-10 text-center">
+          <p className="font-serif text-[18px] font-bold tracking-[0.1em] text-silktext">
+            登录后使用 AI 参详
+          </p>
+          <p className="mx-auto mt-3 max-w-[460px] text-[13px] leading-[1.9] text-silkmuted">
+            AI 参详仅向登录用户开放：起卦后卦例自动落库，服务端基于落库结果构建摘要，
+            每日 20 次额度；live 参详每次消耗 1 灵签，演示引擎免费，失败不扣费。
+          </p>
+          <p className="mt-3 text-[12.5px] text-goldbright">
+            本次起卦：《{benName}》{bianName ? `之《${bianName}》` : ' · 六爻安静'}
+            {user && chartId === null ? '（当前卦例未落库，请在登录状态下重新起卦一次）' : ''}
+          </p>
+          {!user && (
+            <DeepButton to={LOGIN_PATH} className="mt-7 border border-gold/50">
+              前往登录
+            </DeepButton>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  const paragraphs = result ? result.text.split(/\n{2,}|\n/).filter((p) => p.trim().length > 0) : []
+  const errState = reading.isError ? errorStateOf(reading.error) : null
 
   return (
     <div>
-      <SectionHeading
-        dark
-        eyebrow="AI READING"
-        title="AI 参详"
-        sub="两种人格 × 两种深度，锚定《周易》原文与《增删卜易》《卜筮正宗》语类逐句引经"
-      />
-
+      {heading}
       <div className="mx-auto mt-12 max-w-3xl">
         <div className="flex flex-col items-center gap-5">
           <SegmentedControl<Persona>
@@ -154,73 +199,63 @@ export default function AiReading({ ben, bian, movingIdx, question }: AiReadingP
           />
         </div>
 
-        {!started ? (
-          <div className="mt-12 flex flex-col items-center">
-            <GhostButton className="animate-gold-breathe" onClick={() => setDialogOpen(true)}>
-              参详此卦 · 6 灵签
-            </GhostButton>
-            <p className="mt-4 text-[12.5px] tracking-[0.12em] text-silkmuted">
-              本次起卦：{ben.name}
-              {bian ? ` 之 ${bian.name}` : ' · 六爻安静'}
-            </p>
-          </div>
-        ) : (
-          <div className="mt-12 rounded-xl border-l-[3px] border-gold bg-deep2/60 p-8">
-            <p className="text-[12px] tracking-[0.2em] text-silkmuted">
-              参详输出 · {persona === 'scholar' ? '严谨学者' : '幽默隐士'} ·{' '}
-              {depth === 'pro' ? '专业级' : '通俗级'}
-            </p>
-            <div className="mt-5 min-h-[180px]">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`${persona}-${depth}`}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.24 }}
-                >
-                  <Typewriter paragraphs={paragraphs} />
-                </motion.div>
-              </AnimatePresence>
+        <div className="mt-10 text-center">
+          <GoldButton disabled={!canRun} onClick={run}>
+            {reading.isPending ? '参详中…' : '参详此卦'}
+          </GoldButton>
+          <p className="mt-4 text-[12.5px] tracking-[0.12em] text-silkmuted">
+            本次起卦：《{benName}》{bianName ? `之《${bianName}》` : ' · 六爻安静'} · 卦例 #{chartId}
+          </p>
+          <p className="mt-2 text-[11.5px] text-silkmuted">
+            live 参详每次消耗 1 灵签；演示引擎（fallback）免费；参详失败不扣费。
+          </p>
+          {errState && (
+            <div
+              role="alert"
+              className="mx-auto mt-5 max-w-[520px] rounded-lg border border-[#B04A3A]/50 bg-[#B04A3A]/10 px-5 py-4"
+            >
+              <p className="font-serif text-[14px] font-bold tracking-[0.08em] text-[#E0A39A]">
+                {errState.title}
+              </p>
+              <p className="mt-1.5 text-[12.5px] leading-[1.8] text-[#E0A39A]/90">{errState.desc}</p>
+              {errState.showLogin && (
+                <DeepButton to={LOGIN_PATH} className="mt-4 border border-gold/40 px-6 py-2 text-[13px]">
+                  重新登录
+                </DeepButton>
+              )}
             </div>
-            <p className="mt-6 border-t border-gold/15 pt-4 text-[12.5px] text-silkmuted">
-              演示输出 · 正式参详逐句锚定古籍原文出处
-            </p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="border-golddim/30 bg-silk sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-serif text-[20px] tracking-[0.12em] text-inktext">
-              参详此卦
-            </DialogTitle>
-            <DialogDescription className="text-[13.5px] leading-[1.9] text-inkmuted">
-              将消耗 <span className="font-serif text-[16px] font-bold text-golddim">6</span>{' '}
-              灵签，为《{ben.name}》{bian ? `之《${bian.name}》` : ''}
-              生成逐句引经的 AI 参详。当前为演示模式，输出为 mock 预览。
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <GhostButton
-              className="!border-golddim/50 !text-golddim hover:!bg-golddim/10"
-              onClick={() => setDialogOpen(false)}
+        <AnimatePresence>
+          {result && (
+            <motion.div
+              key={`${persona}-${depth}-${result.source}`}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mt-12 rounded-xl border-l-[3px] border-gold bg-deep2/60 p-8"
             >
-              再想想
-            </GhostButton>
-            <button
-              onClick={() => {
-                setDialogOpen(false)
-                setStarted(true)
-              }}
-              className="zf-btn inline-flex items-center justify-center rounded-full px-8 py-3 font-sans text-[14.5px] font-medium tracking-[0.14em] text-[#0B3B39] [background:linear-gradient(135deg,rgb(var(--gold-bright)),rgb(var(--gold)))]"
-            >
-              开始参详
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-[12px] tracking-[0.2em] text-silkmuted">
+                  参详输出 · {persona === 'scholar' ? '严谨学者' : '幽默隐士'} ·{' '}
+                  {depth === 'pro' ? '专业级' : '通俗级'}
+                </p>
+                <SourceBadge result={result} />
+              </div>
+              <div className="mt-5 min-h-[180px]">
+                <Typewriter paragraphs={paragraphs} />
+              </div>
+              <p className="mt-6 border-t border-gold/15 pt-4 text-[12.5px] text-silkmuted">
+                {result.source === 'live'
+                  ? '本参详由 AI 模型基于您的落库卦例生成（已消耗 1 灵签），仅供传统文化参考。'
+                  : '当前为演示引擎模板输出（未配置 AI 密钥），非 AI 模型生成，不消耗灵签，仅供流程演示。'}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   )
 }
