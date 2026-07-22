@@ -35,6 +35,12 @@ function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
+/** 「先看示例」→ 报告区；尚无报告则先到表单区 */
+function scrollToReport() {
+  const target = document.getElementById('hecan-report') ?? document.getElementById('hecan-form')
+  target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 export default function Hecan() {
   const rootRef = useRef<HTMLDivElement>(null)
 
@@ -185,7 +191,7 @@ export default function Hecan() {
             <GoldButton className="animate-gold-breathe" onClick={() => scrollToId('hecan-form')}>
               开始合参
             </GoldButton>
-            <GhostButton onClick={() => scrollToId('hecan-flow')}>先看示例</GhostButton>
+            <GhostButton onClick={scrollToReport}>先看示例</GhostButton>
           </div>
           <div className="hc-hero-line mt-7 flex flex-wrap items-center justify-center gap-2.5">
             <TagPill variant="flagship" />

@@ -43,6 +43,7 @@ export const charts = mysqlTable("charts", {
     "qimen",
     "daliuren",
     "hecan",
+    "draw",
   ]).notNull(),
   title: varchar("title", { length: 255 }),
   /** 输入参数（生辰、问事等），JSON 字符串 */
