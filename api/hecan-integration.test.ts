@@ -23,6 +23,8 @@ const input: BirthInput = {
   hour: 10,
   minute: 30,
   gender: "male",
+  useTrueSolarTime: false,
+  dayRollover: "zichu",
 };
 
 describe("三术合参 · 真实引擎集成", () => {
