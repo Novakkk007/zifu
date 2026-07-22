@@ -3,8 +3,24 @@ import { TRPCError } from "@trpc/server";
 import * as schema from "@db/schema";
 import { computeQizheng, QIZHENG_ALGORITHM_VERSION, QIZHENG_RULESET_VERSION } from "@contracts/engines/qizheng-core";
 import { ianaWallClockToUtcMs } from "@contracts/bazi-core";
+import {
+  assertValidIanaTimezone,
+  InvalidTimezoneError,
+} from "@contracts/engines/time-protocol";
 import { getDb } from "./queries/connection";
 import { createRouter, publicQuery } from "./middleware";
+
+/** 统一时间协议：无效 IANA 时区 → 400（全引擎同口径） */
+function assertTz(ianaTimezone?: string): void {
+  try {
+    assertValidIanaTimezone(ianaTimezone);
+  } catch (err) {
+    if (err instanceof InvalidTimezoneError) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: err.message });
+    }
+    throw err;
+  }
+}
 
 /** 算法引擎版本标识（随 qizheng-core 升级而 bump） */
 export const ALGORITHM_VERSION = QIZHENG_ALGORITHM_VERSION;
@@ -28,13 +44,17 @@ const paipanInput = z.object({
   title: z.string().trim().max(64).optional(),
 });
 
-/** 墙钟小时 → 时支序 0–11（子=0，23:00–00:59 为子） */
-export function hourToBranch(hour: number): number {
-  return Math.floor(((hour + 1) % 24) / 2);
-}
+import { hourToBranch } from "@contracts/engines/time-protocol";
+
+/**
+ * 墙钟小时 → 时支序 0–11（子=0，23:00–00:59 为子）。
+ * 统一改用 contracts/engines/time-protocol 的全引擎共用实现（口径一致）。
+ */
+export { hourToBranch };
 
 /** 解析输入时刻 → UTC 毫秒与生时时支 */
 function resolveInstant(input: z.infer<typeof paipanInput>): { utcMs: number; hourBranch: number } {
+  assertTz(input.ianaTimezone);
   const m = WALL_CLOCK_RE.exec(input.datetime);
   if (!m) {
     throw new TRPCError({

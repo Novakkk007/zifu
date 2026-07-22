@@ -7,6 +7,10 @@ import {
   DALIUREN_RULESET_VERSION,
   type DaliurenInput,
 } from "@contracts/engines/daliuren-core";
+import {
+  assertValidIanaTimezone,
+  InvalidTimezoneError,
+} from "@contracts/engines/time-protocol";
 import { getDb } from "./queries/connection";
 import { createRouter, publicQuery } from "./middleware";
 
@@ -52,6 +56,16 @@ export const daliurenRouter = createRouter({
     .input(qikeInput)
     .mutation(async ({ input, ctx }) => {
       const { datetime, ianaTimezone, question, title } = input;
+
+      // 统一时间协议：无效 IANA 时区 → 400
+      try {
+        assertValidIanaTimezone(ianaTimezone);
+      } catch (err) {
+        if (err instanceof InvalidTimezoneError) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: err.message });
+        }
+        throw err;
+      }
 
       if (!isValidSolarDate(datetime.year, datetime.month, datetime.day)) {
         throw new TRPCError({

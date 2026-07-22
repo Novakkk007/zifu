@@ -19,6 +19,12 @@ const BIRTHDATA_PATTERNS = [
   /[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]年[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]月/,
   // 出生/生于 + 时辰
   /(?:生于|出生在|出生于)\s*(?:凌晨|早上|上午|中午|下午|晚上|夜里)?\s*\d{1,2}\s*[:：点]/,
+  // 经纬度坐标：十进制高精度小数对 / 经度纬度关键字 / 度数表示
+  /(?:经度|纬度|东经|西经|北纬|南纬)\s*[:：]?\s*\d{1,3}(?:\.\d+)?/,
+  /\d{1,3}\.\d{4,}\s*[,，]\s*\d{1,3}\.\d{4,}/,
+  /\d{1,3}°\d{1,2}[′']/, // 116°28′
+  // 出生地/籍贯等地点信息
+  /(?:出生地|出生地点|出生城市|籍贯|户籍所在地)\s*[:：]?\s*\S{2,}/,
 ];
 
 function assertNoBirthData(text: string, field: string): void {
@@ -125,9 +131,35 @@ export const feedbackRouter = createRouter({
         algorithmVersion: input.algorithmVersion ?? null,
         screenshotUrl: input.screenshotUrl ?? null,
       });
+      const feedbackId = Number(result[0].insertId);
+
+      // P0/P1 紧急反馈：写审计日志 + 服务端告警输出（管理收件箱按 severity 排序可见；
+      // 外部通知渠道——邮件/IM webhook——预留 NOTIFY_WEBHOOK_URL 环境变量）
+      if (input.severity === "P0" || input.severity === "P1") {
+        console.warn(
+          `[feedback.urgent] ${input.severity} #${feedbackId} [${input.feature}] ${input.title} (${input.route})`,
+        );
+        try {
+          await db.insert(schema.auditLogs).values({
+            userId: ctx.user?.id ?? null,
+            action: "feedback.urgent",
+            targetType: "feedback",
+            targetId: String(feedbackId),
+            meta: JSON.stringify({
+              severity: input.severity,
+              feature: input.feature,
+              title: input.title,
+              route: input.route,
+            }),
+          });
+        } catch (err) {
+          console.error("[feedback.urgent] audit log failed:", err);
+        }
+      }
+
       return {
         ok: true,
-        feedbackId: Number(result[0].insertId),
+        feedbackId,
         commitSha: env.commitSha,
         notice: "反馈已记录，感谢参谋。",
       };

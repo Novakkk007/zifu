@@ -89,7 +89,7 @@ export default function ZiweiAiReading({ chartId }: { chartId: number | null }) 
         dark
         eyebrow="AI READING"
         title="AI 参详"
-        sub="依已落库命盘，引《紫微斗数全书》逐宫参详"
+        sub="依已落库命盘，按传统斗数规则逐宫参详"
       />
 
       <div className="mt-10 rounded-xl border border-gold/20 bg-deep3/50 p-7">

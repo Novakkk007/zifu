@@ -5,11 +5,15 @@ import * as schema from "@db/schema";
 import { paipanZiwei } from "@contracts/engines/ziwei-core";
 import type { ZiweiInput } from "@contracts/engines/ziwei-core";
 import { ZIWEI_ALGORITHM_VERSION, ZIWEI_RULESET_VERSION } from "@contracts/engines/ziwei-core";
+import { hourToBranch } from "@contracts/engines/time-protocol";
 import { getDb } from "./queries/connection";
 import { createRouter, publicQuery, authedQuery } from "./middleware";
 
 /**
- * 紫微排盘输入（简化版 BirthInput：时辰以时支 0-11 表示）。
+ * 紫微排盘输入（统一时间协议版 BirthInput）。
+ * 优选 hour(0-23)+minute(0-59) 墙钟时分（与其他引擎口径一致）；
+ * hourBranch 保留为向后兼容字段（@deprecated，新调用方请用 hour/minute）；
+ * unknownHour=true 时时辰未知（按子时处理并在结果 warnings 标注）。
  * 闰月按当月计（北派全书惯例）；公历输入由服务端换算农历（lunar-typescript）。
  */
 const ziweiInput = z
@@ -18,8 +22,17 @@ const ziweiInput = z
     year: z.number().int().min(1900).max(2100),
     month: z.number().int().min(1).max(12),
     day: z.number().int().min(1).max(31),
-    /** 时辰支序：0=子 1=丑 … 11=亥 */
-    hourBranch: z.number().int().min(0).max(11),
+    /** 墙钟小时 0-23（优选；与 minute 配套） */
+    hour: z.number().int().min(0).max(23).optional(),
+    /** 墙钟分钟 0-59（缺省 0） */
+    minute: z.number().int().min(0).max(59).optional(),
+    /** 时辰未知：不携带 hour/hourBranch 时必须显式声明 */
+    unknownHour: z.boolean().optional(),
+    /**
+     * @deprecated 时辰支序：0=子 1=丑 … 11=亥。
+     * 兼容旧调用方；与 hour 同时提供时以 hour 为准。
+     */
+    hourBranch: z.number().int().min(0).max(11).optional(),
     gender: z.enum(["male", "female"]),
     /** 农历闰月标记（calendar='lunar' 时有效） */
     isLeapMonth: z.boolean().optional(),
@@ -41,7 +54,30 @@ const ziweiInput = z
         message: "农历日期应在 1-30 之间。",
       });
     }
+    // 统一输入模型：hour 与 hourBranch 至少其一，否则必须声明 unknownHour
+    if (v.hour === undefined && v.hourBranch === undefined && v.unknownHour !== true) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["hour"],
+        message: "请提供出生时分（hour/minute），或显式声明时辰未知（unknownHour）。",
+      });
+    }
   });
+
+/** 解析时辰支序：hour 优先（统一时间协议换算），否则兼容 hourBranch，最后 unknownHour→子时 */
+function resolveHourBranch(input: {
+  hour?: number;
+  hourBranch?: number;
+  unknownHour?: boolean;
+}): { hourBranch: number; hourUnknown: boolean } {
+  if (input.hour !== undefined) {
+    return { hourBranch: hourToBranch(input.hour), hourUnknown: false };
+  }
+  if (input.hourBranch !== undefined) {
+    return { hourBranch: input.hourBranch, hourUnknown: false };
+  }
+  return { hourBranch: 0, hourUnknown: true };
+}
 
 function isValidSolarDate(year: number, month: number, day: number): boolean {
   const d = new Date(Date.UTC(year, month - 1, day));
@@ -62,24 +98,41 @@ export const ziweiRouter = createRouter({
   paipan: publicQuery
     .input(ziweiInput)
     .mutation(async ({ input, ctx }) => {
-      const { title, ...birth } = input;
+      const { title, ...raw } = input;
 
-      if (birth.calendar === "solar" && !isValidSolarDate(birth.year, birth.month, birth.day)) {
+      if (raw.calendar === "solar" && !isValidSolarDate(raw.year, raw.month, raw.day)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "无效的日期，请检查年月日。",
         });
       }
 
+      // 统一时间协议：hour/minute 优先，hourBranch 兼容，unknownHour 显式声明
+      const { hourBranch, hourUnknown } = resolveHourBranch(raw);
+      const birth: ZiweiInput = {
+        calendar: raw.calendar,
+        year: raw.year,
+        month: raw.month,
+        day: raw.day,
+        hourBranch,
+        gender: raw.gender,
+        isLeapMonth: raw.isLeapMonth,
+      };
+
       let result: ReturnType<typeof paipanZiwei>;
       try {
-        result = paipanZiwei(birth satisfies ZiweiInput);
+        result = paipanZiwei(birth);
       } catch (err) {
         // 历法引擎对越界农历日期等会抛错，统一转为 400
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: `无法解析的出生时间：${err instanceof Error ? err.message : String(err)}`,
         });
+      }
+
+      // 时辰未知：在结果 meta.warnings 显式标注（不静默按子时出盘）
+      if (hourUnknown && result?.meta && Array.isArray(result.meta.warnings)) {
+        result.meta.warnings.push("时辰未知：时柱按子时处理，结果仅供参考。");
       }
 
       let chartId: number | null = null;

@@ -540,6 +540,7 @@ describe("支付回调幂等", () => {
       eventId: "evt-0001",
       status: "paid" as const,
       payload: "{}",
+      verified: true, // 渠道验签通过才会驱动状态机（V9 fail-closed）
     };
     const first = await processPaymentEvent(evt);
     expect(first.applied).toBe(true);
@@ -554,6 +555,38 @@ describe("支付回调幂等", () => {
     );
     expect(recharges).toHaveLength(1);
     expect(fake.tables.wallets.at(0)?.balanceLingqian).toBe(100);
+  });
+
+  it("未验签事件（verified 缺省/false）→ 只落事件存档，订单不转 paid、钱包不入账", async () => {
+    const order = await createOrder({
+      userId: 1,
+      amountFen: 1000,
+      lingqianAmount: 100,
+      idempotencyKey: "order-key-unverified",
+    });
+    // 缺省 verified（fail-closed 默认 false）
+    const r1 = await processPaymentEvent({
+      orderNo: order.orderNo,
+      eventId: "evt-unverified-1",
+      status: "paid",
+      payload: "{}",
+    });
+    expect(r1.order.status).toBe("created");
+    expect(r1.event.verified).toBe(false);
+    // 显式 false
+    const r2 = await processPaymentEvent({
+      orderNo: order.orderNo,
+      eventId: "evt-unverified-2",
+      status: "paid",
+      payload: "{}",
+      verified: false,
+    });
+    expect(r2.order.status).toBe("created");
+    // 两条事件均落库，钱包零入账
+    expect(fake.tables.paymentEvents).toHaveLength(2);
+    expect(
+      fake.tables.walletTransactions.filter((t) => t.reason === "recharge"),
+    ).toHaveLength(0);
   });
 
   it("createOrder 幂等：同一 idempotencyKey 返回既有订单", async () => {

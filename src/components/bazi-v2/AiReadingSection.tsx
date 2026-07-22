@@ -24,7 +24,7 @@ type Persona = 'scholar' | 'hermit'
 type Depth = 'pro' | 'plain'
 
 const PERSONAS: { id: Persona; latin: string; name: string; desc: string }[] = [
-  { id: 'scholar', latin: 'SCHOLAR', name: '严谨学者', desc: '客观克制，引经据典，条分缕析' },
+  { id: 'scholar', latin: 'SCHOLAR', name: '严谨学者', desc: '客观克制，依传统规则条分缕析' },
   { id: 'hermit', latin: 'HERMIT', name: '幽默隐士', desc: '随性诙谐，妙语点破，围炉夜话' },
 ]
 
@@ -139,6 +139,7 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
   // chartSummary 由服务端按落库命盘构建；阶段语境仅作界面提示）
   useEffect(() => {
     if (stage === null) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 外部阶段请求落区：以 effect 同步 props→state 为既有契约
     setStageLabel(stage)
     onStageConsumed()
     if (canRun) run()

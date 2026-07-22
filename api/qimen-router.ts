@@ -4,6 +4,10 @@ import * as schema from "@db/schema";
 import { computeQimen } from "@contracts/engines/qimen-core";
 import type { QimenChart } from "@contracts/engines/qimen-core";
 import type { EngineResult } from "@contracts/engines/engine-result";
+import {
+  assertValidIanaTimezone,
+  InvalidTimezoneError,
+} from "@contracts/engines/time-protocol";
 import { getDb } from "./queries/connection";
 import { createRouter, publicQuery } from "./middleware";
 
@@ -34,6 +38,16 @@ export const qimenRouter = createRouter({
     .input(qijuInput)
     .mutation(async ({ input, ctx }) => {
       const { title, ...engineInput } = input;
+
+      // 统一时间协议：无效 IANA 时区 → 400
+      try {
+        assertValidIanaTimezone(engineInput.ianaTimezone);
+      } catch (err) {
+        if (err instanceof InvalidTimezoneError) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: err.message });
+        }
+        throw err;
+      }
 
       let result: EngineResult<QimenChart>;
       try {

@@ -28,37 +28,47 @@ const readingInput = z.object({
   depth: z.enum(["pro", "plain"]),
   /** 扣费幂等键：同一键重复调用不会重复扣费；缺省时服务端按次生成 */
   idempotencyKey: z.string().trim().min(8).max(64).optional(),
-  /** @deprecated 旧契约字段：服务端一律忽略，绝不使用客户端命盘数据 */
-  chartType: z.string().trim().max(32).optional(),
-  /** @deprecated 旧契约字段：服务端一律忽略，摘要由服务端基于落库结果构建 */
-  chartSummary: z.string().trim().max(4000).optional(),
+  // 注：旧契约的 chartType/chartSummary 客户端字段已删除——
+  // 摘要永远由服务端按 chartId 从库中重算，客户端无从注入命盘内容。
 });
 
-/** 内存令牌桶（单实例级限流；多实例部署需替换为集中式限流） */
-const rateBuckets = new Map<number, { tokens: number; resetAt: number }>();
-
-/** 测试用：清空限流状态 */
+/**
+ * @deprecated 限流已改为数据库计数（见 assertRateLimit），本函数无状态可清，
+ * 仅为测试兼容性保留。
+ */
 export function resetAiRateLimits(): void {
-  rateBuckets.clear();
+  /* no-op：限流状态在 ai_readings 表，测试中由用例自行控制数据 */
 }
 
-function checkRateLimit(userId: number): void {
-  const now = Date.now();
-  let bucket = rateBuckets.get(userId);
-  if (!bucket || now >= bucket.resetAt) {
-    bucket = { tokens: AI_RATE_LIMIT_PER_MIN, resetAt: now + 60_000 };
-    rateBuckets.set(userId, bucket);
-  }
-  if (bucket.tokens <= 0) {
+/**
+ * 数据库化限流（替换原单进程内存令牌桶）：
+ * 统计该用户最近 60 秒内已落库的 AI 参详次数，达上限即拒。
+ * 多实例部署下天然一致；失败调用不落日志、不占限流额度。
+ */
+async function assertRateLimit(userId: number): Promise<void> {
+  const since = new Date(Date.now() - 60_000);
+  const rows = await getDb()
+    .select({ n: sql<number>`count(*)` })
+    .from(schema.aiReadings)
+    .where(
+      and(
+        eq(schema.aiReadings.userId, userId),
+        gte(schema.aiReadings.createdAt, since),
+      ),
+    );
+  if (Number(rows.at(0)?.n ?? 0) >= AI_RATE_LIMIT_PER_MIN) {
     throw new TRPCError({
       code: "TOO_MANY_REQUESTS",
       message: `请求过于频繁，每分钟最多 ${AI_RATE_LIMIT_PER_MIN} 次，请稍后再试。`,
     });
   }
-  bucket.tokens -= 1;
 }
 
-/** 统计用户今日已发起的 AI 参详次数（含 fallback，失败不计） */
+/**
+ * 统计用户今日已发起的 AI 参详次数（含 fallback，失败不计）。
+ * 日界定义：按【服务器本地日】（startOfDay = 服务器时区当日 00:00）统计，
+ * 与用户时区无关——文档见 docs/api-routes.md。
+ */
 async function countTodayReadings(userId: number): Promise<number> {
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
@@ -79,7 +89,8 @@ export const aiRouter = createRouter({
    * AI 参详（需登录）：
    * - 命盘由服务端按 chartId 从库中加载并校验归属（他人命盘 → NOT_FOUND），
    *   摘要由服务端基于【已落库结果】构建，客户端提交的命盘数据一概不信。
-   * - 配额：每用户每日 20 次；限流：每用户每分钟 5 次（内存令牌桶）。
+   * - 配额：每用户每日 20 次（按服务器本地日统计）；限流：每用户每分钟 5 次
+     *   （数据库计数，多实例一致）。
    * - 计费：仅当 source=live（真实模型成功返回）时扣 1 灵签，
    *   幂等键防重复扣费；fallback 免费；AI 失败不扣费。
    * - 钱包不存在时自动创建并发放一次注册赠送（36 灵签，幂等）。
@@ -89,7 +100,7 @@ export const aiRouter = createRouter({
     .input(readingInput)
     .mutation(async ({ input, ctx }) => {
       const userId = ctx.user.id;
-      checkRateLimit(userId);
+      await assertRateLimit(userId);
 
       if (input.chartId === undefined) {
         throw new TRPCError({

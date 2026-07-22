@@ -5,7 +5,13 @@
 
 > 古籍数字化 · AI 参详 — 仅供文化研究与体验，不构成任何决策建议。
 
-当前版本：**v8**（2026-07-22）—— V7 全引擎真实化 + V8 预览环境/安全硬化。功能真实度总表见 `docs/feature-status.md`。
+当前版本：**v9**（2026-07-22）—— V7 全引擎真实化 + V8 预览环境/安全硬化 + V9 商业化整改（安全头/统一时间协议/AI 硬化/依赖漏洞清零/品牌统一/前端分包）。功能真实度总表见 `docs/feature-status.md`。
+
+## 依赖与 registry 策略（V9）
+
+- 安装/CI 使用内部镜像 registry（锁文件记录）；**安全审计须走官方源**：`npm audit --registry=https://registry.npmjs.org`（镜像未实现 audit 端点）
+- 漏洞治理原则：不执行 `npm audit fix --force`；逐项升级 + 四关验证；嵌套传递依赖用 `package.json` `overrides` 收敛
+- 当前基线：`npm audit` 与 `npm audit --omit=dev` 均为 **0 vulnerabilities**
 
 ## 技术栈
 

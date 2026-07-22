@@ -58,6 +58,11 @@ export const billingRouter = createRouter({
   /**
    * 模拟支付回调（仅管理员）：用于测试 payment_events 幂等链路。
    * 生产环境应由真实支付渠道回调（验签后）替代。
+   * 约束：
+   * - 输入不接受 verified 字段——演练事件由服务端显式标记 verified:true，
+   *   调用方无法伪造「已验签」语义；
+   * - payload 强制附带 [SIMULATED] 来源标记，审计可区分演练与真实渠道事件；
+   * - 预览环境整体禁用（支付 fail-closed 的一部分）。
    */
   simulateCallback: adminQuery
     .input(
@@ -81,7 +86,7 @@ export const billingRouter = createRouter({
           orderNo: input.orderNo,
           eventId: input.eventId,
           status: input.status,
-          payload: input.payload,
+          payload: `[SIMULATED] ${input.payload ?? "admin drill"}`,
           verified: true,
         });
       } catch (err) {

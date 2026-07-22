@@ -2,7 +2,24 @@
 
 标记口径：🟢 已真实接通（服务端真实计算/真实数据）｜🟡 接口骨架（服务端在、外部依赖未配）｜🟠 演示模式（本地近似/哈希 mock，页面有标注）｜🔴 未实现
 
-更新：v8（2026-07-22）—— V7 全引擎真实化 + V8 预览环境/安全硬化
+更新：v9（2026-07-22）—— V7 全引擎真实化 + V8 预览环境/安全硬化 + V9 商业化整改（Codex 审计闭环）
+
+## V9 新增/变更一览
+
+| 项 | 状态 | 说明 |
+|---|---|---|
+| 支付事件验签语义 | 🟢 | verified 默认 false（fail-closed）；未验签事件只存档不驱动状态机/不入账；simulateCallback 不接受调用方 verified，payload 强制 [SIMULATED] |
+| 安全响应头 | 🟢 | CSP / nosniff / Referrer-Policy / X-Frame-Options 全站下发；HSTS 仅 production |
+| 请求体限额 | 🟢 | 反馈 64KB、其余 API 256KB（历史 50MB 收紧）；超限 413 |
+| CORS | 🟢 | 同源默认不放行；CORS_ALLOWED_ORIGINS 白名单显式开启 |
+| 统一时间协议 | 🟢 | contracts/engines/time-protocol.ts：IANA 时区 Intl 校验（无效 400）、hourToBranch 全引擎同口径；紫微 hour/minute 优选 + unknownHour 显式声明，hourBranch 兼容废弃 |
+| AI 硬化 | 🟢 | 客户端 chartType/chartSummary 废弃字段删除；分钟限流内存→数据库计数（多实例一致）；日额度按服务器本地日（已文档化）；prompt 注入防护（数据隔离 <<< >>> + 禁引书名/作者/原文）；输出净化（HTML/脚本/链接剥除 + 4000 字截断）；前端不再显示书名出处 |
+| 反馈补齐 | 🟢 | 脱敏新增经纬度坐标/出生地模式；P0/P1 写审计日志 + 服务端告警（feedback.urgent） |
+| 依赖治理 | 🟢 | npm audit 18 → 0（生产/开发双清零）；@hono/node-server ^2.0.11、hono ^4.12.31、esbuild ^0.28.1、lodash overrides ^4.18.1 等逐项升级 |
+| 品牌 Logo 统一 | 🟢 | BrandLogo 唯一渲染入口（mark/wordmark/horizontal/stacked/reverse × 4 主题），金色 CSS token 化，旧 logo.png 删除 |
+| 前端分包 | 🟢 | manualChunks + 16 路由懒加载：主 chunk 1,488.53KB → 248.73KB（↓83%） |
+
+## 历史总表（V8）
 
 ## 引擎层（V7 全部真实化）
 

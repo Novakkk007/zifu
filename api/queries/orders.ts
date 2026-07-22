@@ -77,6 +77,11 @@ export interface ProcessPaymentEventInput {
   eventId: string;
   status: "paid" | "failed" | "refunded";
   payload?: string;
+  /**
+   * 渠道验签标记：默认 false（fail-closed）。
+   * 只有支付渠道签名验证通过（或管理员演练通道显式标记）才为 true；
+   * 未验签事件只落库存档，绝不驱动状态机与入账。
+   */
   verified?: boolean;
 }
 
@@ -113,6 +118,9 @@ export async function processPaymentEvent(
     return { order, event: dup[0], applied: false };
   }
 
+  // fail-closed：未显式验签的事件一律按未验签处理
+  const verified = input.verified === true;
+
   try {
     return await db.transaction(async (tx) => {
       const inserted = await tx
@@ -121,7 +129,7 @@ export async function processPaymentEvent(
           orderId: order.id,
           eventId: input.eventId,
           payload: input.payload ?? null,
-          verified: input.verified ?? true,
+          verified,
           status: input.status,
         })
         .$returningId();
@@ -130,7 +138,7 @@ export async function processPaymentEvent(
         orderId: order.id,
         eventId: input.eventId,
         payload: input.payload ?? null,
-        verified: input.verified ?? true,
+        verified,
         status: input.status,
         createdAt: new Date(),
       };
@@ -148,6 +156,10 @@ export async function processPaymentEvent(
       };
 
       let nextStatus = order.status;
+      // 未验签事件：只落库存档，绝不迁移状态、绝不让钱包入账
+      if (!verified) {
+        return { order, event, applied: true };
+      }
       if (input.status === "paid" && order.status === "created") {
         if (await transition("created", "paid")) {
           nextStatus = "paid";

@@ -30,7 +30,62 @@ const REGISTERED_ROUTERS = [
   "feedback",
 ];
 
-app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
+/**
+ * 安全响应头（全站）。
+ * CSP 允许 self + inline style（Tailwind/shadcn 运行时内联样式所需）
+ * + data:/blob: 图片（SVG 资产与图表）；脚本仅 self。
+ * HSTS 仅在生产环境下发（预览/开发常为 http）。
+ */
+app.use("*", async (c, next) => {
+  await next();
+  c.header("X-Content-Type-Options", "nosniff");
+  c.header("Referrer-Policy", "strict-origin-when-cross-origin");
+  c.header("X-Frame-Options", "DENY");
+  c.header(
+    "Content-Security-Policy",
+    [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob:",
+      "font-src 'self' data:",
+      "connect-src 'self'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; "),
+  );
+  if (env.appEnv === "production") {
+    c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
+});
+
+/**
+ * 请求体限额（分级）：
+ * - 反馈提交 64KB（标题+描述+复现步骤足够）
+ * - 其余 API 256KB（排盘/AI/订单均为小 JSON；历史 50MB 属于过度放行）
+ * 静态资源与 GET 不受影响。
+ */
+const KB = 1024;
+app.use("/api/trpc/feedback.submit", bodyLimit({ maxSize: 64 * KB }));
+app.use("/api/*", bodyLimit({ maxSize: 256 * KB }));
+
+/**
+ * CORS：本应用前后端同源部署，默认不签发任何 CORS 头（跨域请求浏览器自然拦截）。
+ * 仅当 CORS_ALLOWED_ORIGINS 显式配置白名单（逗号分隔）时才对 /api/* 放行，
+ * 且仅放行白名单 origin（allowlist，绝不用 *）。
+ */
+const corsAllowedOrigins = (process.env.CORS_ALLOWED_ORIGINS ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+if (corsAllowedOrigins.length > 0) {
+  const { cors } = await import("hono/cors");
+  app.use(
+    "/api/*",
+    cors({ origin: corsAllowedOrigins, credentials: true, maxAge: 600 }),
+  );
+}
 
 /**
  * 存活探针：进程存活即 200。
