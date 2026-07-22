@@ -157,11 +157,12 @@ describe("hecan.analyze API", () => {
     const res = await caller.hecan.analyze({ ...input });
     expect(res.result.meta.engine).toBe("hecan");
     expect(res.result.data.arts).toHaveLength(3);
+    // 路由经静态注册 loader 接入仓库内真实的 ziwei/qizheng 引擎 —— 三术全部 validated
     const precisions = Object.fromEntries(res.result.data.arts.map((a) => [a.art, a.precision]));
     expect(precisions.bazi).toBe("validated");
-    expect(precisions.ziwei).toBe("unavailable");
-    expect(precisions.qizheng).toBe("unavailable");
-    expect(res.result.data.overallTier).toBe("single");
+    expect(precisions.ziwei).toBe("validated");
+    expect(precisions.qizheng).toBe("validated");
+    expect(res.result.data.availableArts).toBe(3);
     expect(res.chart.pillars.day.ganzhi).toBeTruthy();
     expect(res.persisted).toBe(false);
     expect(getDbMock).not.toHaveBeenCalled();
