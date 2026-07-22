@@ -229,6 +229,54 @@ export const auditLogs = mysqlTable("audit_logs", {
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
 
+/**
+ * 用户反馈 — 预览环境多人参谋的意见闭环。
+ * 每条反馈绑定路由、功能、版本与算法版本，便于按版本归类修复。
+ * 禁止写入：生辰原始数据、OAuth Token、连接串、AI Key、支付信息（服务端有脱敏守卫）。
+ */
+export const feedback = mysqlTable("feedback", {
+  id: serial("id").primaryKey(),
+  /** 提交人（游客反馈为 null） */
+  userId: bigint("userId", { mode: "number", unsigned: true }),
+  /** 页面路由，如 /bazi */
+  route: varchar("route", { length: 128 }).notNull(),
+  /** 功能分类 */
+  feature: mysqlEnum("feature", [
+    "bug",
+    "suggestion",
+    "algorithm",
+    "visual",
+    "mobile",
+    "data",
+    "interaction",
+  ]).notNull(),
+  /** 严重度 */
+  severity: mysqlEnum("severity", ["P0", "P1", "P2", "P3"]).notNull(),
+  title: varchar("title", { length: 128 }).notNull(),
+  description: text("description").notNull(),
+  /** 复现步骤 / 期望结果 / 实际结果（可选） */
+  stepsToReproduce: text("stepsToReproduce"),
+  expectedResult: text("expectedResult"),
+  actualResult: text("actualResult"),
+  /** 浏览器与设备（前端自动采集 UA/视口） */
+  browser: varchar("browser", { length: 255 }),
+  device: varchar("device", { length: 64 }),
+  /** 部署版本（提交时从 /healthz 读取） */
+  commitSha: varchar("commitSha", { length: 64 }),
+  /** 相关算法版本（可选，如 liuyao-core@1.0.0） */
+  algorithmVersion: varchar("algorithmVersion", { length: 64 }),
+  /** 截图链接（可选，仅 URL，不上传文件） */
+  screenshotUrl: varchar("screenshotUrl", { length: 512 }),
+  /** 处理状态 */
+  status: mysqlEnum("status", ["open", "triaged", "fixed", "wontfix"])
+    .default("open")
+    .notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Feedback = typeof feedback.$inferSelect;
+export type InsertFeedback = typeof feedback.$inferInsert;
+
 // TODO: Add your tables here. See docs/Database.md for schema examples and patterns.
 //
 // Example:

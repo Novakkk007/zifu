@@ -1,11 +1,22 @@
 import BrandLogo from '@/components/BrandLogo'
 import { Link } from 'react-router-dom'
+import { useDeployInfo } from '@/components/FeedbackWidget'
 
 const FOOT_LINKS = [
   { to: '/wiki', label: '藏经阁' },
   { to: '/talks', label: '主创说' },
   { to: '/terms', label: '服务条款' },
 ]
+
+function VersionLine() {
+  const deploy = useDeployInfo()
+  if (!deploy) return null
+  return (
+    <p className="font-latin text-[11px] tracking-[0.12em] text-silkmuted/50">
+      {deploy.preview ? 'PREVIEW · ' : ''}build {deploy.commitSha}
+    </p>
+  )
+}
 
 export default function Footer() {
   return (
@@ -33,6 +44,7 @@ export default function Footer() {
         <p className="font-latin text-[12px] tracking-[0.12em] text-silkmuted/70">
           © 2026 Zifu Palace. All rights reserved.
         </p>
+        <VersionLine />
       </div>
     </footer>
   )

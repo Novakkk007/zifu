@@ -4,6 +4,7 @@ import { and, eq, gte, sql } from "drizzle-orm";
 import * as schema from "@db/schema";
 import type { BaziChartV2 } from "@contracts/bazi-core";
 import { getDb } from "./queries/connection";
+import { env } from "./lib/env";
 import { createRouter, authedQuery } from "./middleware";
 import { AiServiceError, generateReading } from "./services/ai";
 import { chartSummaryForAi } from "./services/chart-summary";
@@ -147,7 +148,8 @@ export const aiRouter = createRouter({
       }
 
       // 仅 live 成功才扣费；fallback 免费
-      if (result.source === "live") {
+      // AI_BILLING_ENABLED=false（如预览环境）时 live 参详不扣灵签，免费体验
+      if (result.source === "live" && env.aiBillingEnabled) {
         // 钱包不存在时自动创建并发放注册赠送（仅一次，幂等）
         await getOrCreateWallet(userId, { withSignupGrant: true });
         const idempotencyKey =

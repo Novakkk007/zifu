@@ -7,6 +7,8 @@ import { gsap, ScrollTrigger } from '@/lib/anim'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ZifuFab from '@/components/ZifuFab'
+import FeedbackWidget from '@/components/FeedbackWidget'
+import PreviewBanner from '@/components/PreviewBanner'
 
 /**
  * 全局布局（children 模式）：Navbar（sticky）+ 页面槽 + Footer + 紫宸 FAB。
@@ -38,6 +40,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-silk">
+      <PreviewBanner />
       <Navbar />
       <motion.main
         key={location.pathname}
@@ -50,6 +53,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       </motion.main>
       <Footer />
       <ZifuFab />
+      <FeedbackWidget />
     </div>
   )
 }

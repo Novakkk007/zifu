@@ -10,6 +10,7 @@ import { Modal } from '@/components/Modal'
 import { Input } from '@/components/Input'
 import { StatusBadge } from '@/components/StatusBadge'
 import { EmptyState } from '@/components/EmptyState'
+import FeedbackAdminPanel from '@/components/FeedbackAdminPanel'
 import { ErrorState } from '@/components/ErrorState'
 import { LoadingState } from '@/components/LoadingState'
 import { cn } from '@/lib/utils'
@@ -413,6 +414,9 @@ export default function Account() {
             </ZifuButton>
           </CardContent>
         </Card>
+
+        {/* ===== 反馈收件箱（仅管理员可见，服务端强鉴权） ===== */}
+        <FeedbackAdminPanel />
       </div>
 
       {/* ===== 充值说明弹层（支付渠道预留） ===== */}

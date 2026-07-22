@@ -9,6 +9,7 @@ import { qimenRouter } from "./qimen-router";
 import { hepanRouter } from "./hepan-router";
 import { hecanRouter } from "./hecan-router";
 import { drawsRouter } from "./draws-router";
+import { feedbackRouter } from "./feedback-router";
 import { billingRouter } from "./billing-router";
 import { accountRouter } from "./account-router";
 import { createRouter, publicQuery } from "./middleware";
@@ -25,6 +26,7 @@ export const appRouter = createRouter({
   hepan: hepanRouter,
   hecan: hecanRouter,
   draws: drawsRouter,
+  feedback: feedbackRouter,
   ai: aiRouter,
   billing: billingRouter,
   account: accountRouter,

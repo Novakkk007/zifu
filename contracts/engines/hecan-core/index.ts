@@ -7,7 +7,8 @@
  * 探测失败（引擎不存在 / 未导出协议函数）→ 该术输出 precision:'unavailable' 状态块，
  * 绝不伪造星曜、宫位或宿度。
  */
-import { createRequire } from 'node:module'
+// 别名导入：避免与 esbuild ESM bundle 顶部注入的 createRequire shim 冲突
+import { createRequire as nodeCreateRequire } from 'node:module'
 import { computeChartV2 } from '../../bazi-core'
 import type { BaziChartV2, BirthInput, Wuxing } from '../../bazi-core/types'
 import { BRANCH_WUXING, BRANCHES } from '../../bazi-core/rules/stems-branches'

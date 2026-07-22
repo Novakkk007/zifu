@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { desc } from "drizzle-orm";
 import * as schema from "@db/schema";
 import { getDb } from "./queries/connection";
+import { env } from "./lib/env";
 import { getOrCreateWallet, listRecentTransactions } from "./queries/wallets";
 import { createOrder, listOrders, processPaymentEvent } from "./queries/orders";
 import { createRouter, authedQuery, adminQuery } from "./middleware";
@@ -32,6 +33,13 @@ export const billingRouter = createRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      // 支付总闸：PAYMENT_ENABLED 未显式开启（如预览环境）时禁止落单
+      if (!env.paymentEnabled) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "当前环境未开放充值（支付渠道未接入 / 预览环境已禁用支付）。",
+        });
+      }
       const order = await createOrder({
         userId: ctx.user.id,
         amountFen: input.amountFen,
@@ -61,6 +69,13 @@ export const billingRouter = createRouter({
       }),
     )
     .mutation(async ({ input }) => {
+      // 预览环境禁止任何支付状态演练（即使管理员）
+      if (env.isPreview) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "预览环境已禁用支付回调演练。",
+        });
+      }
       try {
         return await processPaymentEvent({
           orderNo: input.orderNo,
