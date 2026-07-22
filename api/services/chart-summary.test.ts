@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { computeChartV2 } from "@contracts/bazi-core";
 import type { BirthInput } from "@contracts/bazi-core";
+import { computeQimen } from "@contracts/engines/qimen-core";
 import { chartSummaryForAi } from "./chart-summary";
 
 const input: BirthInput = {
@@ -47,5 +48,43 @@ describe("chartSummaryForAi", () => {
     const noHour = computeChartV2({ ...input, hour: null });
     const s = chartSummaryForAi(noHour);
     expect(s).toContain("时辰未知，未排时柱");
+  });
+
+  it("奇门 EngineResult 信封：走 qimen 摘要（遁局/值符值使/九宫）", () => {
+    const qm = computeQimen({ datetime: "2024-12-21T18:00" });
+    const s = chartSummaryForAi(qm as unknown as Parameters<typeof chartSummaryForAi>[0]);
+    expect(s).toContain("阳遁4局");
+    expect(s).toContain("值符天辅");
+    expect(s).toContain("值使杜门");
+    expect(s).toContain("坎一宫");
+  });
+
+  it("未登记引擎信封：回退通用占位摘要（不 500、不静默生成八字摘要）", () => {
+    const alien = { meta: { engine: "unknown-art", ruleVariant: "测试流派" }, data: {} };
+    const s = chartSummaryForAi(alien as unknown as Parameters<typeof chartSummaryForAi>[0]);
+    expect(s).toContain("unknown-art");
+    expect(s).toContain("暂不支持结构化摘要");
+    expect(s).not.toContain("四柱");
+  });
+
+  it("已登记引擎（ziwei）信封：走注册表分发而非占位", () => {
+    // 最小 ziwei 形状（仅摘要所需字段）
+    const zw = {
+      meta: { engine: "ziwei", ruleVariant: "北派紫微-全书安星法" },
+      data: {
+        genderKind: "阳男",
+        ju: { name: "火六局", num: 6 },
+        mingGongGanzhi: "丙寅",
+        shenBranch: "寅",
+        mingZhu: "禄存",
+        shenZhu: "火星",
+        palaces: [],
+        sihua: [],
+      },
+    };
+    const s = chartSummaryForAi(zw as unknown as Parameters<typeof chartSummaryForAi>[0]);
+    expect(s).toContain("紫微斗数");
+    expect(s).toContain("火六局");
+    expect(s).toContain("丙寅");
   });
 });
