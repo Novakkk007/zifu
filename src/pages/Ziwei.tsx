@@ -5,28 +5,14 @@ import FloatingGlyphs from '@/components/FloatingGlyphs'
 import QuoteStrip from '@/components/QuoteStrip'
 import SectionHeading from '@/components/SectionHeading'
 import { FormInput, FormSelect, SegmentedControl } from '@/components/FormControls'
-import { GhostButton, GoldButton } from '@/components/Buttons'
-import FeatureStatusBadge from '@/components/FeatureStatusBadge'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { GoldButton } from '@/components/Buttons'
 import PalaceDrawer from '@/components/ziwei/PalaceDrawer'
 import ZiweiChart from '@/components/ziwei/ZiweiChart'
-import type { PalaceCell, ZiweiChart as ChartData } from '@/components/ziwei/logic'
-import { BRANCHES, buildChart, PALACE_DUTY, STEMS } from '@/components/ziwei/logic'
+import ZiweiAiReading from '@/components/ziwei/ZiweiAiReading'
+import type { EngineResult, ZiweiChartData, ZiweiPalace } from '@contracts/engines/ziwei-core'
+import { HOUR_OPTIONS, HUA_COLOR, PALACE_DUTY, liunianOf } from '@/components/ziwei/logic'
+import { trpc } from '@/providers/trpc'
 import { cn } from '@/lib/utils'
-
-const HOURS = BRANCHES.map((b, i) => {
-  const start = (23 + i * 2) % 24
-  const end = (start + 2) % 24
-  const fmt = (h: number) => `${String(h).padStart(2, '0')}:00`
-  return `${b}时 ${fmt(start)}–${fmt(end)}`
-})
 
 type Tab = 'daxian' | 'liunian'
 
@@ -37,52 +23,63 @@ export default function Ziwei() {
   const [year, setYear] = useState('1995')
   const [month, setMonth] = useState('6')
   const [day, setDay] = useState('15')
-  const [hour, setHour] = useState('0')
+  const [hourBranch, setHourBranch] = useState('0')
+  const [isLeapMonth, setIsLeapMonth] = useState(false)
 
-  const [chart, setChart] = useState<ChartData | null>(null)
-  const [selCell, setSelCell] = useState<PalaceCell | null>(null)
+  const [result, setResult] = useState<EngineResult<ZiweiChartData> | null>(null)
+  const [chartId, setChartId] = useState<number | null>(null)
+  const [selCell, setSelCell] = useState<ZiweiPalace | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const [tab, setTab] = useState<Tab>('daxian')
   const [dxIdx, setDxIdx] = useState<number | null>(null)
   const thisYear = new Date().getFullYear()
   const [lnYear, setLnYear] = useState(String(thisYear))
-  const [dialogOpen, setDialogOpen] = useState(false)
 
   const chartRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    document.title = '紫微斗数 · 紫府 — 十二宫排盘，观主星四化'
+    document.title = '紫微斗数 · 紫府 — 北派全书安星法，十二宫排盘'
   }, [])
+
+  const chart = result?.data ?? null
+
+  const paipan = trpc.ziwei.paipan.useMutation({
+    onSuccess: (data) => {
+      setResult(data.result as EngineResult<ZiweiChartData>)
+      setChartId(data.chartId)
+      setDxIdx(null)
+      window.setTimeout(() => chartRef.current?.scrollIntoView({ behavior: 'smooth' }), 60)
+    },
+  })
 
   const handleSubmit = () => {
     const y = Math.min(2026, Math.max(1920, Number(year) || 1995))
-    const data = buildChart({
-      name: name.trim() || '缘主',
-      gender,
+    paipan.mutate({
+      calendar,
       year: y,
       month: Number(month),
       day: Number(day),
-      hour: Number(hour),
+      hourBranch: Number(hourBranch),
+      gender,
+      isLeapMonth: calendar === 'lunar' ? isLeapMonth : undefined,
+      title: name.trim() ? `${name.trim()}的紫微命盘` : undefined,
     })
-    setChart(data)
-    setDxIdx(null)
-    window.setTimeout(() => chartRef.current?.scrollIntoView({ behavior: 'smooth' }), 60)
   }
 
-  const handleSelectCell = (cell: PalaceCell) => {
+  const handleSelectCell = (cell: ZiweiPalace) => {
     setSelCell(cell)
     setDrawerOpen(true)
   }
 
   const lnInfo = useMemo(() => {
     if (!chart) return null
-    const y = Number(lnYear)
-    const stem = STEMS[(y - 4 + 1000) % 10]
-    const branch = BRANCHES[(y - 4 + 1200) % 12]
-    const cell = chart.palaces.find((p) => p.branch === branch) ?? chart.palaces[0]
-    return { y, stem, branch, cell }
+    return liunianOf(chart, Number(lnYear))
   }, [chart, lnYear])
+
+  const dxSteps = chart?.daxian.steps ?? []
+  const selDx = dxIdx !== null ? dxSteps[dxIdx] : null
+  const currentDx = chart ? dxSteps[chart.currentDaxianIndex] : null
 
   return (
     <div>
@@ -119,16 +116,13 @@ export default function Ziwei() {
             </h1>
             <div className="zf-hairline mt-6" />
             <p className="mt-6 max-w-md text-[14px] leading-[1.95] text-silkmuted">
-              十二宫安星，看主星四化与大限流年
+              北派全书安星 · 五行局定紫微 · 观主星四化与大限流年
             </p>
           </motion.div>
         </div>
       </section>
 
       <div className="zf-fade-to-deep h-40 rotate-180" />
-
-      {/* 全站统一真实度标注：演示模式 */}
-      <FeatureStatusBadge kind="demo" />
 
       {/* S2 · 生辰表单（浅色） */}
       <section className="bg-silk py-20 md:py-28">
@@ -142,7 +136,7 @@ export default function Ziwei() {
             <SectionHeading
               eyebrow="BIRTH DATA"
               title="录入生辰"
-              sub="安十二宫、布十四主星、标生年四化"
+              sub="服务端排盘 · 安十二宫、布十四主星、标生年四化"
             />
             <div className="mx-auto mt-12 max-w-2xl rounded-xl border border-golddim/20 bg-silk2/50 p-8">
               <div className="grid gap-5 sm:grid-cols-2">
@@ -171,7 +165,10 @@ export default function Ziwei() {
                   <SegmentedControl<'solar' | 'lunar'>
                     id="zw-cal"
                     value={calendar}
-                    onChange={setCalendar}
+                    onChange={(v) => {
+                      setCalendar(v)
+                      if (v === 'solar') setIsLeapMonth(false)
+                    }}
                     options={[
                       { value: 'solar', label: '阳历' },
                       { value: 'lunar', label: '农历' },
@@ -195,29 +192,43 @@ export default function Ziwei() {
                   ))}
                 </FormSelect>
                 <FormSelect id="zw-day" label="日" value={day} onChange={(e) => setDay(e.target.value)}>
-                  {Array.from({ length: 31 }, (_, i) => (
+                  {Array.from({ length: calendar === 'lunar' ? 30 : 31 }, (_, i) => (
                     <option key={i + 1} value={i + 1}>
                       {i + 1} 日
                     </option>
                   ))}
                 </FormSelect>
                 <div className="sm:col-span-2">
-                  <FormSelect id="zw-hour" label="时辰" value={hour} onChange={(e) => setHour(e.target.value)}>
-                    {HOURS.map((h, i) => (
-                      <option key={h} value={i}>
-                        {h}
+                  <FormSelect id="zw-hour" label="时辰" value={hourBranch} onChange={(e) => setHourBranch(e.target.value)}>
+                    {HOUR_OPTIONS.map((h) => (
+                      <option key={h.value} value={h.value}>
+                        {h.label}
                       </option>
                     ))}
                   </FormSelect>
                 </div>
+                {calendar === 'lunar' && (
+                  <label className="flex items-center gap-2.5 sm:col-span-2">
+                    <input
+                      id="zw-leap"
+                      type="checkbox"
+                      checked={isLeapMonth}
+                      onChange={(e) => setIsLeapMonth(e.target.checked)}
+                      className="h-4 w-4 accent-[rgb(var(--gold))]"
+                    />
+                    <span className="text-[13px] leading-[1.7] text-inkmuted">
+                      该月为农历闰月（闰月按当月安星，北派全书惯例）
+                    </span>
+                  </label>
+                )}
               </div>
               <div className="mt-8 flex flex-col items-center gap-3">
-                <GoldButton onClick={handleSubmit} className="w-full sm:w-auto">
-                  安星排盘
+                <GoldButton onClick={handleSubmit} disabled={paipan.isPending} className="w-full sm:w-auto">
+                  {paipan.isPending ? '排盘中…' : '安星排盘'}
                 </GoldButton>
-                {calendar === 'lunar' && (
-                  <p className="text-[12px] leading-[1.8] text-inkmuted">
-                    农历按同日近似换算
+                {paipan.isError && (
+                  <p className="text-[12.5px] leading-[1.8] text-[#B03A2E]">
+                    {paipan.error.message || '排盘服务暂不可用，请稍后重试。'}
                   </p>
                 )}
               </div>
@@ -227,7 +238,7 @@ export default function Ziwei() {
       </section>
 
       {/* S3 · 十二宫盘 */}
-      {chart && (
+      {result && chart && (
         <section ref={chartRef} className="scroll-mt-16 bg-silk pb-24 md:pb-32">
           <div className="zf-container">
             <SectionHeading
@@ -235,7 +246,33 @@ export default function Ziwei() {
               title="十二宫盘"
               sub={`${name.trim() || '缘主'} · ${gender === 'male' ? '乾造' : '坤造'} · 点击任一宫位查看详情`}
             />
-            <div className="mt-14">
+            {/* 引擎 meta 徽章：流派 / 精度 / 算法版本 */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5 text-[12px]">
+              <span className="rounded-full border border-gold/60 bg-gold/10 px-3.5 py-1.5 tracking-[0.1em] text-golddim">
+                {result.meta.ruleVariant}
+              </span>
+              <span className="rounded-full border border-[#2E7D6B]/50 bg-[#2E7D6B]/10 px-3.5 py-1.5 tracking-[0.1em] text-[#2E7D6B]">
+                {result.meta.precision === 'validated' ? 'validated · 已验证真实算法' : result.meta.precision}
+              </span>
+              <span className="rounded-full border border-golddim/30 bg-silk2/60 px-3.5 py-1.5 tracking-[0.1em] text-inkmuted">
+                {result.meta.algorithmVersion}
+              </span>
+              {chartId !== null && (
+                <span className="rounded-full border border-golddim/30 bg-silk2/60 px-3.5 py-1.5 tracking-[0.1em] text-inkmuted">
+                  已落库 #{chartId}
+                </span>
+              )}
+            </div>
+            {result.meta.warnings.length > 0 && (
+              <div className="mx-auto mt-4 max-w-2xl space-y-1.5">
+                {result.meta.warnings.map((w, i) => (
+                  <p key={i} className="rounded-lg border border-golddim/25 bg-silk2/50 px-4 py-2 text-center text-[12px] leading-[1.8] text-inkmuted">
+                    {w}
+                  </p>
+                ))}
+              </div>
+            )}
+            <div className="mt-10">
               <ZiweiChart chart={chart} onSelect={handleSelectCell} />
             </div>
           </div>
@@ -251,7 +288,11 @@ export default function Ziwei() {
             dark
             eyebrow="DECADES & YEARS"
             title="大限流年"
-            sub="十年一限看大走势，一年一宫看小气象"
+            sub={
+              chart
+                ? `${chart.daxian.directionReason}，${chart.ju.num} 岁起限，十年一宫`
+                : '十年一限看大走势，一年一宫看小气象'
+            }
           />
 
           {/* Tabs */}
@@ -297,12 +338,12 @@ export default function Ziwei() {
                   {chart ? (
                     <>
                       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-                        {chart.palaces.map((p, i) => {
-                          const current = i === chart.currentDaxianIdx
+                        {dxSteps.map((s, i) => {
+                          const current = s.isCurrent
                           const selected = dxIdx === i
                           return (
                             <motion.button
-                              key={p.branch}
+                              key={s.branchIdx}
                               onClick={() => setDxIdx(i)}
                               initial={{ opacity: 0, y: 20 }}
                               whileInView={{ opacity: 1, y: 0 }}
@@ -323,14 +364,13 @@ export default function Ziwei() {
                                 </span>
                               )}
                               <p className="font-serif text-[14px] font-bold tracking-[0.1em] text-silktext">
-                                {p.name}
+                                {s.palaceName}
                               </p>
                               <p className="mt-1 text-[11px] tracking-[0.06em] text-silkmuted">
-                                {p.daxian[0]}–{p.daxian[1]} 岁
+                                {s.startAge}–{s.endAge} 岁
                               </p>
                               <p className="text-[10.5px] text-silkmuted/70">
-                                {p.stem}
-                                {p.branch}宫
+                                {s.ganzhi}宫
                               </p>
                             </motion.button>
                           )
@@ -338,9 +378,11 @@ export default function Ziwei() {
                       </div>
                       <div className="mt-6 min-h-[52px] rounded-lg border-l-[3px] border-gold bg-deep3/50 px-6 py-4">
                         <p className="font-serif text-[14.5px] leading-[1.95] text-silktext">
-                          {dxIdx !== null
-                            ? `大限行至${chart.palaces[dxIdx].name}（${chart.palaces[dxIdx].daxian[0]}–${chart.palaces[dxIdx].daxian[1]} 岁）：十年以「${PALACE_DUTY[chart.palaces[dxIdx].name]}」为重。`
-                            : `当前大限行至${chart.palaces[chart.currentDaxianIdx].name}——点击任一宫条带，参看该限气象。`}
+                          {selDx
+                            ? `大限行至${selDx.palaceName}（${selDx.ganzhi}宫，${selDx.startAge}–${selDx.endAge} 岁虚岁）：十年以「${PALACE_DUTY[selDx.palaceName]}」为重。`
+                            : currentDx
+                              ? `当前大限行至${currentDx.palaceName}（${currentDx.ganzhi}宫，${currentDx.startAge}–${currentDx.endAge} 岁虚岁）——点击任一宫条带，参看该限气象。`
+                              : ''}
                         </p>
                       </div>
                     </>
@@ -375,16 +417,28 @@ export default function Ziwei() {
                       </div>
                       <div className="mt-8 w-full rounded-lg border-l-[3px] border-gold bg-deep3/50 px-6 py-5">
                         <p className="font-serif text-[15px] leading-[2] text-silktext">
-                          {lnInfo.y} 年（{lnInfo.stem}
-                          {lnInfo.branch}）：流年命宫行入{lnInfo.branch}宫，即本盘
-                          <span className="mx-1 text-goldbright">{lnInfo.cell.name}</span>
-                          ——一年气象以「{PALACE_DUTY[lnInfo.cell.name]}」为纲。
+                          {lnInfo.year} 年（{lnInfo.stem}
+                          {lnInfo.branch}）：太岁入{lnInfo.branch}宫，流年命宫即本盘
+                          <span className="mx-1 text-goldbright">{lnInfo.palace.name}</span>
+                          ——一年气象以「{PALACE_DUTY[lnInfo.palace.name]}」为纲。
                         </p>
-                        {lnInfo.cell.majors.length > 0 && (
+                        {lnInfo.palace.majors.length > 0 && (
                           <p className="mt-2 text-[12.5px] text-silkmuted">
-                            宫内主星：{lnInfo.cell.majors.map((s) => `${s.name}${s.hua ? `（化${s.hua}）` : ''}`).join('、')}
+                            宫内主星：{lnInfo.palace.majors.map((s) => `${s.name}${s.hua ? `（生年化${s.hua}）` : ''}`).join('、')}
                           </p>
                         )}
+                        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[12.5px] text-silkmuted">
+                          {lnInfo.sihua.map((s) => (
+                            <span key={s.hua} className="inline-flex items-center gap-1.5">
+                              <span
+                                className="inline-block h-2 w-2 rounded-full"
+                                style={{ backgroundColor: HUA_COLOR[s.hua] }}
+                              />
+                              流年化{s.hua}：{s.star}
+                              {s.palaceName ? `（落本命${s.palaceName}）` : ''}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </>
                   ) : (
@@ -394,50 +448,28 @@ export default function Ziwei() {
               )}
             </AnimatePresence>
 
-            <div className="mt-12 flex justify-center">
-              <GhostButton onClick={() => setDialogOpen(true)}>详参大限流年 · 9 灵签</GhostButton>
-            </div>
-          </div>
+            {/* S5 · AI 参详（真实服务端契约：chartId → ai.reading） */}
+            <ZiweiAiReading chartId={chartId} />
 
-          {/* S5 · 典籍依据 */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto mt-24 max-w-3xl"
-          >
-            <QuoteStrip book="紫微斗数全书" quote="紫微居垣，众星朝拱。" source="宋 · 陈抟 传" />
-            <p className="mt-6 text-center text-[12.5px] leading-[1.9] text-silkmuted">
-              安星规则诸派有别，紫府演示盘从简——正式详批依全书古法。
-            </p>
-          </motion.div>
+            {/* S6 · 典籍依据 */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              className="mx-auto mt-24 max-w-3xl"
+            >
+              <QuoteStrip book="紫微斗数全书" quote="紫微居垣，众星朝拱。" source="宋 · 陈抟 传" />
+              <p className="mt-6 text-center text-[12.5px] leading-[1.9] text-silkmuted">
+                安星依北派《紫微斗数全书》安星法：寅起正月安命身、纳音定五行局、商数法定紫微、
+                紫府两系正曜逆顺分布、十干四化随星落宫；闰月按当月计，年干支以正月初一换年。
+              </p>
+            </motion.div>
+          </div>
         </div>
       </section>
 
       <PalaceDrawer cell={selCell} open={drawerOpen} onOpenChange={setDrawerOpen} />
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="border-golddim/30 bg-silk sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-serif text-[20px] tracking-[0.12em] text-inktext">
-              详参大限流年
-            </DialogTitle>
-            <DialogDescription className="text-[13.5px] leading-[1.9] text-inkmuted">
-              将消耗 <span className="font-serif text-[16px] font-bold text-golddim">9</span>{' '}
-              灵签，逐限逐年引《紫微斗数全书》参详行运气象。当前为演示模式，输出为 mock 预览。
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <button
-              onClick={() => setDialogOpen(false)}
-              className="zf-btn inline-flex items-center justify-center rounded-full px-8 py-3 font-sans text-[14.5px] font-medium tracking-[0.14em] text-[#0B3B39] [background:linear-gradient(135deg,rgb(var(--gold-bright)),rgb(var(--gold)))]"
-            >
-              知道了
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
