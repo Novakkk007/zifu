@@ -1,7 +1,31 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { BRANCHES, MANSIONS, polar, rng, wedgePath } from '@/components/sanshi/astro'
-import { MANSION_ANGLE, MANSION_WEDGES, type QizhengChart } from '@/components/sanshi/qizheng'
+import { MANSION_ANGLE, MANSION_WEDGES } from '@/components/sanshi/qizheng'
+
+/** 星盘环输入（真实星历）：星曜按宿序 + 宿内进度布点 */
+export interface StarRingStar {
+  name: string
+  /** 宿序 0–27（角宿起） */
+  mansion: number
+  /** 宿内进度 0–1 */
+  fraction: number
+  /** 逆行标记 */
+  retrograde?: boolean
+}
+
+export interface StarRingChart {
+  stars: StarRingStar[]
+  /** 命宫宿序与宿内进度（金轴指向） */
+  mingMansion: number
+  mingFraction: number
+}
+
+/** 宿 + 宿内进度 → 环上角度（宿内自起点向终点顺布） */
+function starAngle(mansion: number, fraction: number): number {
+  const [a0, a1] = MANSION_WEDGES[mansion]
+  return a0 + fraction * (a1 - a0)
+}
 
 const C = 320 // 圆心
 const R_BG = 316
@@ -14,8 +38,8 @@ const R_STAR_TEXT = 166
 
 type Twinkle = { x: number; y: number; r: number; dur: number; delay: number }
 
-/** 七政四余 · 二十八宿星盘环（SVG，夜空圆盘 + 十一曜 + 命宫轴） */
-export default function StarRing({ chart }: { chart: QizhengChart }) {
+/** 七政四余 · 二十八宿星盘环（SVG，夜空圆盘 + 十一曜 + 命宫轴，真实星历布点） */
+export default function StarRing({ chart }: { chart: StarRingChart }) {
   // 24 颗背景小星点（固定种子，闪烁循环）
   const twinkles = useMemo<Twinkle[]>(() => {
     const rand = rng(20260214)
@@ -34,7 +58,8 @@ export default function StarRing({ chart }: { chart: QizhengChart }) {
   }, [])
 
   // 命宫轴旋转角（自正上方缓转至命宫宿度）
-  const axisRot = ((chart.mingAngle - 270 + 540) % 360) - 180
+  const mingAngle = starAngle(chart.mingMansion, chart.mingFraction)
+  const axisRot = ((mingAngle - 270 + 540) % 360) - 180
 
   return (
     <motion.svg
@@ -158,10 +183,11 @@ export default function StarRing({ chart }: { chart: QizhengChart }) {
         </text>
       </motion.g>
 
-      {/* 十一曜标记 */}
+      {/* 十一曜标记（真实星历位置；逆行曜加「逆」小印） */}
       {chart.stars.map((s, i) => {
-        const p = polar(C, C, R_STAR, s.angle)
-        const tp = polar(C, C, R_STAR_TEXT, s.angle)
+        const angle = starAngle(s.mansion, s.fraction)
+        const p = polar(C, C, R_STAR, angle)
+        const tp = polar(C, C, R_STAR_TEXT, angle)
         return (
           <motion.g
             key={s.name}
@@ -182,6 +208,18 @@ export default function StarRing({ chart }: { chart: QizhengChart }) {
             >
               {s.name}
             </text>
+            {s.retrograde && (
+              <text
+                x={tp.x}
+                y={tp.y + 13}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize={9}
+                className="fill-red-400/90 font-serif"
+              >
+                逆
+              </text>
+            )}
           </motion.g>
         )
       })}
