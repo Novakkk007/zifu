@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion'
-import { BRANCHES, polar } from '@/components/sanshi/astro'
-import { GENERAL_SHORT, type LiuRenKe } from '@/components/sanshi/daliuren'
+import { BRANCHES } from '@contracts/bazi-core'
+import { GENERAL_SHORT, type DaliurenChart } from '@contracts/engines/daliuren-core'
+import { polar } from '@/components/sanshi/astro'
 
 const C = 240
 
 /** 大六壬 · 天地盘圆环：外地盘十二支固定，内天盘随月将加时旋转，旁注十二天将 */
-export default function TiandiPan({ ke }: { ke: LiuRenKe }) {
+export default function TiandiPan({ chart }: { chart: DaliurenChart }) {
   return (
     <motion.svg
       viewBox="0 0 480 480"
@@ -72,7 +73,7 @@ export default function TiandiPan({ ke }: { ke: LiuRenKe }) {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 + e * 0.04, duration: 0.4 }}
               >
-                {BRANCHES[ke.heaven[e]]}
+                {BRANCHES[chart.heaven[e]]}
               </motion.text>
               <motion.text
                 x={pg.x}
@@ -85,7 +86,7 @@ export default function TiandiPan({ ke }: { ke: LiuRenKe }) {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 + e * 0.04, duration: 0.4 }}
               >
-                {GENERAL_SHORT[ke.generals[e]]}
+                {GENERAL_SHORT[chart.generals[e]]}
               </motion.text>
             </g>
           )
@@ -105,7 +106,7 @@ export default function TiandiPan({ ke }: { ke: LiuRenKe }) {
           fontSize={13}
           className="fill-silktext font-serif"
         >
-          日干支 {ke.dayGZ} · 时干支 {ke.hourGZ}
+          日干支 {chart.dayGanzhi} · 时干支 {chart.hourGanzhi}
         </text>
         <text
           x={C}
@@ -114,7 +115,7 @@ export default function TiandiPan({ ke }: { ke: LiuRenKe }) {
           fontSize={12}
           className="fill-goldbright font-serif"
         >
-          月将 {BRANCHES[ke.yuejiangBranch]}·{ke.yuejiangName}
+          月将 {chart.yuejiang.branch}·{chart.yuejiang.name}（{chart.yuejiang.zhongqi}后）
         </text>
       </motion.g>
     </motion.svg>
