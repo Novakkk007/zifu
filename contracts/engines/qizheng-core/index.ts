@@ -66,7 +66,8 @@ export function hecanSynthesize(input: BirthInput): HecanArtContribution {
   return {
     keyPoints,
     wuxingFocus: STAR_WUXING[String(d.mingzhu)] ?? null,
-    mingGongBranch: d.minggong.branch,
+    // 归一化为纯地支（七政引擎输出为「午宫」格式，剥离后缀以与八字命宫互证对齐）
+    mingGongBranch: d.minggong.branch.replace(/宫$/, ''),
     structureScore: null,
     summary: `七政看星：命宫${d.minggong.branch}（${d.minggong.zodiac}），命主星${d.mingzhu}。`,
     precision: result.meta.precision,
