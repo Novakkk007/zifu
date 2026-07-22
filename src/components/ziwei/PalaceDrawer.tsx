@@ -6,11 +6,11 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
-import type { PalaceCell } from '@/components/ziwei/logic'
+import type { ZiweiPalace } from '@/components/ziwei/logic'
 import { HUA_COLOR, PALACE_DUTY, palaceSentences } from '@/components/ziwei/logic'
 
 type PalaceDrawerProps = {
-  cell: PalaceCell | null
+  cell: ZiweiPalace | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -69,11 +69,11 @@ export default function PalaceDrawer({ cell, open, onOpenChange }: PalaceDrawerP
               </ul>
             </div>
 
-            {cell.majors.some((s) => s.hua) && (
+            {[...cell.majors, ...cell.minors].some((s) => s.hua) && (
               <div className="mt-6 rounded-lg border border-gold/20 bg-deep3/60 px-5 py-4">
                 <p className="text-[12px] tracking-[0.3em] text-silkmuted">四 化 落 宫</p>
                 <div className="mt-3 flex flex-wrap gap-3">
-                  {cell.majors
+                  {[...cell.majors, ...cell.minors]
                     .filter((s) => s.hua)
                     .map((s) => (
                       <span key={s.name} className="flex items-center gap-1.5 text-[13px] text-silktext">
@@ -89,7 +89,7 @@ export default function PalaceDrawer({ cell, open, onOpenChange }: PalaceDrawerP
             )}
 
             <p className="mt-6 text-[12px] leading-[1.9] text-silkmuted">
-              大限 {cell.daxian[0]}–{cell.daxian[1]} 岁行此宫 · 演示盘星曜位置仅供界面展示
+              大限 {cell.daxian.startAge}–{cell.daxian.endAge} 岁（虚岁）行此宫 · 北派《紫微斗数全书》安星法
             </p>
           </div>
         )}

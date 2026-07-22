@@ -1,14 +1,14 @@
 import { motion } from 'framer-motion'
-import type { PalaceCell, ZiweiChart } from '@/components/ziwei/logic'
+import type { ZiweiChartData, ZiweiPalace } from '@/components/ziwei/logic'
 import { GRID_POS, HUA_COLOR } from '@/components/ziwei/logic'
 import { cn } from '@/lib/utils'
 
 type ZiweiChartProps = {
-  chart: ZiweiChart
-  onSelect: (cell: PalaceCell) => void
+  chart: ZiweiChartData
+  onSelect: (cell: ZiweiPalace) => void
 }
 
-/** 十二宫盘：4×4 宫格 + 中央命主信息区 */
+/** 十二宫盘：4×4 宫格 + 中央命主信息区（数据来自服务端真实安星） */
 export default function ZiweiChart({ chart, onSelect }: ZiweiChartProps) {
   return (
     <motion.div
@@ -68,7 +68,18 @@ export default function ZiweiChart({ chart, onSelect }: ZiweiChartProps) {
                 </div>
                 {/* 辅星 / 杂曜 */}
                 <p className="mt-1 line-clamp-2 text-[10px] leading-[1.7] text-inkmuted sm:text-[11px]">
-                  {cell.minors.join('　')}
+                  {cell.minors.map((s) => (
+                    <span key={s.name} className="mr-1.5 inline-flex items-center">
+                      {s.name}
+                      {s.hua && (
+                        <span
+                          className="ml-0.5 inline-block h-1.5 w-1.5 rounded-full"
+                          style={{ backgroundColor: HUA_COLOR[s.hua] }}
+                          title={`化${s.hua}`}
+                        />
+                      )}
+                    </span>
+                  ))}
                 </p>
               </div>
 
@@ -77,8 +88,7 @@ export default function ZiweiChart({ chart, onSelect }: ZiweiChartProps) {
                   {cell.name}
                 </span>
                 <span className="text-[10px] tracking-[0.08em] text-inkmuted/80 sm:text-[11px]">
-                  {cell.stem}
-                  {cell.branch}
+                  {cell.ganzhi}
                 </span>
               </div>
             </motion.button>
@@ -104,13 +114,15 @@ export default function ZiweiChart({ chart, onSelect }: ZiweiChartProps) {
               Ziwei Chart
             </p>
             <p className="mt-2 font-serif text-[15px] font-bold tracking-[0.2em] text-inktext sm:text-[17px]">
-              {chart.yearStem}
-              {chart.yearBranch}年生 · {chart.ju}
+              {chart.yearGanzhi}年生 · {chart.ju.name}
             </p>
             <div className="zf-hairline mx-auto mt-3" />
             <p className="mt-3 text-[11.5px] leading-[1.9] text-inkmuted sm:text-[12.5px]">
               命主 <span className="font-serif text-golddim">{chart.mingZhu}</span>{'　'}身主{' '}
               <span className="font-serif text-golddim">{chart.shenZhu}</span>
+            </p>
+            <p className="mt-1 text-[10.5px] leading-[1.8] tracking-[0.06em] text-inkmuted/80 sm:text-[11.5px]">
+              命宫{chart.mingGongGanzhi} · 身宫{chart.shenBranch} · {chart.genderKind}大限{chart.daxian.direction}
             </p>
             <p className="mt-1 text-[10.5px] tracking-[0.08em] text-inkmuted/80 sm:text-[11.5px]">
               点击宫格查看宫位详情
