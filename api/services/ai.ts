@@ -55,40 +55,102 @@ function readEnv(): AiEnv {
   };
 }
 
+import { ENGINE_FRAMEWORKS, type EngineFramework } from "./ai-frameworks";
+
 const PERSONA_STYLE: Record<Persona, string> = {
-  scholar: "严谨克制，逐句引经据典，标注典籍出处",
-  hermit: "通达幽默，以生活化譬喻讲解，不失分寸",
+  scholar:
+    "严谨克制，条分缕析。凡有论断必归因典籍或盘象，句式如「按《滴天髓》之法」「由此盘象可见」；不作主观渲染，不用惊叹语。",
+  hermit:
+    "通达幽默，以生活化譬喻讲解术数之理，如围炉夜话；譬喻须贴切不油滑，分寸感在先，涉及断语处与学者人格同守克制。",
 };
 
 const DEPTH_STYLE: Record<Depth, string> = {
-  pro: "使用专业术语（十神、格局、用神、岁运），面向有基础的读者",
-  plain: "使用通俗语言，避免术语堆叠，面向初次接触的读者",
+  pro: "使用专业术语（十神、格局、用神、岁运、庙旺、纳甲等），按框架逐节展开，面向有基础的读者。",
+  plain: "保留框架顺序，但每节先用一句白话说清结论，再简释术语；避免术语堆叠，面向初次接触的读者。",
 };
 
+/** 全局表述红线（叠加各引擎特有 caution） */
+const GLOBAL_CAUTIONS = [
+  "不作生死、疾病、灾祸之确定性断语；不言「必死」「必败」「必离」之类。",
+  "不给医疗、法律、投资之直接指令；相关话题仅以传统命理视角作文化性陈述。",
+  "不恐吓、不渲染厄运；凶象以「传统命理认为此处需留意」的归因句式表述。",
+  "引典只限给定书目，且须为真实原文或通行表述；不确定出处者宁可不引，严禁杜撰引文。",
+];
+
+function frameworkFor(chartType: string): EngineFramework {
+  return (
+    ENGINE_FRAMEWORKS[chartType] ?? {
+      name: chartType,
+      books: [],
+      steps: ["盘象概览", "要点分析", "综合参详"],
+    }
+  );
+}
+
+/** 术数类别：ming 命术（禀赋命格）/ zhan 占术（具体事项）/ qian 签术（灵签寓意） */
+function chartTypeGroup(chartType: string): "ming" | "zhan" | "qian" {
+  if (chartType === "liuyao" || chartType === "qimen" || chartType === "daliuren") {
+    return "zhan";
+  }
+  if (chartType === "draw") return "qian";
+  return "ming";
+}
+
 function buildPrompt(req: ReadingRequest): string {
-  return [
-    `你是一位术数参详助手，请以${req.persona === "scholar" ? "学者" : "隐士"}人格输出解读。`,
-    `文风要求：${PERSONA_STYLE[req.persona]}；深度要求：${DEPTH_STYLE[req.depth]}。`,
-    `解读对象类型：${req.chartType}。`,
-    `排盘信息：${req.chartSummary}`,
-    "请输出 3-5 段解读，末尾附一句免责说明：仅供文化研究与体验，不构成任何决策建议。",
-  ].join("\n");
+  const fw = frameworkFor(req.chartType);
+  const lines: string[] = [
+    `请以「${req.persona === "scholar" ? "严谨学者" : "幽默隐士"}」人格，为一则${fw.name}排盘结果作参详解读。`,
+    "",
+    `【人格文风】${PERSONA_STYLE[req.persona]}`,
+    `【深度要求】${DEPTH_STYLE[req.depth]}`,
+    "",
+    `【解读框架】按下列次第分节展开，每节冠以四字至八字小标题：`,
+    ...fw.steps.map((s, i) => `${i + 1}. ${s}`),
+    "",
+    `【排盘摘要】（解读的一切依据，不可超出此范围虚增盘象）`,
+    req.chartSummary,
+    "",
+    `【引典范围】仅可引用：${fw.books.length > 0 ? fw.books.join("、") : "（本术不强制引典）"}；格式如《书名》：「原文」。`,
+    `【红线】`,
+    ...GLOBAL_CAUTIONS.map((c) => `· ${c}`),
+    ...(fw.caution ? [`· ${fw.caution}`] : []),
+    "",
+    `【篇幅】${req.depth === "pro" ? "按框架 5-7 节" : "按框架 3-4 节"}，每节 2-4 句。`,
+    `【结尾】另起一行，附：古籍数字化 · AI 参详 — 仅供文化研究与体验，不构成任何决策建议。`,
+  ];
+  return lines.join("\n");
 }
 
 /** 降级模板：无 API 密钥时的确定性输出（同一输入必得同一输出） */
 function fallbackReading(req: ReadingRequest): string {
+  const fw = frameworkFor(req.chartType);
   const personaLine =
     req.persona === "scholar"
       ? "谨按典籍体例，就此盘作一概览。"
       : "且坐下来，听我慢慢与你拆解这张盘。";
-  const depthLine =
-    req.depth === "pro"
-      ? "先观日主之旺衰，次察格局之成败，再审岁运之流转。"
-      : "简单来说，这张盘讲的是你的底色、长处与节奏。";
+  const depthLine = (() => {
+    if (req.depth === "pro") {
+      return "先观日主之旺衰，次察格局之成败，再审岁运之流转。";
+    }
+    // plain 深度的开场白按术数类别区分：命术言禀赋，占术言事态，签术言寓意
+    if (chartTypeGroup(req.chartType) === "zhan") {
+      return "简单来说，这一局讲的是此事的来龙去脉、关键所在与时机节奏。";
+    }
+    if (chartTypeGroup(req.chartType) === "qian") {
+      return "简单来说，这一签讲的是寓意所指、当下宜守与行持方向。";
+    }
+    return "简单来说，这张盘讲的是你的底色、长处与节奏。";
+  })();
+  // 演示纲要：取解读框架前三节作示例（确定性，随引擎而变）
+  const outline = fw.steps
+    .slice(0, 3)
+    .map((s, i) => `${i + 1}. ${s}`)
+    .join("\n");
   return [
     personaLine,
     depthLine,
-    `【${req.chartType}】${req.chartSummary}`,
+    `【${fw.name} · 排盘摘要】\n${req.chartSummary}`,
+    `【参详纲要】真实模型将按下列次第逐节引经参详：\n${outline}`,
     "当前为演示引擎输出：配置 AI_API_KEY 后，此处将由真实大模型逐句参详。",
     "古籍数字化 · AI 参详 — 仅供文化研究与体验，不构成任何决策建议。",
   ].join("\n\n");
@@ -122,7 +184,11 @@ export async function generateReading(req: ReadingRequest): Promise<ReadingResul
       body: JSON.stringify({
         model: env.model,
         messages: [
-          { role: "system", content: "你是紫府平台的术数参详助手，输出克制、专业、可溯源。" },
+          {
+            role: "system",
+            content:
+              "你是紫府平台的术数参详助手。知识根基为《周易》《滴天髓》《三命通会》《紫微斗数全书》《果老星宗》《增删卜易》等公版典籍。输出准则：克制、专业、可溯源——凡论断必归因典籍或盘象；不作生死疾病灾祸之确定性断语；不给医疗、法律、投资之直接指令；严禁杜撰典籍引文；摘要之外不得虚增盘象。",
+          },
           { role: "user", content: buildPrompt(req) },
         ],
         temperature: 0.7,
