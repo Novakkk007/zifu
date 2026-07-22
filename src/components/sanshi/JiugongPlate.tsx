@@ -1,5 +1,9 @@
 import { motion } from 'framer-motion'
-import { DOOR_KIND, GRID_ORDER, type Palace } from '@/components/sanshi/qimen'
+import {
+  DOOR_KIND,
+  GRID_ORDER,
+  type QimenPalace,
+} from '@contracts/engines/qimen-core'
 import { cn } from '@/lib/utils'
 
 const DOOR_CLS: Record<'吉' | '凶' | '平', string> = {
@@ -9,11 +13,14 @@ const DOOR_CLS: Record<'吉' | '凶' | '平', string> = {
 }
 
 type JiugongPlateProps = {
-  palaces: Palace[]
-  onSelect: (p: Palace) => void
+  palaces: QimenPalace[]
+  onSelect: (p: QimenPalace) => void
 }
 
-/** 奇门九宫盘：绢米宫格 + 神星门干分层 + 值符金边呼吸 + 值使金印 */
+/**
+ * 奇门九宫盘（真实拆补法数据）：绢米宫格 + 神星门干分层 +
+ * 值符金边呼吸 + 值使金印 + 空亡/马星标注。
+ */
 export default function JiugongPlate({ palaces, onSelect }: JiugongPlateProps) {
   return (
     <div className="mx-auto grid w-full max-w-[720px] grid-cols-3 gap-2.5 md:gap-3">
@@ -29,8 +36,9 @@ export default function JiugongPlate({ palaces, onSelect }: JiugongPlateProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: idx * 0.07, duration: 0.55, ease: 'easeOut' }}
             className={cn(
-              'relative flex min-h-[128px] flex-col rounded-lg border bg-silk2 p-3 text-left transition-colors hover:border-gold/50 md:min-h-[150px] md:p-4',
+              'relative flex min-h-[138px] flex-col rounded-lg border bg-silk2 p-3 text-left transition-colors hover:border-gold/50 md:min-h-[160px] md:p-4',
               p.isZhifu ? 'animate-gold-breathe border-gold/70' : 'border-gold/15',
+              p.isKongWang && 'opacity-80',
             )}
           >
             {/* 值符角标 */}
@@ -39,15 +47,31 @@ export default function JiugongPlate({ palaces, onSelect }: JiugongPlateProps) {
                 值符
               </span>
             )}
+            {/* 空亡 / 马星角标 */}
+            <div className="absolute -top-2 right-2 flex gap-1">
+              {p.isKongWang && (
+                <span className="rounded-full border border-inkmuted/40 bg-silk px-1.5 py-px font-sans text-[9.5px] tracking-[0.1em] text-inkmuted">
+                  空亡
+                </span>
+              )}
+              {p.hasMaXing && (
+                <span className="rounded-full border border-golddim/50 bg-silk px-1.5 py-px font-sans text-[9.5px] tracking-[0.1em] text-golddim">
+                  马星
+                </span>
+              )}
+            </div>
             <div className="flex items-start justify-between">
               <span className="text-[10.5px] tracking-[0.1em] text-inkmuted">{p.gua}</span>
               <span className="text-[12px] tracking-[0.08em] text-golddim">
-                {p.god || '—'}
+                {p.god ? `${p.god}${p.godAlias ? `(${p.godAlias})` : ''}` : '—'}
               </span>
             </div>
             <div className="mt-1.5 flex flex-1 flex-col items-center justify-center gap-0.5 md:mt-2">
               <span className="font-serif text-[16px] font-bold tracking-[0.06em] text-inktext md:text-[17px]">
-                {p.star}
+                {p.star || '中宫'}
+                {p.starJi && (
+                  <span className="ml-1 text-[11px] font-normal text-inkmuted">({p.starJi}寄)</span>
+                )}
               </span>
               <span className={cn('flex items-center gap-1 text-[14px]', DOOR_CLS[kind])}>
                 {p.door ? `${p.door}门` : '寄宫'}
@@ -61,7 +85,10 @@ export default function JiugongPlate({ palaces, onSelect }: JiugongPlateProps) {
             <div className="mt-1.5 space-y-0.5 border-t border-golddim/15 pt-1.5 text-[11.5px] leading-snug text-inkmuted md:mt-2">
               <p>
                 <span className="mr-1.5 text-golddim/80">天</span>
-                {p.tianGan}
+                {p.tianGan || '—'}
+                {p.tianGanJi && (
+                  <span className="ml-1 text-[10px] text-inkmuted/80">+{p.tianGanJi}(寄)</span>
+                )}
               </p>
               <p>
                 <span className="mr-1.5 text-golddim/80">地</span>

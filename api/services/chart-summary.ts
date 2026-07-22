@@ -11,10 +11,35 @@
  *   请勿将整个 chart 对象直接发给 AI，应只发送本函数产出字段对应的内容）。
  */
 import type { BaziChartV2, Wuxing } from "@contracts/bazi-core";
+import { qimenSummaryForAi } from "@contracts/engines/qimen-core";
+import type { QimenChart } from "@contracts/engines/qimen-core";
+import type { EngineResult } from "@contracts/engines/engine-result";
 
 const WUXING_ORDER: Wuxing[] = ["金", "木", "水", "火", "土"];
 
+/** EngineResult 信封形状检测（奇门等引擎落库结果） */
+function asEngineResult(chart: unknown): EngineResult<unknown> | null {
+  if (
+    chart &&
+    typeof chart === "object" &&
+    "meta" in chart &&
+    "data" in chart &&
+    typeof (chart as { meta?: { engine?: unknown } }).meta?.engine === "string"
+  ) {
+    return chart as EngineResult<unknown>;
+  }
+  return null;
+}
+
 export function chartSummaryForAi(chart: BaziChartV2): string {
+  // 引擎信封结果（如奇门 EngineResult<QimenChart>）走各自引擎的摘要
+  const wrapped = asEngineResult(chart);
+  if (wrapped) {
+    if (wrapped.meta.engine === "qimen") {
+      return qimenSummaryForAi(wrapped.data as QimenChart);
+    }
+    throw new Error(`暂不支持的引擎摘要：${wrapped.meta.engine}`);
+  }
   const { pillars } = chart;
   const pillarParts = [pillars.year, pillars.month, pillars.day, pillars.hour]
     .filter((p): p is NonNullable<typeof p> => p !== null)
