@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import BrandLogo from '@/components/BrandLogo'
 
 /** 外环：干支（八字 · 四柱干支） */
 const OUTER = '甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥'.split('')
@@ -69,7 +70,7 @@ function Ring({ spec, index }: { spec: RingSpec; index: number }) {
 
 /**
  * 三盘环图：三个同心金线圆环（八字/紫微/七政）各自反向缓转，
- * 圆心 logo.png 64px + 金点。入场由页面 GSAP（.tri-ring scale .7→1）驱动。
+ * 圆心 BrandLogo 葫芦母标 64px + 金点。入场由页面 GSAP（.tri-ring scale .7→1）驱动。
  */
 const TriRingDiagram = memo(function TriRingDiagram() {
   return (
@@ -79,7 +80,7 @@ const TriRingDiagram = memo(function TriRingDiagram() {
       ))}
       {/* 圆心 */}
       <div className="tri-ring absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center opacity-0">
-        <img src="/assets/logo.png" alt="紫府" className="h-16 w-16" />
+        <BrandLogo variant="mark" theme="indigo" size={64} />
         <span className="mt-2 h-1.5 w-1.5 rounded-full bg-goldbright" />
       </div>
     </div>

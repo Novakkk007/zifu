@@ -273,9 +273,11 @@ export default function Home() {
         </div>
 
         {/* 品牌水印 */}
-        <img
-          src="/assets/logo-mark.svg"
-          alt=""
+        <BrandLogo
+          variant="mark"
+          theme="indigo"
+          size={320}
+          title=""
           aria-hidden
           className="animate-spin-slow pointer-events-none absolute -bottom-10 -right-10 w-[320px] opacity-[0.1]"
         />

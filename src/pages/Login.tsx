@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import BrandLogo from "@/components/BrandLogo";
 
 /**
  * OAuth state 由服务端 /api/oauth/begin 生成（CSPRNG 随机、一次性、10 分钟有效），
@@ -14,6 +15,9 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
+          <div className="mb-4 flex justify-center">
+            <BrandLogo variant="stacked" theme="ivory" size={96} />
+          </div>
           <CardTitle>Welcome</CardTitle>
         </CardHeader>
         <CardContent>

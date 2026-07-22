@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import BrandLogo from '@/components/BrandLogo'
 import type { ZiweiChartData, ZiweiPalace } from '@/components/ziwei/logic'
 import { GRID_POS, HUA_COLOR } from '@/components/ziwei/logic'
 import { cn } from '@/lib/utils'
@@ -103,11 +104,13 @@ export default function ZiweiChart({ chart, onSelect }: ZiweiChartProps) {
           style={{ gridRowStart: 2, gridRowEnd: 4, gridColumnStart: 2, gridColumnEnd: 4 }}
           className="relative flex flex-col items-center justify-center overflow-hidden bg-silk2 p-4 text-center"
         >
-          <img
-            src="/assets/logo.png"
-            alt=""
+          <BrandLogo
+            variant="mark"
+            theme="ivory"
+            size={160}
+            title=""
             aria-hidden
-            className="pointer-events-none absolute inset-0 m-auto w-2/3 opacity-20"
+            className="pointer-events-none absolute inset-0 m-auto w-2/3 items-center justify-center opacity-20"
           />
           <div className="relative">
             <p className="font-latin text-[10px] uppercase tracking-[0.38em] text-golddim sm:text-[11px]">

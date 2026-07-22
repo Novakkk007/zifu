@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { BRANCHES, MANSIONS, MANSION_ANGLE, MANSION_WEDGES, polar, rng, wedgePath } from '@/components/sanshi/astro'
+import { BRAND_MARK_VIEWBOX, BrandMarkPaths } from '@/components/BrandLogo'
 
 /** 星盘环输入（真实星历）：星曜按宿序 + 宿内进度布点 */
 export interface StarRingStar {
@@ -223,8 +224,19 @@ export default function StarRing({ chart }: { chart: StarRingChart }) {
         )
       })}
 
-      {/* 圆心：logo + 紫府星盘 */}
-      <image href="/assets/logo-mark.svg" x={C - 24} y={C - 30} width={48} height={48} />
+      {/* 圆心：葫芦母标（BrandLogo 同源矢量） + 紫府星盘 */}
+      <svg
+        x={C - 20}
+        y={C - 34}
+        width={40}
+        height={58}
+        viewBox={BRAND_MARK_VIEWBOX}
+        color="rgb(var(--gold))"
+        role="img"
+        aria-label="紫府"
+      >
+        <BrandMarkPaths />
+      </svg>
       <text
         x={C}
         y={C + 36}
