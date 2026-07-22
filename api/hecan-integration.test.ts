@@ -76,6 +76,8 @@ describe("三术合参 · 真实引擎集成", () => {
       minute: 30,
       gender: "female",
       isLeapMonth: true, // 1990 年闰五月
+      useTrueSolarTime: false,
+      dayRollover: "zichu",
     };
     const s = await synthesizeHecan(lunar, { loadEngine: staticLoader });
     expect(s.report.availableArts).toBe(3);

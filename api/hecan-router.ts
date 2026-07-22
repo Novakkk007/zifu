@@ -54,7 +54,13 @@ export const hecanRouter = createRouter({
 
       let synthesis: Awaited<ReturnType<typeof synthesizeHecan>>;
       try {
-        synthesis = await synthesizeHecan(birth);
+        // 静态注册 loader：ziwei/qizheng 引擎均在本仓库内，
+        // 避免动态探测在 esbuild 单文件 bundle 下解析失败导致误报 unavailable。
+        const staticLoader: HecanEngineLoader = async (art) =>
+          art === "ziwei"
+            ? { hecanSynthesize: ziweiSynthesize }
+            : { hecanSynthesize: qizhengSynthesize };
+        synthesis = await synthesizeHecan(birth, { loadEngine: staticLoader });
       } catch (err) {
         throw new TRPCError({
           code: "BAD_REQUEST",
