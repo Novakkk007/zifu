@@ -73,6 +73,8 @@ export interface BirthFormState {
   day: number
   /** 时辰地支序号 0-11；null = 时辰不详 */
   hourBranch: number | null
+  /** 仅时辰=子时有效：早子时(00:00-01:00) / 晚子时(23:00-24:00) */
+  ziVariant: 'early' | 'late'
   minute: number
   gender: 'male' | 'female'
   /** 预设城市名，或 CUSTOM_CITY */
@@ -93,6 +95,7 @@ export function defaultBirthForm(): BirthFormState {
     month: 6,
     day: 15,
     hourBranch: 6,
+    ziVariant: 'early',
     minute: 0,
     gender: 'male',
     city: '北京',
@@ -113,8 +116,16 @@ export function toPayload(f: BirthFormState, title?: string): PaipanPayload {
     year: f.year,
     month: f.month,
     day: f.day,
-    // 时辰支序 → 时段中点小时（子=0、丑=2、寅=4……）
-    hour: f.hourBranch === null ? null : (f.hourBranch * 2) % 24,
+    // 时辰支序 → 代表小时：丑=2、寅=4……；子时按早子(0)/晚子(23)区分，
+    // 晚子时提交 23，由引擎按 dayRollover 规则处理换日（修复 23:30 被错转为 00:30 的 bug）
+    hour:
+      f.hourBranch === null
+        ? null
+        : f.hourBranch === 0
+          ? f.ziVariant === 'late'
+            ? 23
+            : 0
+          : (f.hourBranch * 2) % 24,
     minute: Math.min(59, Math.max(0, Math.round(f.minute) || 0)),
     gender: f.gender,
     isLeapMonth: f.calendar === 'lunar' ? f.isLeapMonth : false,
@@ -242,6 +253,24 @@ export default function BirthFormCard({ value, onChange, loading, error, onSubmi
           ))}
           <option value="unknown">时辰不详（不排时柱）</option>
         </FormSelect>
+        {value.hourBranch === 0 && (
+          <div className="flex items-center gap-2 self-end pb-1">
+            {(['early', 'late'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => set('ziVariant', v)}
+                className={`rounded-full border px-3 py-1.5 font-sans text-[12px] tracking-[0.1em] transition-colors ${
+                  value.ziVariant === v
+                    ? 'border-gold bg-gold/15 text-golddim'
+                    : 'border-inkmuted/30 text-inkmuted hover:border-golddim'
+                }`}
+              >
+                {v === 'early' ? '早子时 00–01' : '晚子时 23–24'}
+              </button>
+            ))}
+          </div>
+        )}
         <FormInput
           label="分钟（0–59）"
           id="bazi-minute"
