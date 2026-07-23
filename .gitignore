@@ -20,3 +20,7 @@ coverage/
 .nyc_output/
 # Logs
 *.log
+
+# Playwright
+playwright-report/
+test-results/
