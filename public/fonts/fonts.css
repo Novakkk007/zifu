@@ -1,0 +1,116 @@
+/*
+ * 紫府自托管字体 —— 替代 Google Fonts CDN
+ *
+ * 使用方式：
+ * 1. 运行 scripts/download-fonts.sh 下载 woff2 到 public/fonts/
+ * 2. 在 index.html 中把 Google Fonts <link> 替换为：
+ *    <link rel="stylesheet" href="/fonts/fonts.css" />
+ *
+ * 优点：消除 Google CDN 跨境延迟（中国大陆用户尤其明显），
+ *       离线可用，避免第三方追踪。
+ */
+
+/* ===== Noto Serif SC (宋体 / 标题) ===== */
+
+@font-face {
+  font-family: 'Noto Serif SC';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Noto Serif SC'), local('Songti SC'), local('STSong'), local('SimSun'),
+       url('/fonts/noto-serif-sc-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Noto Serif SC';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Noto Serif SC'), local('Songti SC'),
+       url('/fonts/noto-serif-sc-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Noto Serif SC';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Noto Serif SC'), local('Songti SC'),
+       url('/fonts/noto-serif-sc-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Noto Serif SC';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: local('Noto Serif SC'), local('Songti SC'),
+       url('/fonts/noto-serif-sc-900.woff2') format('woff2');
+}
+
+/* ===== Noto Sans SC (黑体 / 正文) ===== */
+
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: local('Noto Sans SC'), local('PingFang SC'), local('Microsoft YaHei'),
+       url('/fonts/noto-sans-sc-300.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Noto Sans SC'), local('PingFang SC'), local('Microsoft YaHei'),
+       url('/fonts/noto-sans-sc-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: local('Noto Sans SC'), local('PingFang SC'), local('Microsoft YaHei'),
+       url('/fonts/noto-sans-sc-500.woff2') format('woff2');
+}
+
+/* ===== Cormorant Garamond (拉丁装饰) ===== */
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Cormorant Garamond'), local('Georgia'), local('Times New Roman'),
+       url('/fonts/cormorant-garamond-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Cormorant Garamond'), local('Georgia'),
+       url('/fonts/cormorant-garamond-400i.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: local('Cormorant Garamond'),
+       url('/fonts/cormorant-garamond-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: local('Cormorant Garamond'),
+       url('/fonts/cormorant-garamond-500i.woff2') format('woff2');
+}
