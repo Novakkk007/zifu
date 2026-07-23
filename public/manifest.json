@@ -1,0 +1,25 @@
+{
+  "name": "紫府 Zifu Palace · 古籍数字化 AI 推演平台",
+  "short_name": "紫府",
+  "description": "以《周易》《滴天髓》《三命通会》等公版典籍原文为根，AI 逐句引经参详；按次付费，无需订阅。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#100A24",
+  "theme_color": "#100A24",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/assets/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["lifestyle", "education", "reference"],
+  "lang": "zh-CN",
+  "dir": "ltr"
+}
