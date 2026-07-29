@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router'
 import { Coins, ScrollText, ShieldAlert, UserRound, Wallet } from 'lucide-react'
 import { trpc } from '@/providers/trpc'
 import { useAuth } from '@/hooks/useAuth'

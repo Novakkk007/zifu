@@ -7,7 +7,7 @@
  */
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import SectionHeading from '@/components/SectionHeading'
 import { SegmentedControl } from '@/components/FormControls'
 import { GoldButton } from '@/components/Buttons'

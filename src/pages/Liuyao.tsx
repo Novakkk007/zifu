@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { motion } from 'framer-motion'
 import { History, ShieldCheck, Zap } from 'lucide-react'
 import FloatingGlyphs from '@/components/FloatingGlyphs'

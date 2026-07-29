@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { cn } from '@/lib/utils'
 import PageHero from '@/components/content/PageHero'
 import SectionHeading from '@/components/SectionHeading'

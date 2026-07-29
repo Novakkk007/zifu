@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { Sparkle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TagPill } from '@/components/Buttons'

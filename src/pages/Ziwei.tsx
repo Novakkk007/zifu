@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
 import QuoteStrip from '@/components/QuoteStrip'

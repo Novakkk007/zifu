@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router'
 import { MessageSquarePlus, Loader2, CheckCircle2 } from 'lucide-react'
 import { trpc } from '@/providers/trpc'
 import {

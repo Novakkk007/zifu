@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { memo, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
