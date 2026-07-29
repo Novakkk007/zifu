@@ -8,11 +8,13 @@ interface State {
   retryKey: number
 }
 
-/** 生成简短匿名错误 ID（不泄露路径/数据） */
+/** CSPRNG 生成匿名错误 ID */
 function makeErrorId(): string {
   const chars = 'abcdefghjkmnpqrstuvwxyz23456789'
+  const arr = new Uint8Array(8)
+  crypto.getRandomValues(arr)
   let id = ''
-  for (let i = 0; i < 8; i++) id += chars[Math.floor(Math.random() * chars.length)]
+  for (let i = 0; i < 8; i++) id += chars[arr[i] % chars.length]
   return `ERR-${id}`
 }
 
@@ -23,8 +25,7 @@ export default class ErrorBoundary extends Component<Props, State> {
     return { errorId: makeErrorId() }
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    // 仅在 console 输出匿名 ID，不打印原始 error
+  componentDidCatch(_error: Error, info: ErrorInfo) {
     console.error(`[ErrorBoundary ${this.state.errorId}]`, info.componentStack?.slice(0, 200))
   }
 
@@ -62,6 +63,6 @@ export default class ErrorBoundary extends Component<Props, State> {
         </div>
       )
     }
-    return <ErrorBoundary key={retryKey}>{this.props.children}</ErrorBoundary>
+    return <div key={retryKey}>{this.props.children}</div>
   }
 }
