@@ -28,14 +28,8 @@ import {
   hourBranchOf,
   hourLuck,
   solarTermOn,
-} from '@/components/content/ganzhi'
-import {
-  HOUR_TIPS,
-  hebenReading,
-  lunarApprox,
-  yijiOf,
-} from '@/components/content/almanac'
-import type { HourLuck } from '@/components/content/ganzhi'
+} from '@contracts/engines/daily-core'
+import type { HourLuck } from '@contracts/engines/daily-core'
 
 const MONTHS_EN = [
   'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
@@ -757,7 +751,7 @@ export default function Daily() {
       <div className="zf-fade-to-silk h-[160px]" />
 
       {/* 全站统一真实度标注：演示模式 */}
-      <FeatureStatusBadge kind="demo" />
+      <FeatureStatusBadge kind="partial" />
 
       {/* S2 · 今日详卡 */}
       <section className="relative bg-silk py-24">
