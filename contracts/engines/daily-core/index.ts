@@ -53,20 +53,33 @@ export function yearGanzhiIndex(year: number): number {
   return (year - 4) % 60
 }
 
-/** 月柱：五虎遁（年干定月干）+ 月份定月支 */
-export function monthGanzhiIndex(yearGanIdx: number, month: number): number {
-  // 月支：寅为正月（index 2）
-  const branchIdx = (month + 1) % 12
-  // 月干：五虎遁 —— (年干 × 2 + 月份 - 1) % 10
-  const stemIdx = (yearGanIdx * 2 + month - 1) % 10
-  return stemIdx * 12 + branchIdx
+/** 六十甲子序号：stemIdx + branchIdx → 0-59 */
+function jiaziIndex(stemIdx: number, branchIdx: number): number {
+  // 解同余方程 i%10=s, i%12=b → 步长为 10，从 s 开始找到 branch 匹配
+  for (let i = stemIdx; i < 60; i += 10) {
+    if (i % 12 === branchIdx) return i
+  }
+  return 0 // unreachable for valid inputs
 }
 
-/** 时柱：五鼠遁（日干定时干）+ 时辰定时支 */
+/** 月柱：节气定月支 + 五虎遁定月干 */
+export function monthGanzhiIndex(yearStemIdx: number, month: number): number {
+  // 月支：寅为正月 → branch 2, month 1→2, month 12(丑月)→1
+  const branchIdx = month === 12 ? 1 : (month + 1) % 12
+  // 五虎遁（甲己丙寅、乙庚戊寅、丙辛庚寅、丁壬壬寅、戊癸甲寅）
+  // 甲年(stem 0)→寅月 stem 2; 乙年(stem 1)→寅月 stem 4
+  const firstMonthStem = ((yearStemIdx % 5) * 2 + 2) % 10
+  const stemIdx = (firstMonthStem + month - 1) % 10
+  return jiaziIndex(stemIdx, branchIdx)
+}
+
+/** 时柱：五鼠遁（日干定时干） */
 export function hourGanzhiIndex(dayStemIdx: number, hour: number): number {
   const branchIdx = Math.floor(((hour + 1) % 24) / 2)
-  const stemIdx = (dayStemIdx * 2 + branchIdx) % 10
-  return stemIdx * 12 + branchIdx
+  // 五鼠遁：甲己日起甲子(stem 0)、乙庚日起丙子(2)、丙辛日起戊子(4)、丁壬日起庚子(6)、戊癸日起壬子(8)
+  const firstHourStem = ((dayStemIdx % 5) * 2) % 10
+  const stemIdx = (firstHourStem + branchIdx) % 10
+  return jiaziIndex(stemIdx, branchIdx)
 }
 
 /** 时辰 → 地支索引 */
@@ -76,9 +89,9 @@ export function hourBranchOf(hour: number): number {
 
 // ===================== 输出格式化 =====================
 
-/** 索引 → 天干地支标签 */
+/** 六十甲子索引 → 天干地支标签 */
 export function ganzhiLabel(idx: number): string {
-  return `${STEMS[idx / 12 | 0]}${BRANCHES[idx % 12]}`
+  return `${STEMS[idx % 10]}${BRANCHES[idx % 12]}`
 }
 
 /** 当前节气（近似） */
@@ -167,9 +180,9 @@ export function getDailySummary(date?: Date): DailySummary {
   const hour = d.getHours()
 
   const yearIdx = yearGanzhiIndex(y)
-  const yearStemIdx = yearIdx / 12 | 0
+  const yearStemIdx = yearIdx % 10
   const dayIdx = dayGanzhiIndex(y, m, day)
-  const dayStem = STEMS[dayIdx / 12 | 0]
+  const dayStem = STEMS[dayIdx % 10]
   const dayBranch = BRANCHES[dayIdx % 12]
   const monthIdx = monthGanzhiIndex(yearStemIdx, m)
   const term = currentSolarTerm(d)
