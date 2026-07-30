@@ -72,7 +72,7 @@ export const ZIWEI_LINKS: EngineGlossaryLink[] = [
   {
     engineField: "palaces[]",
     glossaryTerms: [],
-    books: ["ziweiquanshu"],
+    books: ["ziweishu"],
   },
 ]
 
@@ -81,7 +81,7 @@ export const QIZHENG_LINKS: EngineGlossaryLink[] = [
   {
     engineField: "stars[]",
     glossaryTerms: [],
-    books: ["guolaoxingzong"],
+    books: ["guolao"],
   },
 ]
 
@@ -90,7 +90,7 @@ export const QIMEN_LINKS: EngineGlossaryLink[] = [
   {
     engineField: "plate",
     glossaryTerms: [],
-    books: ["yanbodiaosouge"],
+    books: ["yanbo"],
   },
 ]
 
@@ -99,7 +99,7 @@ export const DALIUREN_LINKS: EngineGlossaryLink[] = [
   {
     engineField: "lessons",
     glossaryTerms: [],
-    books: ["liurendaquan"],
+    books: ["liuren"],
   },
 ]
 
