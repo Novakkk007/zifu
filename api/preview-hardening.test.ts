@@ -67,6 +67,23 @@ describe("部署探针", () => {
   });
 });
 
+describe("运行时配置出口", () => {
+  it("GET /api/config：未设 PAYMENT_ENABLED → paymentEnabled=false（fail-closed）", async () => {
+    const res = await app.fetch(new Request("http://localhost/api/config"));
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { paymentEnabled: boolean };
+    expect(body.paymentEnabled).toBe(false); // 测试环境未设 PAYMENT_ENABLED → 默认关闭
+  });
+
+  it("GET /api/config：不依赖数据库可用性（DB down 仍 200）", async () => {
+    getDbMock.mockReturnValue({
+      execute: vi.fn().mockRejectedValue(new Error("conn refused")),
+    });
+    const res = await app.fetch(new Request("http://localhost/api/config"));
+    expect(res.status).toBe(200);
+  });
+});
+
 describe("支付闸门", () => {
   it("PAYMENT_ENABLED 未开启：billing.recharge 拒绝落单", async () => {
     const caller = appRouter.createCaller(userCtx(1));

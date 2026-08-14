@@ -7,6 +7,7 @@ import FeatureCard from '@/components/FeatureCard'
 import SiweiDemo from '@/components/SiweiDemo'
 import { GhostButton, GoldButton } from '@/components/Buttons'
 import BrandLogo from '@/components/BrandLogo'
+import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabled'
 
 const BOOKS = [
   '周易', '滴天髓', '三命通会', '子平真诠', '穷通宝鉴', '渊海子平',
@@ -72,6 +73,7 @@ export default function Home() {
   const rootRef = useRef<HTMLDivElement>(null)
   const heroRef = useRef<HTMLElement>(null)
   const heroFieldRef = useRef<HTMLDivElement>(null)
+  const paymentEnabled = usePaymentEnabled()
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -442,7 +444,9 @@ export default function Home() {
             <Chars text="灵签" />
           </h2>
           <p className="gs-reveal mt-4 text-[14px] tracking-[0.08em] text-inkmuted">
-            按次计费，无订阅；充值额外赠 15%
+            {paymentEnabled
+              ? '按次计费，无订阅；充值额外赠 15%'
+              : `按次计费，无订阅；${RECHARGE_CLOSED_HINT}`}
           </p>
           <div className="gs-cta-btn mt-10">
             <GoldButton

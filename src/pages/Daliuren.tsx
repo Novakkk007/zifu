@@ -11,7 +11,11 @@ import { BRANCHES } from '@contracts/bazi-core'
 import type { DaliurenChart } from '@contracts/engines/daliuren-core'
 import type { EngineResult } from '@contracts/engines/engine-result'
 import { trpc } from '@/providers/trpc'
+import { useEngine } from '@/hooks/useEngine'
+import { qikeDaliuren } from '@/engines/client'
+import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
 import { useAuth } from '@/hooks/useAuth'
+import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabled'
 import { LOGIN_PATH } from '@/const'
 import { cn } from '@/lib/utils'
 import type { ReadingResponse } from '@/components/bazi-v2/api'
@@ -74,6 +78,7 @@ function newIdempotencyKey(chartId: number): string {
 
 function AiReadingSection({ chartId }: { chartId: number | null }) {
   const { user, isLoading: authLoading } = useAuth()
+  const paymentEnabled = usePaymentEnabled()
   const [persona, setPersona] = useState<Persona>('scholar')
   const [depth, setDepth] = useState<Depth>('pro')
   const [result, setResult] = useState<ReadingResponse | null>(null)
@@ -175,7 +180,12 @@ function AiReadingSection({ chartId }: { chartId: number | null }) {
               {code === 'TOO_MANY_REQUESTS' ? '额度或频率受限' : code === 'FORBIDDEN' ? '灵签余额不足' : '参详失败'}
             </p>
             <p className="mt-1.5 text-[12.5px] leading-[1.8] text-[#E0A39A]/90">
-              {reading.error instanceof Error ? reading.error.message : 'AI 参详服务暂不可用，本次未扣除费用，请稍后重试。'}
+              {code === 'FORBIDDEN' && !paymentEnabled
+                ? `live 参详每次消耗 1 灵签。${RECHARGE_CLOSED_HINT}。`
+                : (aiBackendUnavailableText(reading.error) ??
+                  (reading.error instanceof Error
+                    ? reading.error.message
+                    : 'AI 参详服务暂不可用，本次未扣除费用，请稍后重试。'))}
             </p>
           </div>
         )}
@@ -237,7 +247,8 @@ export default function Daliuren() {
   const [runId, setRunId] = useState(0)
   const panRef = useRef<HTMLElement | null>(null)
 
-  const qike = trpc.daliuren.qike.useMutation({
+  // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.daliuren.qike 一致
+  const qike = useEngine(qikeDaliuren, {
     onSuccess: (res) => {
       setResult(res.result as unknown as EngineResult<DaliurenChart>)
       setChartId(res.chartId)

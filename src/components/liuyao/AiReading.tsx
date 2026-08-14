@@ -13,6 +13,8 @@ import { SegmentedControl } from '@/components/FormControls'
 import { DeepButton, GoldButton } from '@/components/Buttons'
 import { trpc } from '@/providers/trpc'
 import { useAuth } from '@/hooks/useAuth'
+import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabled'
+import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
 import { LOGIN_PATH } from '@/const'
 import { trpcCode, type ReadingResponse } from '@/components/liuyao/api'
 
@@ -69,7 +71,13 @@ function newReadingKey(chartId: number): string {
 }
 
 /** 错误码 → 明确 UI 状态文案 */
-function errorStateOf(err: unknown): { title: string; desc: string; showLogin: boolean } {
+function errorStateOf(
+  err: unknown,
+  paymentEnabled: boolean,
+): { title: string; desc: string; showLogin: boolean } {
+  // 静态托管无后端：fetch/JSON 解析类错误兜底为友好文案
+  const unavailable = aiBackendUnavailableText(err)
+  if (unavailable) return { title: '参详失败', desc: unavailable, showLogin: false }
   const code = trpcCode(err)
   const serverMsg = err instanceof Error ? err.message : ''
   switch (code) {
@@ -82,7 +90,13 @@ function errorStateOf(err: unknown): { title: string; desc: string; showLogin: b
         showLogin: false,
       }
     case 'FORBIDDEN':
-      return { title: '灵签余额不足', desc: 'live 参详每次消耗 1 灵签，请先充值或稍后再试。', showLogin: false }
+      return {
+        title: '灵签余额不足',
+        desc: paymentEnabled
+          ? 'live 参详每次消耗 1 灵签，请先充值或稍后再试。'
+          : `live 参详每次消耗 1 灵签。${RECHARGE_CLOSED_HINT}。`,
+        showLogin: false,
+      }
     case 'BAD_GATEWAY':
       return { title: 'AI 服务暂不可用', desc: '模型网关异常，本次未扣除任何费用，请稍后重试。', showLogin: false }
     case 'NOT_FOUND':
@@ -119,6 +133,7 @@ type AiReadingProps = {
 /** S4 · AI 参详（深色）：人格 × 深度 → ai.reading（chartId 契约） */
 export default function AiReading({ chartId, benName, bianName }: AiReadingProps) {
   const { user, isLoading: authLoading } = useAuth()
+  const paymentEnabled = usePaymentEnabled()
   const [persona, setPersona] = useState<Persona>('scholar')
   const [depth, setDepth] = useState<Depth>('pro')
   const [result, setResult] = useState<ReadingResponse | null>(null)
@@ -172,7 +187,7 @@ export default function AiReading({ chartId, benName, bianName }: AiReadingProps
   }
 
   const paragraphs = result ? result.text.split(/\n{2,}|\n/).filter((p) => p.trim().length > 0) : []
-  const errState = reading.isError ? errorStateOf(reading.error) : null
+  const errState = reading.isError ? errorStateOf(reading.error, paymentEnabled) : null
 
   return (
     <div>

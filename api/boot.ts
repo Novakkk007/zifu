@@ -126,6 +126,18 @@ app.get("/readyz", async (c) => {
   }
 });
 
+/**
+ * 运行时公开配置（匿名可读、无敏感信息、不依赖数据库）：
+ * 前端启动时拉取，用于付费入口等 fail-closed 降级。
+ * 与 /readyz 解耦——readyz 是部署探针（依赖 DB、可能 503），
+ * 前端配置通道必须轻量且永远可答。
+ */
+app.get("/api/config", (c) =>
+  c.json({
+    paymentEnabled: env.paymentEnabled,
+  }),
+);
+
 app.get("/api/oauth/begin", createOAuthBeginHandler());
 app.get(Paths.oauthCallback, createOAuthCallbackHandler());
 app.use("/api/trpc/*", async (c) => {

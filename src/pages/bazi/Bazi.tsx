@@ -20,6 +20,8 @@ import HistorySection from '@/components/bazi-v2/HistorySection'
 import { ChengguCard, RelationsTable, ShenshaTable, TenGodsTable } from '@/components/bazi-v2/ChartDetails'
 import type { PaipanPayload, PaipanResponse } from '@/components/bazi-v2/api'
 import { trpc } from '@/providers/trpc'
+import { useEngine } from '@/hooks/useEngine'
+import { paipanBazi } from '@/engines/client'
 
 const HERO_POOL = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸', '子', '丑', '寅', '卯', '财', '官', '印', '食']
 
@@ -40,7 +42,8 @@ export default function Bazi() {
     document.title = '八字排盘 · 紫府 — 服务端排盘，真太阳时校正，全量可解释'
   }, [])
 
-  const paipan = trpc.bazi.paipan.useMutation({
+  // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.bazi.paipan 一致
+  const paipan = useEngine(paipanBazi, {
     onSuccess: async (data) => {
       const res = data as unknown as PaipanResponse
       setChart(res.chart)
@@ -60,8 +63,8 @@ export default function Bazi() {
 
   const submit = (payload: PaipanPayload) => {
     setChartTitle(payload.title ?? '')
-    // 服务端契约（升级后）：完整 BirthInput + title → { chart, chartId, persisted }
-    paipan.mutate(payload as unknown as Parameters<typeof paipan.mutate>[0])
+    // 契约（浏览器直跑）：完整 BirthInput + title → { chart, chartId, persisted }
+    paipan.mutate(payload)
   }
 
   const restore = (restored: BaziChartV2, title: string, id: number | null) => {
@@ -78,7 +81,7 @@ export default function Bazi() {
   }
 
   const errorText = paipan.isError
-    ? paipan.error.message || '排盘服务暂不可用，请稍后重试。'
+    ? paipan.error?.message || '排盘服务暂不可用，请稍后重试。'
     : null
 
   const inputDesc = chart

@@ -12,7 +12,8 @@ import type { BaziChartV2, BirthInput, PillarInfo } from '@contracts/bazi-core'
 import type { HepanReport } from '@contracts/engines/hepan-core'
 import type { EngineResult } from '@contracts/engines/engine-result'
 import { WUXING_COLORS } from '@/lib/wuxing-style'
-import { trpc } from '@/providers/trpc'
+import { useEngine } from '@/hooks/useEngine'
+import { analyzeHepan } from '@/engines/client'
 
 /** 合盘表单（公历、不校正）→ BirthInput */
 function toBirthInput(p: PersonFormState): BirthInput {
@@ -136,7 +137,8 @@ export default function Hepan() {
   const [displayScore, setDisplayScore] = useState(0)
   const resultRef = useRef<HTMLDivElement>(null)
 
-  const analyze = trpc.hepan.analyze.useMutation({
+  // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.hepan.analyze 一致
+  const analyze = useEngine(analyzeHepan, {
     onSuccess: (data) => setResult(data as unknown as HepanResponse),
   })
 

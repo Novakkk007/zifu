@@ -14,12 +14,15 @@ export default defineConfig({
     port: 3000,
   },
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "@contracts": path.resolve(__dirname, "./contracts"),
-      "@db": path.resolve(__dirname, "./db"),
-      "db": path.resolve(__dirname, "./db"),
-    },
+    alias: [
+      // hecan-core 顶层 import 'node:module'（仅服务端 defaultEngineLoader 探测用）；
+      // 浏览器构建用占位 shim 顶替，前端固定传静态 loader，永不触发真实调用
+      { find: "node:module", replacement: path.resolve(__dirname, "./src/shims/node-module.ts") },
+      { find: "@", replacement: path.resolve(__dirname, "./src") },
+      { find: "@contracts", replacement: path.resolve(__dirname, "./contracts") },
+      { find: "@db", replacement: path.resolve(__dirname, "./db") },
+      { find: "db", replacement: path.resolve(__dirname, "./db") },
+    ],
   },
   envDir: path.resolve(__dirname),
   build: {

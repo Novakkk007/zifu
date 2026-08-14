@@ -4,7 +4,8 @@ import { Link } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { trpc } from '@/providers/trpc'
+import { useEngine } from '@/hooks/useEngine'
+import { drawLingqian } from '@/engines/client'
 import { useAuth } from '@/hooks/useAuth'
 import { LOGIN_PATH } from '@/const'
 import type { GuanyinSign } from '@contracts/engines/draws-core'
@@ -13,6 +14,15 @@ import SectionHeading from '@/components/SectionHeading'
 import { FormSelect } from '@/components/FormControls'
 import { GhostButton, GoldButton } from '@/components/Buttons'
 import FeatureStatusBadge from '@/components/FeatureStatusBadge'
+/**
+ * 数据来源映射（V11 方向3 · 每日时令真实化）：
+ * - 日柱 / 节气名 / 宜忌 / 时柱干支与时辰批语：共享引擎 @contracts/engines/daily-core（真实计算）
+ * - 时辰「吉/平/凶」评级：daily-core v1 未提供评级 API，沿用 content/ganzhi.ts 的
+ *   六合三合冲害确定性规则（真实推算，非 mock）
+ * - 月柱：本页不上屏（INT-02：daily-core 月柱为公历月近似，非节气换月）；
+ *   Toolkit 三柱卡片的月柱继续用 content/ganzhi.ts monthPillar()（节气换月版）
+ * - 农历（lunarApprox）与「今日与你 · 逐日详参」：仍为近似 / 演示，标注保留
+ */
 import {
   BRANCHES,
   BRANCH_WUXING,
@@ -21,21 +31,39 @@ import {
   STEM_WUXING,
   WUXING_COLOR,
   WUXING_SWATCH,
-  currentSolarTerm,
-  dayGanzhiIndex,
-  ganzhiLabel,
   ganzhiOf,
-  hourBranchOf,
   hourLuck,
-  solarTermOn,
 } from '@/components/content/ganzhi'
 import {
-  HOUR_TIPS,
-  hebenReading,
-  lunarApprox,
+  STEMS as CORE_STEMS,
+  currentSolarTerm as coreSolarTerm,
+  dayJiazi,
+  ganzhiLabel,
+  getDailySummary,
+  hourBranchOf,
+  hourLuck as coreHourLuck,
+  jiaziStem,
   yijiOf,
-} from '@/components/content/almanac'
+} from '@contracts/engines/daily-core'
+import { hebenReading, lunarApprox } from '@/components/content/almanac'
 import type { HourLuck } from '@/components/content/ganzhi'
+
+/** 距下一节气（仅用 daily-core 节气近似表向后扫描，保证与「当前节气」同源） */
+function nextSolarTerm(from: Date): { name: string; daysTo: number } {
+  const cur = coreSolarTerm(from)
+  for (let i = 1; i <= 40; i++) {
+    const name = coreSolarTerm(new Date(from.getFullYear(), from.getMonth(), from.getDate() + i))
+    if (name !== cur) return { name, daysTo: i }
+  }
+  return { name: cur, daysTo: 0 }
+}
+
+/** 某日是否为节气换名日（daily-core 节气表，与页首节气行同源的月历角标） */
+function solarTermStartsOn(y: number, m: number, d: number): string | null {
+  const cur = coreSolarTerm(new Date(y, m - 1, d))
+  const prev = coreSolarTerm(new Date(y, m - 1, d - 1))
+  return cur !== prev ? cur : null
+}
 
 const MONTHS_EN = [
   'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
@@ -82,8 +110,9 @@ function Reveal({
 
 /* ================= S2 · 今日宜忌 ================= */
 
-function YijiCards({ dayGz }: { dayGz: number }) {
-  const { yi, ji } = yijiOf(dayGz)
+function YijiCards({ dayStem }: { dayStem: string }) {
+  // 宜忌：共享引擎 daily-core（公版黄历基础规则，按日干映射）
+  const { yi, ji } = yijiOf(dayStem)
   return (
     <div className="mx-auto w-full max-w-[960px]">
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -134,18 +163,17 @@ function YijiCards({ dayGz }: { dayGz: number }) {
       </div>
       <Reveal className="mt-4 text-center">
         <p className="text-[12.5px] tracking-[0.06em] text-inkmuted">
-          宜忌依日柱轮换择日类目 —— 传统宜忌规则演示，供文化体验
+          宜忌依日柱轮换择日类目 —— 公版黄历基础规则，共享引擎 daily-core 真实计算
         </p>
       </Reveal>
     </div>
   )
 }
 
-/** 今日五行色条 */
-function WuxingStrip({ dayGz }: { dayGz: number }) {
-  const { stem, branch } = ganzhiOf(dayGz)
-  const stemEl = STEM_WUXING[STEMS.indexOf(stem)]
-  const branchEl = BRANCH_WUXING[BRANCHES.indexOf(branch)]
+/** 今日五行色条（日干/日支来自 daily-core summary，五行映射表为展示常量） */
+function WuxingStrip({ stem, branch }: { stem: string; branch: string }) {
+  const stemEl = STEM_WUXING[STEMS.indexOf(stem as (typeof STEMS)[number])]
+  const branchEl = BRANCH_WUXING[BRANCHES.indexOf(branch as (typeof BRANCHES)[number])]
   const els = [stemEl, branchEl]
   return (
     <Reveal className="mx-auto mt-6 w-full max-w-[960px]">
@@ -173,14 +201,17 @@ function WuxingStrip({ dayGz }: { dayGz: number }) {
 
 /* ================= S3 · 时辰吉凶 ================= */
 
-function HourGrid({ dayGz, now }: { dayGz: number; now: Date }) {
+function HourGrid({ dayGz, dayStemIdx, now }: { dayGz: number; dayStemIdx: number; now: Date }) {
   const [tip, setTip] = useState<number | null>(null)
   const current = hourBranchOf(now.getHours())
   return (
     <div className="mx-auto w-full max-w-[1100px]">
       <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 lg:grid-cols-12">
         {BRANCHES.map((b, i) => {
+          // 吉凶评级：daily-core v1 无评级 API，沿用六合三合冲害确定性规则（真实推算）
           const luck = hourLuck(dayGz, i)
+          // 时柱干支（五鼠遁，含时干）与批语：daily-core 真实计算
+          const core = coreHourLuck((2 * i) % 24, dayStemIdx)
           const isNow = i === current
           const st = LUCK_STYLE[luck]
           return (
@@ -206,7 +237,7 @@ function HourGrid({ dayGz, now }: { dayGz: number; now: Date }) {
                   现在
                 </span>
               )}
-              <span className="font-serif text-[17px] font-bold text-inktext">{b}时</span>
+              <span className="font-serif text-[17px] font-bold text-inktext">{core.label}</span>
               <span className="font-latin text-[10px] tracking-wide text-inkmuted">
                 {HOUR_RANGES[i]}
               </span>
@@ -232,7 +263,7 @@ function HourGrid({ dayGz, now }: { dayGz: number; now: Date }) {
             transition={{ duration: 0.24 }}
             className="mt-4 text-center font-serif text-[14.5px] tracking-[0.06em] text-golddim"
           >
-            {HOUR_TIPS[tip]}
+            {coreHourLuck((2 * tip) % 24, dayStemIdx).shortTip}
           </motion.p>
         )}
       </AnimatePresence>
@@ -247,36 +278,39 @@ type LingqianDraw = { signNo: number; sign: GuanyinSign; idempotentReplay: boole
 function LingqianSection() {
   const { user, isAuthenticated, isLoading } = useAuth()
   const [draw, setDraw] = useState<LingqianDraw | null>(null)
-  const lingqian = trpc.draws.lingqian.useMutation({
+  // 浏览器直跑（静态托管无后端）：CSPRNG 抽签 + localStorage 幂等复放，
+  // 返回形状与 trpc.draws.lingqian 一致
+  const lingqian = useEngine(drawLingqian, {
     onSuccess: (data) => setDraw(data.result.data as unknown as LingqianDraw),
   })
 
-  const todayKey = (uid: number) => {
+  const todayKey = (uid: number | 'guest') => {
     const t = new Date()
     return `${uid}-${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
   }
 
   const submit = () => {
-    if (!user) return
-    lingqian.mutate({ idempotencyKey: todayKey(user.id) })
+    // 游客按本机 guest 键幂等（localStorage），登录用户按用户 id 幂等
+    lingqian.mutate({ idempotencyKey: todayKey(user?.id ?? 'guest') })
   }
 
   return (
     <div className="mx-auto flex w-full max-w-[560px] flex-col items-center">
-      {!isAuthenticated && !isLoading ? (
-        <Reveal className="flex flex-col items-center">
-          <p className="text-center font-sans text-[14px] leading-[2] text-inkmuted">
-            观音灵签一百首，每日一签——签号由服务端加密随机数均匀抽取，
-            登录后今日之签恒定如一。
+      {!isAuthenticated && !isLoading && (
+        <Reveal className="mb-6 flex flex-col items-center">
+          <p className="text-center font-sans text-[13px] leading-[2] text-inkmuted">
+            游客模式：签号由浏览器加密随机数均匀抽取，今日之签在本机恒定；
+            <Link
+              to={LOGIN_PATH}
+              className="text-golddim underline underline-offset-4 hover:text-gold"
+            >
+              登录
+            </Link>
+            后可跨设备同步每日一签。
           </p>
-          <Link
-            to={LOGIN_PATH}
-            className="mt-6 inline-flex items-center justify-center rounded-lg border border-gold/60 px-10 py-3 font-serif text-[15px] font-bold tracking-[0.14em] text-golddim transition-colors hover:bg-golddim/10"
-          >
-            登录后抽今日灵签
-          </Link>
         </Reveal>
-      ) : (
+      )}
+      {isLoading ? null : (
         <Reveal className="flex w-full flex-col items-center">
           <GoldButton onClick={submit} disabled={lingqian.isPending} className="px-12">
             {lingqian.isPending ? '抽签中…' : draw ? '查看今日灵签' : '今日灵签'}
@@ -314,7 +348,7 @@ function LingqianSection() {
                   简注：{draw.sign.note}
                 </p>
                 <p className="mt-3 font-sans text-[11.5px] tracking-[0.06em] text-inkmuted/70">
-                  观音灵签通行本 · 服务端 CSPRNG 均匀抽取 · 每人每日一签（同一日内重抽仍为该签）· 仅供文化体验
+                  观音灵签通行本 · CSPRNG 均匀抽取 · 每日一签（同一日内重抽仍为该签）· 仅供文化体验
                 </p>
               </motion.div>
             )}
@@ -352,7 +386,7 @@ function MonthCalendar({ today }: { today: Date }) {
   const isToday = (d: number) =>
     view.y === today.getFullYear() && view.m === today.getMonth() && d === today.getDate()
 
-  const pickedGz = picked !== null ? dayGanzhiIndex(view.y, view.m + 1, picked) : null
+  const pickedGz = picked !== null ? dayJiazi(view.y, view.m + 1, picked) : null
 
   return (
     <div className="mx-auto w-full max-w-[720px]">
@@ -403,8 +437,8 @@ function MonthCalendar({ today }: { today: Date }) {
             ))}
             {Array.from({ length: cells.days }).map((_, i) => {
               const d = i + 1
-              const gz = dayGanzhiIndex(view.y, view.m + 1, d)
-              const term = solarTermOn(view.m + 1, d)
+              const gz = dayJiazi(view.y, view.m + 1, d)
+              const term = solarTermStartsOn(view.y, view.m + 1, d)
               const todayCell = isToday(d)
               return (
                 <motion.button
@@ -481,13 +515,13 @@ function MonthCalendar({ today }: { today: Date }) {
                 <div>
                   <p className="font-serif text-[13px] font-bold tracking-[0.2em] text-golddim">宜</p>
                   <p className="mt-1.5 font-sans text-[13px] leading-[1.9] text-inktext">
-                    {yijiOf(pickedGz).yi.join(' · ')}
+                    {yijiOf(CORE_STEMS[jiaziStem(pickedGz)]).yi.join(' · ')}
                   </p>
                 </div>
                 <div>
                   <p className="font-serif text-[13px] font-bold tracking-[0.2em] text-inkmuted">忌</p>
                   <p className="mt-1.5 font-sans text-[13px] leading-[1.9] text-inktext">
-                    {yijiOf(pickedGz).ji.join(' · ')}
+                    {yijiOf(CORE_STEMS[jiaziStem(pickedGz)]).ji.join(' · ')}
                   </p>
                 </div>
               </div>
@@ -513,7 +547,8 @@ function HebenSection({ todayGz }: { todayGz: number }) {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const submit = () => {
-    const myGz = dayGanzhiIndex(y, m, d)
+    // 本命日柱同样由 daily-core 真实推算（与本页日柱同源）
+    const myGz = dayJiazi(y, m, d)
     const today = ganzhiOf(todayGz)
     const mine = ganzhiOf(myGz)
     setResult(
@@ -687,9 +722,12 @@ export default function Daily() {
   const y = now.getFullYear()
   const m = now.getMonth() + 1
   const d = now.getDate()
-  const dayGz = dayGanzhiIndex(y, m, d)
-  const { stem, branch } = ganzhiOf(dayGz)
-  const { term, next, daysToNext } = currentSolarTerm(now)
+  // 当日摘要：日柱 / 节气 / 宜忌 / 时辰均由共享引擎 daily-core 真实计算
+  const summary = getDailySummary(now)
+  const dayGz = dayJiazi(y, m, d)
+  const { dayStem: stem, dayBranch: branch } = summary
+  const dayStemIdx = jiaziStem(dayGz)
+  const { name: nextTerm, daysTo: daysToNext } = nextSolarTerm(now)
 
   return (
     <div>
@@ -746,8 +784,8 @@ export default function Daily() {
           className="mt-5 text-[14px] tracking-[0.1em] text-silkmuted"
         >
           时值
-          <span className="mx-1.5 font-serif text-[16px] font-semibold text-goldbright">{term.name}</span>
-          · 距 {next.name} 还有
+          <span className="mx-1.5 font-serif text-[16px] font-semibold text-goldbright">{summary.solarTerm}</span>
+          · 距 {nextTerm} 还有
           <span className="mx-1 font-serif text-[16px] font-semibold text-goldbright">{daysToNext}</span>
           天
         </motion.p>
@@ -756,8 +794,11 @@ export default function Daily() {
       {/* 深 → 浅 过渡 */}
       <div className="zf-fade-to-silk h-[160px]" />
 
-      {/* 全站统一真实度标注：演示模式 */}
-      <FeatureStatusBadge kind="demo" />
+      {/* 真实度标注：干支/宜忌/时辰已接 daily-core 真实计算；节气农历近似；「今日与你·逐日详参」仍为演示 */}
+      <FeatureStatusBadge
+        kind="approx"
+        text="今日干支、宜忌、时柱由共享引擎 daily-core 真实计算；时辰吉凶按六合三合冲害规则推算；节气与农历为公历近似；「今日与你 · 逐日详参」仍为演示入口"
+      />
 
       {/* S2 · 今日详卡 */}
       <section className="relative bg-silk py-24">
@@ -766,11 +807,11 @@ export default function Daily() {
           <SectionHeading
             eyebrow="Do & Don't"
             title="今日宜忌"
-            sub={`${ganzhiLabel(dayGz)}日 · 依日柱轮换择日类目`}
+            sub={`${summary.dayGanzhi}日 · 依日柱轮换择日类目 · 共享引擎真实推算`}
           />
           <div className="mt-14">
-            <YijiCards dayGz={dayGz} />
-            <WuxingStrip dayGz={dayGz} />
+            <YijiCards dayStem={summary.dayStem} />
+            <WuxingStrip stem={summary.dayStem} branch={summary.dayBranch} />
           </div>
         </div>
       </section>
@@ -784,7 +825,7 @@ export default function Daily() {
             sub="与日支六合三合为吉、相冲相害为凶；点击时辰看一句小注"
           />
           <div className="mt-14">
-            <HourGrid dayGz={dayGz} now={now} />
+            <HourGrid dayGz={dayGz} dayStemIdx={dayStemIdx} now={now} />
           </div>
         </div>
       </section>

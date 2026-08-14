@@ -5,6 +5,7 @@
 import type { ReactNode } from 'react'
 import type { BaziChartV2, ShenshaHit } from '@contracts/bazi-core'
 import { TEN_GOD_INFO, type TenGod } from '@contracts/bazi-core'
+import GlossaryTooltip from '@/components/GlossaryTooltip'
 
 /* ---------- 通用表样式 ---------- */
 
@@ -61,7 +62,9 @@ export function TenGodsTable({ chart }: { chart: BaziChartV2 }) {
           const info = TEN_GOD_INFO[god as TenGod]
           return (
             <tr key={god}>
-              <td className={`${tdCls} font-serif text-[15px] font-bold text-golddim`}>{god}</td>
+              <td className={`${tdCls} font-serif text-[15px] font-bold text-golddim`}>
+                <GlossaryTooltip term={god}>{god}</GlossaryTooltip>
+              </td>
               <td className={tdCls}>
                 {sources.map((s, i) => (
                   <span key={i} className="mr-2 inline-block whitespace-nowrap">
