@@ -7,6 +7,8 @@ import { inspectAttr } from 'plugin-inspect-react-code'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // GitHub Pages 项目站点需要 /zifu/ 前缀；本地与 Docker/Render 部署走 '/'
+  base: process.env.VITE_BASE ?? "/",
   plugins: [
     devServer({ entry: "api/boot.ts", exclude: [/^\/(?!api\/).*$/] }),
     inspectAttr(), react()],
