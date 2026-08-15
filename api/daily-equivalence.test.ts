@@ -6,8 +6,7 @@
 import { describe, expect, it } from "vitest"
 import {
   getDailySummary, dayJiazi, yearJiazi, monthJiazi,
-  ganzhiLabel, jiaziStem, jiaziBranch,
-  hourLuck, STEMS, BRANCHES,
+  ganzhiLabel, hourLuck,
 } from "@contracts/engines/daily-core"
 
 describe("daily-core equivalence (old vs new)", () => {
