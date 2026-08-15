@@ -111,7 +111,7 @@ export function hourBranchOf(clockHour: number): number {
 
 // ===================== 节气 =====================
 
-/** 当前节气（公历近似） */
+/** 当前节气（公历近似；精密版见 getDailySummary / preciseSolarTerm） */
 export function currentSolarTerm(date: Date): string {
   const m = date.getMonth() + 1
   const d = date.getDate()
@@ -120,6 +120,31 @@ export function currentSolarTerm(date: Date): string {
     if (m > tm || (m === tm && d >= td)) return name
   }
   return SOLAR_TERMS[SOLAR_TERMS.length - 1][2]
+}
+
+/** 精密版当前节气名（lunar-typescript 真实交节，INT-03 销号产物） */
+export function preciseSolarTerm(date: Date): string {
+  return Solar.fromDate(date).getLunar().getPrevJieQi(false).getName()
+}
+
+/** 精密版下一节气（真实交节时刻，含精确剩余天数） */
+export function preciseNextSolarTerm(date: Date): { name: string; daysTo: number } {
+  const lunar = Solar.fromDate(date).getLunar()
+  const next = lunar.getNextJieQi(false)
+  if (!next) return { name: preciseSolarTerm(date), daysTo: 0 }
+  const solar = next.getSolar()
+  const nextMs = new Date(
+    solar.getYear(), solar.getMonth() - 1, solar.getDay(),
+    solar.getHour(), solar.getMinute(), solar.getSecond(),
+  ).getTime()
+  const daysTo = Math.ceil((nextMs - date.getTime()) / 86400000)
+  return { name: next.getName(), daysTo: Math.max(0, daysTo) }
+}
+
+/** 某日是否为交节日（当天发生节气交接），返回节气名或 null */
+export function solarTermStartsOn(date: Date): string | null {
+  const jieQi = Solar.fromDate(date).getLunar().getJieQi()
+  return jieQi ? jieQi.getName() : null
 }
 
 // ===================== 宜忌 =====================

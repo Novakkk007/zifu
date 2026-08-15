@@ -15,12 +15,11 @@ import { FormSelect } from '@/components/FormControls'
 import { GhostButton, GoldButton } from '@/components/Buttons'
 import FeatureStatusBadge from '@/components/FeatureStatusBadge'
 /**
- * 数据来源映射（V11 方向3 · 每日时令真实化）：
- * - 日柱 / 节气名 / 宜忌 / 时柱干支与时辰批语：共享引擎 @contracts/engines/daily-core（真实计算）
+ * 数据来源映射（V12 更新 · 每日时令全真实化）：
+ * - 日柱 / 月柱 / 年柱 / 节气名（真实交节）/ 宜忌 / 时柱干支与时辰批语：
+ *   共享引擎 @contracts/engines/daily-core（lunar-typescript 精密历法，V11-INT-02/03 已销号）
  * - 时辰「吉/平/凶」评级：daily-core v1 未提供评级 API，沿用 content/ganzhi.ts 的
  *   六合三合冲害确定性规则（真实推算，非 mock）
- * - 月柱：本页不上屏（INT-02：daily-core 月柱为公历月近似，非节气换月）；
- *   Toolkit 三柱卡片的月柱继续用 content/ganzhi.ts monthPillar()（节气换月版）
  * - 农历（lunarApprox）与「今日与你 · 逐日详参」：仍为近似 / 演示，标注保留
  */
 import {
@@ -36,7 +35,6 @@ import {
 } from '@/components/content/ganzhi'
 import {
   STEMS as CORE_STEMS,
-  currentSolarTerm as coreSolarTerm,
   dayJiazi,
   ganzhiLabel,
   getDailySummary,
@@ -48,21 +46,17 @@ import {
 import { hebenReading, lunarApprox } from '@/components/content/almanac'
 import type { HourLuck } from '@/components/content/ganzhi'
 
-/** 距下一节气（仅用 daily-core 节气近似表向后扫描，保证与「当前节气」同源） */
+// INT-02/03 销号：节气改 daily-core 精密 API（lunar-typescript 真实交节）
+import { preciseNextSolarTerm, solarTermStartsOn as preciseStartsOn } from '@contracts/engines/daily-core'
+
+/** 距下一节气（精密交节时刻） */
 function nextSolarTerm(from: Date): { name: string; daysTo: number } {
-  const cur = coreSolarTerm(from)
-  for (let i = 1; i <= 40; i++) {
-    const name = coreSolarTerm(new Date(from.getFullYear(), from.getMonth(), from.getDate() + i))
-    if (name !== cur) return { name, daysTo: i }
-  }
-  return { name: cur, daysTo: 0 }
+  return preciseNextSolarTerm(from)
 }
 
-/** 某日是否为节气换名日（daily-core 节气表，与页首节气行同源的月历角标） */
+/** 某日是否为交节日（月历角标，精密版） */
 function solarTermStartsOn(y: number, m: number, d: number): string | null {
-  const cur = coreSolarTerm(new Date(y, m - 1, d))
-  const prev = coreSolarTerm(new Date(y, m - 1, d - 1))
-  return cur !== prev ? cur : null
+  return preciseStartsOn(new Date(y, m - 1, d))
 }
 
 const MONTHS_EN = [
@@ -794,10 +788,10 @@ export default function Daily() {
       {/* 深 → 浅 过渡 */}
       <div className="zf-fade-to-silk h-[160px]" />
 
-      {/* 真实度标注：干支/宜忌/时辰已接 daily-core 真实计算；节气农历近似；「今日与你·逐日详参」仍为演示 */}
+      {/* 真实度标注：干支/宜忌/时柱/节气已接 daily-core 精密历法；农历近似；「今日与你·逐日详参」仍为演示 */}
       <FeatureStatusBadge
         kind="approx"
-        text="今日干支、宜忌、时柱由共享引擎 daily-core 真实计算；时辰吉凶按六合三合冲害规则推算；节气与农历为公历近似；「今日与你 · 逐日详参」仍为演示入口"
+        text="今日干支、宜忌、时柱、节气由共享引擎 daily-core 精密历法真实计算（年以立春界、月以节气界、交节时刻精确）；农历为公历近似；「今日与你 · 逐日详参」仍为演示入口"
       />
 
       {/* S2 · 今日详卡 */}
