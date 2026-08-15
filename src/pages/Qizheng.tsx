@@ -8,6 +8,9 @@ import { FormSelect, SegmentedControl } from '@/components/FormControls'
 import { DeepButton, GoldButton } from '@/components/Buttons'
 import { BRANCHES, MANSIONS } from '@/components/sanshi/astro'
 import { trpc } from '@/providers/trpc'
+import { useEngine } from '@/hooks/useEngine'
+import { paipanQizheng } from '@/engines/client'
+import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
 import { useAuth } from '@/hooks/useAuth'
 import { LOGIN_PATH } from '@/const'
 import { cn } from '@/lib/utils'
@@ -109,10 +112,10 @@ function AiPanel({ chartId }: { chartId: number | null }) {
     )
   }
 
+  // 静态托管无后端：fetch/JSON 解析类错误兜底为友好文案
   const errMsg = reading.isError
-    ? reading.error instanceof Error
-      ? reading.error.message
-      : '参详失败，请稍后重试'
+    ? (aiBackendUnavailableText(reading.error) ??
+      (reading.error instanceof Error ? reading.error.message : '参详失败，请稍后重试'))
     : null
 
   return (
@@ -207,7 +210,8 @@ export default function Qizheng() {
   const [runId, setRunId] = useState(0)
   const chartRef = useRef<HTMLDivElement>(null)
 
-  const paipan = trpc.qizheng.paipan.useMutation({
+  // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.qizheng.paipan 一致
+  const paipan = useEngine(paipanQizheng, {
     onSuccess: () => {
       setRunId((n) => n + 1)
       requestAnimationFrame(() => chartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))

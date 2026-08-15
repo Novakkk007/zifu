@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest"
 import {
   getDailySummary, yearJiazi, dayJiazi, monthJiazi, hourJiazi,
   ganzhiLabel, jiaziStem, jiaziBranch, hourLuck, yijiOf,
-  STEMS, BRANCHES,
 } from "@contracts/engines/daily-core"
 
 /** 所有合法二百甲子标签 */

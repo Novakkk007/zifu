@@ -14,7 +14,8 @@ import {
   newCastIdempotencyKey,
   type CastResponse,
 } from '@/components/liuyao/api'
-import { trpc } from '@/providers/trpc'
+import { useEngine } from '@/hooks/useEngine'
+import { castLiuyao, coinTossLiuyao } from '@/engines/client'
 
 type CoinFace = 'zi' | 'bei'
 
@@ -32,8 +33,9 @@ export default function Liuyao() {
   /** 每次起卦会话一个幂等键（重摇即换），防止重复落库 */
   const idemKeyRef = useRef<string>(newCastIdempotencyKey())
 
-  const coinToss = trpc.liuyao.coinToss.useMutation()
-  const cast = trpc.liuyao.cast.useMutation({
+  // 浏览器直跑引擎（静态托管无后端）：掷币改浏览器 CSPRNG，装卦纯函数
+  const coinToss = useEngine(coinTossLiuyao)
+  const cast = useEngine(castLiuyao, {
     onSuccess: (data) => setCastData(data as unknown as CastResponse),
   })
 
@@ -66,7 +68,7 @@ export default function Liuyao() {
     if (tossing || done || coinToss.isPending) return
     setTossing(true)
     try {
-      // 服务端 CSPRNG 掷币（随机源不下放到客户端）
+      // 浏览器 CSPRNG 掷币（crypto.getRandomValues，拒绝采样无偏）
       const r = await coinToss.mutateAsync({ tossIndex: tosses.length + 1 })
       const faces = r.faces as CoinFace[]
       setCoins([faces[0], faces[1], faces[2]])
@@ -180,7 +182,7 @@ export default function Liuyao() {
             <div className="mt-8 flex justify-center">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-golddim/40 bg-silk2 px-3.5 py-1.5 text-[11.5px] font-medium tracking-[0.14em] text-golddim">
                 <Zap className="h-3.5 w-3.5" aria-hidden />
-                服务端随机源 · CSPRNG
+                加密安全随机源 · CSPRNG
               </span>
             </div>
             <div className="mt-10">
@@ -290,7 +292,7 @@ export default function Liuyao() {
             <QuoteStrip book="卜筮正宗" quote="卦成而后，先观世应。" source="清 · 王洪绪" />
           </motion.div>
           <p className="mt-10 text-center text-[12.5px] leading-[1.9] text-silkmuted">
-            掷币由服务端加密安全随机源（CSPRNG）完成，装卦依《增删卜易》《卜筮正宗》通行之法，
+            掷币由加密安全随机源（CSPRNG）完成，装卦依《增删卜易》《卜筮正宗》通行之法，
             卦辞爻辞皆出《周易》公版原文 · 仅供文化研究与体验
           </p>
         </div>

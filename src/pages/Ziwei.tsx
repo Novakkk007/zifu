@@ -11,7 +11,8 @@ import ZiweiChart from '@/components/ziwei/ZiweiChart'
 import ZiweiAiReading from '@/components/ziwei/ZiweiAiReading'
 import type { EngineResult, ZiweiChartData, ZiweiPalace } from '@contracts/engines/ziwei-core'
 import { HOUR_OPTIONS, HUA_COLOR, PALACE_DUTY, liunianOf } from '@/components/ziwei/logic'
-import { trpc } from '@/providers/trpc'
+import { useEngine } from '@/hooks/useEngine'
+import { paipanZiwei } from '@/engines/client'
 import { cn } from '@/lib/utils'
 
 type Tab = 'daxian' | 'liunian'
@@ -44,7 +45,8 @@ export default function Ziwei() {
 
   const chart = result?.data ?? null
 
-  const paipan = trpc.ziwei.paipan.useMutation({
+  // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.ziwei.paipan 一致
+  const paipan = useEngine(paipanZiwei, {
     onSuccess: (data) => {
       setResult(data.result as EngineResult<ZiweiChartData>)
       setChartId(data.chartId)
@@ -228,7 +230,7 @@ export default function Ziwei() {
                 </GoldButton>
                 {paipan.isError && (
                   <p className="text-[12.5px] leading-[1.8] text-[#B03A2E]">
-                    {paipan.error.message || '排盘服务暂不可用，请稍后重试。'}
+                    {paipan.error?.message || '排盘服务暂不可用，请稍后重试。'}
                   </p>
                 )}
               </div>

@@ -23,7 +23,11 @@ import {
 } from '@contracts/engines/qimen-core'
 import type { EngineResult } from '@contracts/engines/engine-result'
 import { trpc } from '@/providers/trpc'
+import { useEngine } from '@/hooks/useEngine'
+import { qijuQimen } from '@/engines/client'
+import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
 import { useAuth } from '@/hooks/useAuth'
+import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabled'
 import { LOGIN_PATH } from '@/const'
 import { cn } from '@/lib/utils'
 
@@ -114,6 +118,7 @@ function newIdempotencyKey(chartId: number): string {
 
 function QimenAiReading({ chartId }: { chartId: number | null }) {
   const { user, isLoading: authLoading } = useAuth()
+  const paymentEnabled = usePaymentEnabled()
   const [persona, setPersona] = useState<Persona>('scholar')
   const [depth, setDepth] = useState<Depth>('pro')
   const [result, setResult] = useState<ReadingResponse | null>(null)
@@ -148,6 +153,9 @@ function QimenAiReading({ chartId }: { chartId: number | null }) {
 
   const errState = reading.isError
     ? (() => {
+        // 静态托管无后端：fetch/JSON 解析类错误兜底为友好文案
+        const unavailable = aiBackendUnavailableText(reading.error)
+        if (unavailable) return { title: '参详失败', desc: unavailable, showLogin: false }
         const code = trpcCode(reading.error)
         const msg = reading.error instanceof Error ? reading.error.message : ''
         if (code === 'UNAUTHORIZED')
@@ -155,7 +163,13 @@ function QimenAiReading({ chartId }: { chartId: number | null }) {
         if (code === 'TOO_MANY_REQUESTS')
           return { title: '额度或频率受限', desc: msg || '请稍后再试。', showLogin: false }
         if (code === 'FORBIDDEN')
-          return { title: '灵签余额不足', desc: 'live 参详每次消耗 1 灵签，请充值后再试。', showLogin: false }
+          return {
+            title: '灵签余额不足',
+            desc: paymentEnabled
+              ? 'live 参详每次消耗 1 灵签，请充值后再试。'
+              : `live 参详每次消耗 1 灵签。${RECHARGE_CLOSED_HINT}。`,
+            showLogin: false,
+          }
         return { title: '参详失败', desc: msg || 'AI 服务暂不可用，本次未扣费。', showLogin: false }
       })()
     : null
@@ -283,7 +297,8 @@ export default function Qimen() {
   const [ysIdx, setYsIdx] = useState(0)
   const plateRef = useRef<HTMLElement | null>(null)
 
-  const qiju = trpc.qimen.qiju.useMutation({
+  // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.qimen.qiju 一致
+  const qiju = useEngine(qijuQimen, {
     onSuccess: (res) => {
       setOut({ result: res.result, chartId: res.chartId })
       setYsIdx(0)

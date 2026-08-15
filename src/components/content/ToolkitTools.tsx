@@ -1,13 +1,14 @@
 /**
  * 百宝袋 6 个小工具面板
- * 前五为确定性 / 真实算法（前端本地计算）；灵签一抽走服务端真实随机通道（draws.lingqian）。
+ * 确定性工具前端本地计算；灵签一抽走浏览器 CSPRNG（drawLingqian，静态托管无后端亦可用）。
  */
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
 import { RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { trpc } from '@/providers/trpc'
+import { useEngine } from '@/hooks/useEngine'
+import { drawLingqian } from '@/engines/client'
 import { useAuth } from '@/hooks/useAuth'
 import { LOGIN_PATH } from '@/const'
 import type { GuanyinSign } from '@contracts/engines/draws-core'
@@ -280,7 +281,9 @@ export function QianTool() {
   const [drawn, setDrawn] = useState<QianDraw | null>(null)
   const [shaking, setShaking] = useState(false)
 
-  const lingqian = trpc.draws.lingqian.useMutation({
+  // 浏览器直跑（静态托管无后端）：CSPRNG 抽签 + localStorage 幂等复放，
+  // 返回形状与 trpc.draws.lingqian 一致
+  const lingqian = useEngine(drawLingqian, {
     onSuccess: (data) => {
       setDrawn(data.result.data as unknown as QianDraw)
       setShaking(false)
@@ -289,41 +292,31 @@ export function QianTool() {
   })
 
   const draw = () => {
-    if (shaking || !user) return
+    if (shaking) return
     setShaking(true)
     setDrawn(null)
     const t = new Date()
     const dateKey = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
-    // 摇筒动画与服务端抽签并行；每日幂等键保证同日同签
+    // 摇筒动画与抽签并行；每日幂等键保证同日同签（游客按本机 guest 键幂等）
+    const uid = user?.id ?? 'guest'
     window.setTimeout(() => {
-      lingqian.mutate({ idempotencyKey: `${user.id}-${dateKey}` })
+      lingqian.mutate({ idempotencyKey: `${uid}-${dateKey}` })
     }, 620)
-  }
-
-  if (!isAuthenticated && !isLoading) {
-    return (
-      <div>
-        <PanelTitle>每日一签 · 随缘自取</PanelTitle>
-        <div className="flex flex-col items-center">
-          <p className="max-w-[420px] text-center font-sans text-[13.5px] leading-[2] text-inkmuted">
-            观音灵签一百首，签号由服务端加密随机数（CSPRNG）均匀抽取；
-            登录后每日一签，同日重抽仍为该签。
-          </p>
-          <Link
-            to={LOGIN_PATH}
-            className="mt-6 inline-flex items-center justify-center rounded-lg border border-gold/60 px-10 py-3 font-serif text-[15px] font-bold tracking-[0.14em] text-golddim transition-colors hover:bg-golddim/10"
-          >
-            登录后抽签
-          </Link>
-        </div>
-      </div>
-    )
   }
 
   return (
     <div>
       <PanelTitle>每日一签 · 随缘自取</PanelTitle>
       <div className="flex flex-col items-center">
+        {!isAuthenticated && !isLoading && (
+          <p className="mb-5 max-w-[420px] text-center font-sans text-[12.5px] leading-[1.9] text-inkmuted">
+            游客模式：签号由浏览器加密随机数（CSPRNG）均匀抽取，今日之签在本机恒定；
+            <Link to={LOGIN_PATH} className="text-golddim underline underline-offset-4 hover:text-gold">
+              登录
+            </Link>
+            后可跨设备同步每日一签。
+          </p>
+        )}
         {/* CSS 签筒 */}
         <motion.button
           type="button"
@@ -385,7 +378,7 @@ export function QianTool() {
                 简注：{drawn.sign.note}
               </p>
               <p className="mt-3 font-sans text-[11px] tracking-[0.06em] text-inkmuted/70">
-                观音灵签通行本 · 服务端 CSPRNG 抽取 · 每日一签 · 仅供文化体验
+                观音灵签通行本 · CSPRNG 均匀抽取 · 每日一签 · 仅供文化体验
               </p>
             </motion.div>
           )}

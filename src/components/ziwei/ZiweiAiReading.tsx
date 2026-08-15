@@ -13,6 +13,8 @@ import { SegmentedControl } from '@/components/FormControls'
 import { GoldButton } from '@/components/Buttons'
 import { trpc } from '@/providers/trpc'
 import { useAuth } from '@/hooks/useAuth'
+import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabled'
+import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
 import { LOGIN_PATH } from '@/const'
 import { cn } from '@/lib/utils'
 
@@ -46,7 +48,10 @@ function newIdempotencyKey(chartId: number): string {
   return `ziwei-reading:${chartId}:${uuid}`
 }
 
-function errorText(err: unknown): string {
+function errorText(err: unknown, paymentEnabled: boolean): string {
+  // 静态托管无后端：fetch/JSON 解析类错误兜底为友好文案
+  const unavailable = aiBackendUnavailableText(err)
+  if (unavailable) return unavailable
   const code = trpcCode(err)
   const msg = err instanceof Error ? err.message : ''
   switch (code) {
@@ -55,7 +60,9 @@ function errorText(err: unknown): string {
     case 'TOO_MANY_REQUESTS':
       return msg || '今日参详次数已达上限，或请求过于频繁，请稍后再试。'
     case 'FORBIDDEN':
-      return '灵签余额不足，请先充值；本次未扣除费用。'
+      return paymentEnabled
+        ? '灵签余额不足，请先充值；本次未扣除费用。'
+        : `灵签余额不足。${RECHARGE_CLOSED_HINT}；本次未扣除费用。`
     case 'BAD_GATEWAY':
       return 'AI 服务暂不可用，本次未扣除任何费用，请稍后重试。'
     case 'NOT_FOUND':
@@ -67,6 +74,7 @@ function errorText(err: unknown): string {
 
 export default function ZiweiAiReading({ chartId }: { chartId: number | null }) {
   const { user, isLoading } = useAuth()
+  const paymentEnabled = usePaymentEnabled()
   const [persona, setPersona] = useState<Persona>('scholar')
   const [depth, setDepth] = useState<Depth>('plain')
   const [reading, setReading] = useState<ReadingResponse | null>(null)
@@ -145,7 +153,7 @@ export default function ZiweiAiReading({ chartId }: { chartId: number | null }) 
 
             {aiReading.isError && (
               <p className="mt-5 rounded-lg border border-[#B03A2E]/40 bg-[#B03A2E]/10 px-5 py-3 text-center text-[13px] leading-[1.8] text-[#E8A49C]">
-                {errorText(aiReading.error)}
+                {errorText(aiReading.error, paymentEnabled)}
               </p>
             )}
 

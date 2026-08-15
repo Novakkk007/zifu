@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router'
 import { Coins, ScrollText, ShieldAlert, UserRound, Wallet } from 'lucide-react'
 import { trpc } from '@/providers/trpc'
 import { useAuth } from '@/hooks/useAuth'
+import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabled'
 import { LOGIN_PATH } from '@/const'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/Card'
 import { ZifuButton } from '@/components/Buttons'
@@ -61,6 +62,7 @@ const RECHARGE_PRESETS = [
 export default function Account() {
   const navigate = useNavigate()
   const { user, isAuthenticated, isLoading } = useAuth()
+  const paymentEnabled = usePaymentEnabled()
   const utils = trpc.useUtils()
 
   useEffect(() => {
@@ -190,17 +192,24 @@ export default function Account() {
                 灵签钱包
               </span>
             </CardTitle>
-            <ZifuButton
-              variant="foil"
-              onClick={() => {
-                setRechargeStatus('idle')
-                setRechargeNote(null)
-                setRechargeOpen(true)
-              }}
-            >
-              <Coins className="h-4 w-4" aria-hidden />
-              充值
-            </ZifuButton>
+            {paymentEnabled ? (
+              <ZifuButton
+                variant="foil"
+                onClick={() => {
+                  setRechargeStatus('idle')
+                  setRechargeNote(null)
+                  setRechargeOpen(true)
+                }}
+              >
+                <Coins className="h-4 w-4" aria-hidden />
+                充值
+              </ZifuButton>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 px-3.5 py-1.5 text-[12px] tracking-[0.1em] text-inkmuted">
+                <Coins className="h-3.5 w-3.5" aria-hidden />
+                {RECHARGE_CLOSED_HINT}
+              </span>
+            )}
           </CardHeader>
           <CardContent className="flex flex-col gap-6">
             {wallet.isLoading ? (

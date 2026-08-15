@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import type { BaziChartV2, GongInfo, PillarInfo } from '@contracts/bazi-core'
 import { cn } from '@/lib/utils'
 import { WUXING_COLORS, WUXING_ICONS } from '@/lib/wuxing-style'
+import GlossaryTooltip from '@/components/GlossaryTooltip'
 
 function PillarCard({
   pillar,
@@ -34,13 +35,13 @@ function PillarCard({
       {pillar ? (
         <>
           <p className="mt-2 font-serif text-[13px] tracking-[0.1em] text-golddim">
-            {pillar.stemTenGod}
+            <GlossaryTooltip term={pillar.stemTenGod}>{pillar.stemTenGod}</GlossaryTooltip>
           </p>
           <p
             className="mt-1 font-serif text-[32px] font-black leading-tight"
             style={{ color: WUXING_COLORS[pillar.stemWuxing] }}
           >
-            {pillar.stem}
+            <GlossaryTooltip term={pillar.stem}>{pillar.stem}</GlossaryTooltip>
             <span className="ml-1 align-middle text-[13px]" aria-hidden>
               {WUXING_ICONS[pillar.stemWuxing]}
             </span>
@@ -49,7 +50,7 @@ function PillarCard({
             className="font-serif text-[32px] font-black leading-tight"
             style={{ color: WUXING_COLORS[pillar.branchWuxing] }}
           >
-            {pillar.branch}
+            <GlossaryTooltip term={pillar.branch}>{pillar.branch}</GlossaryTooltip>
             <span className="ml-1 align-middle text-[13px]" aria-hidden>
               {WUXING_ICONS[pillar.branchWuxing]}
             </span>
@@ -59,8 +60,10 @@ function PillarCard({
               藏干：
               {pillar.hiddenStems.map((h) => (
                 <span key={h.stem + h.role} className="mr-1.5">
-                  {h.stem}
-                  <span className="text-golddim">{h.tenGod}</span>
+                  <GlossaryTooltip term={h.stem}>{h.stem}</GlossaryTooltip>
+                  <GlossaryTooltip term={h.tenGod} className="text-golddim">
+                    {h.tenGod}
+                  </GlossaryTooltip>
                 </span>
               ))}
             </p>
