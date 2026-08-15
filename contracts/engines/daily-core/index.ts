@@ -246,21 +246,16 @@ export function wallClockFields(utcMs: number, ianaTimezone: string): {
   return { year: y, month: mo, day: d, hour: h, minute: mi, second: s }
 }
 
-/**
- * 目标时区偏移毫秒数（正值 = 在 UTC 东边）。把墙钟当 UTC 解释的时刻
- * 减真实时刻即得偏移。INT-04 销号核心。
- */
-function tzOffsetMs(utcMs: number, ianaTimezone: string): number {
-  const w = wallClockFields(utcMs, ianaTimezone)
-  const asUtc = Date.UTC(w.year, w.month - 1, w.day, w.hour, w.minute, w.second)
-  return asUtc - utcMs
-}
-
 export function getDailySummary(date?: Date, opts?: DailySummaryOptions): DailySummary {
   const d = date ?? new Date()
   const tz = opts?.ianaTimezone
-  // 精密历法源：lunar-typescript（销号 V11-INT-02/03）
-  const lunar = Solar.fromDate(d).getLunar()
+  // 精密历法源：lunar-typescript（销号 V11-INT-02/03）。
+  // 关键事实：lunar 的节气表固定按北京时间(+8)生成，年柱/月柱/节气判定
+  // 用「运行环境本地墙钟 vs 表墙钟」比较——非 +8 环境会错位（实测 UTC 下
+  // 立春后 1.5h 仍判乙巳年）。修复：统一把绝对时刻换算为北京时间墙钟喂入。
+  const bj = wallClockFields(d.getTime(), 'Asia/Shanghai')
+  const eff = new Date(bj.year, bj.month - 1, bj.day, bj.hour, bj.minute, bj.second)
+  const lunar = Solar.fromDate(eff).getLunar()
   // Exact 版：交节时刻精确换界（ByLiChun/getMonthInGanZhi 整日粒度会在
   // 立春/节气当日 00:00 提前换柱，Kimi 金标 04:01→乙巳己丑 / 04:03→丙午庚寅
   // 要求精确到分钟，故用 Exact 系列）。
@@ -269,16 +264,17 @@ export function getDailySummary(date?: Date, opts?: DailySummaryOptions): DailyS
   const monthGanzhiStr = lunar.getMonthInGanZhiExact() // 节气交节时刻界月干支
   const prevJieQi = lunar.getPrevJieQi(false) // 上一个节或气（真实交节）
 
-  // INT-04：日柱与 date 字段按目标时区的墙钟日历日
+  // INT-04：日柱与 date 字段按目标时区的墙钟日历日。
+  // 干支日的本质：自锚点（1900-01-01 甲戌）起每个日历日进一位，
+  // 只依赖日历日标签，与运行环境时区无关——直接把目标日历日喂给
+  // Solar.fromYmd（其内部用本地时区解读，日历日标签自洽）。
   let y: number, m: number, day: number, dayGanzhiStr: string
   if (tz) {
     const w = wallClockFields(d.getTime(), tz)
     y = w.year
     m = w.month
     day = w.day
-    // 目标日历日 00:00 的真实绝对时刻 → 本地解读日界 JD 正确 → 日柱正确
-    const dayStartUtc = Date.UTC(w.year, w.month - 1, w.day, 0, 0, 0) - tzOffsetMs(d.getTime(), tz)
-    dayGanzhiStr = Solar.fromDate(new Date(dayStartUtc)).getLunar().getDayInGanZhi()
+    dayGanzhiStr = Solar.fromYmd(y, m, day).getLunar().getDayInGanZhi()
   } else {
     y = d.getFullYear()
     m = d.getMonth() + 1
