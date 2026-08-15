@@ -20,6 +20,7 @@ const Talks = lazy(() => import('@/pages/Talks'))
 const Terms = lazy(() => import('@/pages/Terms'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 const Account = lazy(() => import('@/pages/Account'))
+const Profile = lazy(() => import('@/pages/Profile'))
 const Login = lazy(() => import('@/pages/Login'))
 
 export default function App() {
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="/auth" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
