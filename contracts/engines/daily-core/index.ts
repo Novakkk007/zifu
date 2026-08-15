@@ -5,11 +5,19 @@
  *   六十甲子索引 i ∈ [0, 59]，天干 = i % 10，地支 = i % 12。
  *   禁止使用 `i / 12 | 0`、`stem * 12 + branch` 等非等价的混用编码。
  *
- * 节气：公历近似日期表（非 lunar-typescript 真实计算，标注 approximate）。
+ * 历法精度（V12 起）：
+ *   - 纯函数（yearJiazi / dayJiazi / monthJiazi / hourJiazi）保留确定性公式实现，
+ *     作为独立校验锚点（1900–2100 与 lunar-typescript 全量对拍见 daily-core.test.ts）。
+ *   - getDailySummary 使用 lunar-typescript 精密历法：
+ *     年干支以立春为界、月干支以节气为界（销号 V11-INT-02/03）、
+ *     节气名为真实交节而非近似日期表。
+ *   - monthJiazi（公历月近似）保留导出并标注 approximate，仅供对拍与兼容。
  * 宜忌：按日干静态映射（公版黄历基础规则）。
  *
  * 迁移自：src/components/content/ganzhi.ts + almanac.ts
  */
+
+import { Solar } from 'lunar-typescript'
 
 // ===================== 常量 =====================
 
@@ -184,25 +192,29 @@ export interface DailySummary {
 
 export function getDailySummary(date?: Date): DailySummary {
   const d = date ?? new Date()
+  // 精密历法源：lunar-typescript（销号 V11-INT-02/03）
+  const lunar = Solar.fromDate(d).getLunar()
+  const yearGanzhiStr = lunar.getYearInGanZhiByLiChun() // 立春界年干支
+  const monthGanzhiStr = lunar.getMonthInGanZhi() // 节气界月干支
+  const dayGanzhiStr = lunar.getDayInGanZhi() // 日干支
+  const prevJieQi = lunar.getPrevJieQi(false) // 上一个节或气（真实交节）
   const y = d.getFullYear()
   const m = d.getMonth() + 1
   const day = d.getDate()
 
-  const yearIdx = yearJiazi(y)
-  const dayIdx = dayJiazi(y, m, day)
-  const dayStemIdx = jiaziStem(dayIdx)
-  const monthIdx = monthJiazi(jiaziStem(yearIdx), m)
-  const term = currentSolarTerm(d)
-  const yj = yijiOf(STEMS[dayStemIdx])
+  const dayStem = dayGanzhiStr[0]
+  const dayBranch = dayGanzhiStr[1]
+  const dayStemIdx = STEMS.indexOf(dayStem)
+  const yj = yijiOf(dayStem)
 
   return {
     date: `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-    yearGanzhi: ganzhiLabel(yearIdx),
-    monthGanzhi: ganzhiLabel(monthIdx),
-    dayGanzhi: ganzhiLabel(dayIdx),
-    solarTerm: term,
-    dayStem: STEMS[dayStemIdx],
-    dayBranch: BRANCHES[jiaziBranch(dayIdx)],
+    yearGanzhi: yearGanzhiStr,
+    monthGanzhi: monthGanzhiStr,
+    dayGanzhi: dayGanzhiStr,
+    solarTerm: prevJieQi.getName(),
+    dayStem,
+    dayBranch,
     yi: yj.yi,
     ji: yj.ji,
     hourLuck: Array.from({ length: 24 }, (_, h) => hourLuck(h, dayStemIdx)),
