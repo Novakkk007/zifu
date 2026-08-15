@@ -162,7 +162,9 @@ const YIJI_BY_DAY_STEM: Record<string, { yi: string[]; ji: string[] }> = {
   '癸': { yi: ['入学', '纳采', '上册'], ji: ['词讼', '开仓'] },
 }
 
-export function yijiOf(dayStem: string): { yi: string[]; ji: string[] } {
+export type DayStem = (typeof STEMS)[number]
+
+export function yijiOf(dayStem: DayStem): { yi: string[]; ji: string[] } {
   return YIJI_BY_DAY_STEM[dayStem] ?? { yi: ['祭祀'], ji: ['动土'] }
 }
 
@@ -208,7 +210,7 @@ export interface DailySummary {
   monthGanzhi: string
   dayGanzhi: string
   solarTerm: string
-  dayStem: string
+  dayStem: DayStem
   dayBranch: string
   yi: string[]
   ji: string[]
@@ -282,9 +284,9 @@ export function getDailySummary(date?: Date, opts?: DailySummaryOptions): DailyS
     dayGanzhiStr = lunar.getDayInGanZhi()
   }
 
-  const dayStem = dayGanzhiStr[0]
+  const dayStem = dayGanzhiStr[0] as DayStem
   const dayBranch = dayGanzhiStr[1]
-  const dayStemIdx = STEMS.indexOf(dayStem as (typeof STEMS)[number])
+  const dayStemIdx = STEMS.indexOf(dayStem)
   const yj = yijiOf(dayStem)
 
   return {

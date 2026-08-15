@@ -24,7 +24,7 @@ import {
 import type { EngineResult } from '@contracts/engines/engine-result'
 import { trpc } from '@/providers/trpc'
 import { useEngine } from '@/hooks/useEngine'
-import { qijuQimen } from '@/engines/client'
+import { qijuQimen } from '@/engines/client/qimen'
 import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
 import { useAuth } from '@/hooks/useAuth'
 import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabled'
@@ -142,7 +142,7 @@ function QimenAiReading({ chartId }: { chartId: number | null }) {
         </p>
         <p className="mx-auto mt-3 max-w-[460px] text-[13px] leading-[1.9] text-silkmuted">
           AI 参详仅向登录用户开放：起局后局盘自动落库，服务端基于落库结果构建摘要，
-          每日 20 次额度；live 参详每次消耗 1 灵签，演示引擎免费，失败不扣费。
+          每日 20 次额度；live 参详每次消耗 1 灵签，模板参详免费，失败不扣费。
         </p>
         <DeepButton to={LOGIN_PATH} className="mt-7 border border-gold/50">
           前往登录
@@ -216,7 +216,7 @@ function QimenAiReading({ chartId }: { chartId: number | null }) {
           </p>
         )}
         <p className="mt-3 text-[11.5px] text-silkmuted">
-          live 参详每次消耗 1 灵签；演示引擎（fallback）免费；参详失败不扣费。
+          live 参详每次消耗 1 灵签；模板参详（非 AI，fallback）免费；参详失败不扣费。
         </p>
         {errState && (
           <div
@@ -259,7 +259,7 @@ function QimenAiReading({ chartId }: { chartId: number | null }) {
               ) : (
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-silkmuted/40 bg-silktext/5 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-silkmuted">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-silkmuted" />
-                  fallback · 演示引擎（非 AI 生成，免费）
+                  fallback · 模板参详（非 AI 生成，免费）
                 </span>
               )}
             </div>

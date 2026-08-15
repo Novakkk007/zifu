@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useEngine } from '@/hooks/useEngine'
-import { drawLingqian } from '@/engines/client'
+import { drawLingqian } from '@/engines/client/draws'
 import { useAuth } from '@/hooks/useAuth'
 import { LOGIN_PATH } from '@/const'
 import type { GuanyinSign } from '@contracts/engines/draws-core'
@@ -47,7 +47,7 @@ import { hebenReading, lunarApprox } from '@/components/content/almanac'
 import type { HourLuck } from '@/components/content/ganzhi'
 
 // INT-02/03 销号：节气改 daily-core 精密 API（lunar-typescript 真实交节）
-import { preciseNextSolarTerm, solarTermStartsOn as preciseStartsOn } from '@contracts/engines/daily-core'
+import { preciseNextSolarTerm, solarTermStartsOn as preciseStartsOn, type DayStem } from '@contracts/engines/daily-core'
 
 /** 距下一节气（精密交节时刻） */
 function nextSolarTerm(from: Date): { name: string; daysTo: number } {
@@ -104,7 +104,7 @@ function Reveal({
 
 /* ================= S2 · 今日宜忌 ================= */
 
-function YijiCards({ dayStem }: { dayStem: string }) {
+function YijiCards({ dayStem }: { dayStem: DayStem }) {
   // 宜忌：共享引擎 daily-core（公版黄历基础规则，按日干映射）
   const { yi, ji } = yijiOf(dayStem)
   return (
@@ -165,8 +165,8 @@ function YijiCards({ dayStem }: { dayStem: string }) {
 }
 
 /** 今日五行色条（日干/日支来自 daily-core summary，五行映射表为展示常量） */
-function WuxingStrip({ stem, branch }: { stem: string; branch: string }) {
-  const stemEl = STEM_WUXING[STEMS.indexOf(stem as (typeof STEMS)[number])]
+function WuxingStrip({ stem, branch }: { stem: DayStem; branch: string }) {
+  const stemEl = STEM_WUXING[STEMS.indexOf(stem)]
   const branchEl = BRANCH_WUXING[BRANCHES.indexOf(branch as (typeof BRANCHES)[number])]
   const els = [stemEl, branchEl]
   return (

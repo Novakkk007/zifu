@@ -12,7 +12,7 @@ import ZiweiAiReading from '@/components/ziwei/ZiweiAiReading'
 import type { EngineResult, ZiweiChartData, ZiweiPalace } from '@contracts/engines/ziwei-core'
 import { HOUR_OPTIONS, HUA_COLOR, PALACE_DUTY, liunianOf } from '@/components/ziwei/logic'
 import { useEngine } from '@/hooks/useEngine'
-import { paipanZiwei } from '@/engines/client'
+import { paipanZiwei } from '@/engines/client/ziwei'
 import { cn } from '@/lib/utils'
 
 type Tab = 'daxian' | 'liunian'

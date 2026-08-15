@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useEngine } from '@/hooks/useEngine'
-import { analyzeHecan } from '@/engines/client'
+import { analyzeHecan } from '@/engines/client/hecan'
 import type { BaziChartV2, BirthInput } from '@contracts/bazi-core'
 import type { EngineResult } from '@contracts/engines/engine-result'
 import type { ArtPrecision, HecanReport } from '@contracts/engines/hecan-core/types'
