@@ -215,20 +215,76 @@ export interface DailySummary {
   hourLuck: HourLuck[]
 }
 
-export function getDailySummary(date?: Date): DailySummary {
+export interface DailySummaryOptions {
+  /** IANA 时区（如 Asia/Shanghai）。缺省用运行环境本地时区 */
+  ianaTimezone?: string
+}
+
+/** 提取某绝对时刻在指定 IANA 时区的墙钟字段（Intl 实现，无外部依赖） */
+export function wallClockFields(utcMs: number, ianaTimezone: string): {
+  year: number
+  month: number
+  day: number
+  hour: number
+  minute: number
+  second: number
+} {
+  let y = 0, mo = 0, d = 0, h = 0, mi = 0, s = 0
+  for (const p of new Intl.DateTimeFormat('en-US', {
+    timeZone: ianaTimezone,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+  }).formatToParts(utcMs)) {
+    if (p.type === 'year') y = Number(p.value)
+    else if (p.type === 'month') mo = Number(p.value)
+    else if (p.type === 'day') d = Number(p.value)
+    else if (p.type === 'hour') h = Number(p.value) % 24 // hour12:false 仍可能给 24
+    else if (p.type === 'minute') mi = Number(p.value)
+    else if (p.type === 'second') s = Number(p.value)
+  }
+  return { year: y, month: mo, day: d, hour: h, minute: mi, second: s }
+}
+
+/**
+ * 目标时区偏移毫秒数（正值 = 在 UTC 东边）。把墙钟当 UTC 解释的时刻
+ * 减真实时刻即得偏移。INT-04 销号核心。
+ */
+function tzOffsetMs(utcMs: number, ianaTimezone: string): number {
+  const w = wallClockFields(utcMs, ianaTimezone)
+  const asUtc = Date.UTC(w.year, w.month - 1, w.day, w.hour, w.minute, w.second)
+  return asUtc - utcMs
+}
+
+export function getDailySummary(date?: Date, opts?: DailySummaryOptions): DailySummary {
   const d = date ?? new Date()
+  const tz = opts?.ianaTimezone
   // 精密历法源：lunar-typescript（销号 V11-INT-02/03）
   const lunar = Solar.fromDate(d).getLunar()
   // Exact 版：交节时刻精确换界（ByLiChun/getMonthInGanZhi 整日粒度会在
   // 立春/节气当日 00:00 提前换柱，Kimi 金标 04:01→乙巳己丑 / 04:03→丙午庚寅
-  // 要求精确到分钟，故用 Exact 系列）
+  // 要求精确到分钟，故用 Exact 系列）。
+  // 年柱/月柱/节气：交节是天文绝对时刻，与观看时区无关——直接用原绝对时刻。
   const yearGanzhiStr = lunar.getYearInGanZhiExact() // 立春交节时刻界年干支
   const monthGanzhiStr = lunar.getMonthInGanZhiExact() // 节气交节时刻界月干支
-  const dayGanzhiStr = lunar.getDayInGanZhi() // 日干支
   const prevJieQi = lunar.getPrevJieQi(false) // 上一个节或气（真实交节）
-  const y = d.getFullYear()
-  const m = d.getMonth() + 1
-  const day = d.getDate()
+
+  // INT-04：日柱与 date 字段按目标时区的墙钟日历日
+  let y: number, m: number, day: number, dayGanzhiStr: string
+  if (tz) {
+    const w = wallClockFields(d.getTime(), tz)
+    y = w.year
+    m = w.month
+    day = w.day
+    // 目标日历日 00:00 的真实绝对时刻 → 本地解读日界 JD 正确 → 日柱正确
+    const dayStartUtc = Date.UTC(w.year, w.month - 1, w.day, 0, 0, 0) - tzOffsetMs(d.getTime(), tz)
+    dayGanzhiStr = Solar.fromDate(new Date(dayStartUtc)).getLunar().getDayInGanZhi()
+  } else {
+    y = d.getFullYear()
+    m = d.getMonth() + 1
+    day = d.getDate()
+    dayGanzhiStr = lunar.getDayInGanZhi()
+  }
 
   const dayStem = dayGanzhiStr[0]
   const dayBranch = dayGanzhiStr[1]
