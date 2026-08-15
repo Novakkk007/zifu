@@ -14,6 +14,8 @@ import { HOUR_OPTIONS, HUA_COLOR, PALACE_DUTY, liunianOf } from '@/components/zi
 import { useEngine } from '@/hooks/useEngine'
 import { paipanZiwei } from '@/engines/client/ziwei'
 import { cn } from '@/lib/utils'
+import { SafeStorage, STORAGE_KEYS } from '@/lib/storage'
+import type { FavoriteItem, HistoryItem } from '@/lib/storage'
 
 type Tab = 'daxian' | 'liunian'
 
@@ -47,11 +49,24 @@ export default function Ziwei() {
 
   // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.ziwei.paipan 一致
   const paipan = useEngine(paipanZiwei, {
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setResult(data.result as EngineResult<ZiweiChartData>)
       setChartId(data.chartId)
       setDxIdx(null)
       window.setTimeout(() => chartRef.current?.scrollIntoView({ behavior: 'smooth' }), 60)
+      // 自动保存历史（最近10条）。注意：浏览器直跑 chartId 恒为 null，
+      // 不能作为保存条件——用时间戳生成本地 id
+      if (data.result.data) {
+        const item: HistoryItem = {
+          id: `hist-${Date.now()}`,
+          type: 'ziwei',
+          title: name.trim() ? `${name.trim()}的紫微命盘` : `紫微命盘 ${new Date().toLocaleDateString('zh-CN')}`,
+          createdAt: new Date().toISOString(),
+          payload: data.result.data,
+        }
+        const existing = SafeStorage.get<HistoryItem[]>(STORAGE_KEYS.HISTORY, [])
+        SafeStorage.set(STORAGE_KEYS.HISTORY, [item, ...existing].slice(0, 10))
+      }
     },
   })
 
@@ -82,6 +97,26 @@ export default function Ziwei() {
   const dxSteps = chart?.daxian.steps ?? []
   const selDx = dxIdx !== null ? dxSteps[dxIdx] : null
   const currentDx = chart ? dxSteps[chart.currentDaxianIndex] : null
+
+  // 收藏当前命盘到 localStorage（STORAGE_KEYS.FAVORITES）。数据仅本地，不脱敏上传。
+  const handleFavorite = () => {
+    if (!chart) return
+    const item: FavoriteItem = {
+      id: `fav-${chartId ?? 'local'}-${Date.now()}`,
+      type: 'ziwei',
+      title: name.trim() ? `${name.trim()}的紫微命盘` : `紫微命盘 ${new Date().toLocaleDateString('zh-CN')}`,
+      createdAt: new Date().toISOString(),
+      payload: chart,
+    }
+    const existing = SafeStorage.get<FavoriteItem[]>(STORAGE_KEYS.FAVORITES, [])
+    // 去重：同一命盘（payload 摘要）不重复收藏
+    const signature = JSON.stringify(chart.palaces)
+    const deduped = existing.filter((favorite) => {
+      if (favorite.type !== 'ziwei') return true
+      return JSON.stringify((favorite.payload as { palaces?: unknown })?.palaces) !== signature
+    })
+    SafeStorage.set(STORAGE_KEYS.FAVORITES, [item, ...deduped])
+  }
 
   return (
     <div>
@@ -276,6 +311,15 @@ export default function Ziwei() {
             )}
             <div className="mt-10">
               <ZiweiChart chart={chart} onSelect={handleSelectCell} />
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-5 pt-2">
+              <button
+                type="button"
+                onClick={handleFavorite}
+                className="zf-link-more inline-flex items-center gap-1 text-[14px] font-medium tracking-[0.1em] text-golddim"
+              >
+                收藏
+              </button>
             </div>
           </div>
         </section>

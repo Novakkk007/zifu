@@ -16,6 +16,8 @@ import {
 } from '@/components/liuyao/api'
 import { useEngine } from '@/hooks/useEngine'
 import { castLiuyao, coinTossLiuyao } from '@/engines/client/liuyao'
+import { SafeStorage, STORAGE_KEYS } from '@/lib/storage'
+import type { FavoriteItem, HistoryItem } from '@/lib/storage'
 
 type CoinFace = 'zi' | 'bei'
 
@@ -36,7 +38,23 @@ export default function Liuyao() {
   // 浏览器直跑引擎（静态托管无后端）：掷币改浏览器 CSPRNG，装卦纯函数
   const coinToss = useEngine(coinTossLiuyao)
   const cast = useEngine(castLiuyao, {
-    onSuccess: (data) => setCastData(data as unknown as CastResponse),
+    onSuccess: async (data) => {
+      const res = data as unknown as CastResponse
+      setCastData(res)
+      // 自动保存历史（最近10条）。注意：浏览器直跑 chartId 恒为 null，
+      // 不能作为保存条件——用时间戳生成本地 id
+      if (res.result.data) {
+        const item: HistoryItem = {
+          id: `hist-${Date.now()}`,
+          type: 'liuyao',
+          title: question.trim() ? `${question.trim()} · 六爻起卦` : `六爻起卦 ${new Date().toLocaleDateString('zh-CN')}`,
+          createdAt: new Date().toISOString(),
+          payload: res.result.data,
+        }
+        const existing = SafeStorage.get<HistoryItem[]>(STORAGE_KEYS.HISTORY, [])
+        SafeStorage.set(STORAGE_KEYS.HISTORY, [item, ...existing].slice(0, 10))
+      }
+    },
   })
 
   useEffect(() => {
@@ -103,6 +121,26 @@ export default function Liuyao() {
   }
 
   const chart = castData?.result.data ?? null
+
+  // 收藏当前卦象到 localStorage（STORAGE_KEYS.FAVORITES）。数据仅本地，不脱敏上传。
+  const handleFavorite = () => {
+    if (!chart) return
+    const item: FavoriteItem = {
+      id: `fav-${castData?.chartId ?? 'local'}-${Date.now()}`,
+      type: 'liuyao',
+      title: question.trim() ? `${question.trim()} · 六爻起卦` : `六爻起卦 ${new Date().toLocaleDateString('zh-CN')}`,
+      createdAt: new Date().toISOString(),
+      payload: chart,
+    }
+    const existing = SafeStorage.get<FavoriteItem[]>(STORAGE_KEYS.FAVORITES, [])
+    // 去重：同一卦象（payload 摘要）不重复收藏
+    const signature = JSON.stringify(chart.benGua)
+    const deduped = existing.filter((favorite) => {
+      if (favorite.type !== 'liuyao') return true
+      return JSON.stringify((favorite.payload as { benGua?: unknown })?.benGua) !== signature
+    })
+    SafeStorage.set(STORAGE_KEYS.FAVORITES, [item, ...deduped])
+  }
 
   return (
     <div>
@@ -212,6 +250,15 @@ export default function Liuyao() {
             {castData ? (
               <>
                 <HexagramResult result={castData.result} question={question.trim()} />
+                <div className="flex flex-wrap items-center justify-center gap-5 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleFavorite}
+                    className="zf-link-more inline-flex items-center gap-1 text-[14px] font-medium tracking-[0.1em] text-golddim"
+                  >
+                    收藏
+                  </button>
+                </div>
                 {castData.persisted && castData.chartId !== null && (
                   <motion.p
                     initial={{ opacity: 0 }}
