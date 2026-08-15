@@ -22,6 +22,7 @@ import type { PaipanPayload, PaipanResponse } from '@/components/bazi-v2/api'
 import { trpc } from '@/providers/trpc'
 import { useEngine } from '@/hooks/useEngine'
 import { paipanBazi } from '@/engines/client/bazi'
+import { SafeStorage, STORAGE_KEYS } from '@/lib/storage'
 
 const HERO_POOL = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸', '子', '丑', '寅', '卯', '财', '官', '印', '食']
 
@@ -49,6 +50,19 @@ export default function Bazi() {
       setChart(res.chart)
       setChartId(res.chartId)
       setPersisted(res.persisted)
+      // 自动保存历史（最近10条）。注意：浏览器直跑 chartId 恒为 null，
+      // 不能作为保存条件——用时间戳生成本地 id
+      if (res.chart) {
+        const item = {
+          id: `hist-${Date.now()}`,
+          type: 'bazi',
+          title: chartTitle || `八字排盘 ${new Date().toLocaleDateString('zh-CN')}`,
+          createdAt: new Date().toISOString(),
+          payload: res.chart,
+        }
+        const existing = SafeStorage.get(STORAGE_KEYS.HISTORY, [])
+        SafeStorage.set(STORAGE_KEYS.HISTORY, [item, ...existing].slice(0, 10))
+      }
       await utils.bazi.history.invalidate()
     },
   })
@@ -78,6 +92,25 @@ export default function Bazi() {
   const handleAiExplain = (stageLabel: string) => {
     setAiStage(stageLabel)
     detailRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' })
+  }
+
+  // 收藏当前命盘到 localStorage（STORAGE_KEYS.FAVORITES）。数据仅本地，不脱敏上传。
+  const handleFavorite = () => {
+    if (!chart) return
+    const item = {
+      id: `fav-${chartId ?? 'local'}-${Date.now()}`,
+      type: 'bazi',
+      title: chartTitle || `八字排盘 ${new Date().toLocaleDateString('zh-CN')}`,
+      createdAt: new Date().toISOString(),
+      payload: chart,
+    }
+    const existing = SafeStorage.get(STORAGE_KEYS.FAVORITES, [])
+    // 去重：同一命盘（payload 摘要）不重复收藏
+    const signature = JSON.stringify(chart.pillars)
+    const deduped = existing.filter(
+      (f: { payload?: unknown }) => JSON.stringify((f.payload as { pillars?: unknown })?.pillars) !== signature,
+    )
+    SafeStorage.set(STORAGE_KEYS.FAVORITES, [item, ...deduped])
   }
 
   const errorText = paipan.isError
@@ -171,6 +204,12 @@ export default function Bazi() {
                 >
                   重新排盘
                 </GhostButton>
+                <button
+                  onClick={handleFavorite}
+                  className="zf-link-more inline-flex items-center gap-1 text-[14px] font-medium tracking-[0.1em] text-golddim"
+                >
+                  收藏
+                </button>
                 <button
                   onClick={() => detailRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' })}
                   className="zf-link-more inline-flex items-center gap-1 text-[14px] font-medium tracking-[0.1em] text-golddim"
