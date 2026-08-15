@@ -15,6 +15,10 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  preview: {
+    // 允许隧道/代理域名访问预览（默认仅 localhost，会 403 外网域名）
+    allowedHosts: true,
+  },
   resolve: {
     alias: [
       // hecan-core 顶层 import 'node:module'（仅服务端 defaultEngineLoader 探测用）；
