@@ -9,15 +9,20 @@
  * - 计费说明：live 每次消耗 1 灵签；fallback 免费；失败不扣费。
  */
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import SectionHeading from '@/components/SectionHeading'
 import { SegmentedControl } from '@/components/FormControls'
 import { DeepButton, GoldButton } from '@/components/Buttons'
 import { trpc } from '@/providers/trpc'
 import { useAuth } from '@/hooks/useAuth'
+import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
 import { LOGIN_PATH } from '@/const'
 import { cn } from '@/lib/utils'
 import type { BaziChartV2 } from '@contracts/bazi-core'
+import { getBooksForTerm } from '@contracts/glossary-bridge'
+import { BOOKS, type Book } from '@/components/content/books'
+import { GLOSSARY } from '@/components/GlossaryTooltip'
 import type { ReadingResponse } from './api'
 
 type Persona = 'scholar' | 'hermit'
@@ -47,6 +52,9 @@ function newIdempotencyKey(chartId: number): string {
 
 /** 错误码 → 明确 UI 状态文案（action 可选登录引导） */
 function errorStateOf(err: unknown): { title: string; desc: string; showLogin: boolean } {
+  // 静态托管无后端：fetch/JSON 解析类错误兜底为友好文案
+  const unavailable = aiBackendUnavailableText(err)
+  if (unavailable) return { title: '参详失败', desc: unavailable, showLogin: false }
   const code = trpcCode(err)
   const serverMsg = err instanceof Error ? err.message : ''
   switch (code) {
@@ -87,6 +95,53 @@ function errorStateOf(err: unknown): { title: string; desc: string; showLogin: b
         showLogin: false,
       }
   }
+}
+
+/**
+ * 相关典籍（纯展示）：对本次排盘实际涉及的术语（十神 + 日主/身强身弱/格局/大运/流年）
+ * 经 glossary-bridge 映射取关联典籍，渲染为藏经阁入口卡。
+ * 数据仅供展示层互链，不进入 AI prompt 链路（红线见 api/glossary-wire.test.ts）。
+ */
+function relatedBooksForChart(chart: BaziChartV2): Book[] {
+  const terms = new Set<string>(['日主', '身强身弱', '格局', '大运', '流年'])
+  for (const t of chart.tenGods) terms.add(t.tenGod)
+  const ids = new Set<string>()
+  for (const term of terms) {
+    if (!GLOSSARY[term]) continue // 无词条的术语（如偏印）跳过，不强行关联
+    for (const id of getBooksForTerm(term)) ids.add(id)
+  }
+  return BOOKS.filter((b) => ids.has(b.id))
+}
+
+function RelatedBooksSection({ chart }: { chart: BaziChartV2 }) {
+  const books = relatedBooksForChart(chart)
+  if (books.length === 0) return null
+  return (
+    <div className="mt-12">
+      <p className="text-center text-[12px] tracking-[0.18em] text-silkmuted">
+        相关典籍 · 本盘术语可溯源的公版书目（藏经阁）
+      </p>
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {books.map((b) => (
+          <Link
+            key={b.id}
+            to="/wiki"
+            className="rounded-xl border border-golddim/25 bg-deep/50 px-4 py-4 text-center transition-colors hover:border-gold/60 hover:bg-deep"
+          >
+            <p className="font-serif text-[15px] font-bold tracking-[0.08em] text-goldbright">
+              《{b.title}》
+            </p>
+            <p className="mt-1.5 text-[11.5px] leading-[1.7] text-silkmuted">
+              {b.dynasty} · {b.author}
+            </p>
+            <p className="mt-1 line-clamp-2 text-[11.5px] leading-[1.7] text-silkmuted/80">
+              {b.intro}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 function SourceBadge({ result }: { result: ReadingResponse }) {
@@ -317,6 +372,9 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 相关典籍：本盘术语 → 藏经阁互链（纯展示，不入 AI 链路） */}
+      {chart && <RelatedBooksSection chart={chart} />}
     </div>
   )
 }

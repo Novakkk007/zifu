@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useEffect, useRef } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router'
 import Lenis from 'lenis'
 import { motion } from 'framer-motion'
 import { gsap, ScrollTrigger } from '@/lib/anim'

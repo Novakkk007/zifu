@@ -1,0 +1,20 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npm run check
+      - run: npm run lint
+      - run: npm run test
+        env:
+          KIMI_AUTH_URL: http://127.0.0.1:9999
+          KIMI_OPEN_URL: http://127.0.0.1:9999
+      - run: npm run build
+      - run: npm audit --omit=dev

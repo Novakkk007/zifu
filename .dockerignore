@@ -1,5 +1,31 @@
+# 依赖与构建产物（镜像内重新安装/构建）
 node_modules
 dist
+
+# 版本控制
 .git
+.github
+.gitignore
+
+# 环境变量（严禁进镜像；.env.example 保留作模板）
+.env
+.env.*
+!.env.example
+
+# 测试与 e2e 产物
+e2e/test-results
+e2e/playwright-report
+playwright-report
+test-results
+coverage
+
+# 文档与设计稿（运行镜像不需要）
+docs
+info.md
+plan.md
+
+# 其他
 *.swp
 *.log
+*.bundle
+.DS_Store

@@ -19,7 +19,8 @@ export interface CoinTossResponse {
   faces: string[]
   /** 三枚之和：6/7/8/9 */
   value: number
-  source: 'server-csprng'
+  /** 随机源：服务端（有后端）或浏览器 crypto.getRandomValues（静态托管） */
+  source: 'server-csprng' | 'client-csprng'
 }
 
 /** cast 响应 */

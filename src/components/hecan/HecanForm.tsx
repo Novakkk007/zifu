@@ -12,7 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { trpc } from '@/providers/trpc'
+import { useEngine } from '@/hooks/useEngine'
+import { analyzeHecan } from '@/engines/client'
 import type { BaziChartV2, BirthInput } from '@contracts/bazi-core'
 import type { EngineResult } from '@contracts/engines/engine-result'
 import type { ArtPrecision, HecanReport } from '@contracts/engines/hecan-core/types'
@@ -63,7 +64,8 @@ export default function HecanForm() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const resultRef = useRef<HTMLDivElement>(null)
 
-  const analyze = trpc.hecan.analyze.useMutation({
+  // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.hecan.analyze 一致
+  const analyze = useEngine(analyzeHecan, {
     onSuccess: (data) => setResult(data as unknown as HecanResponse),
   })
 

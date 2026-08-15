@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, LogOut, Menu, Sparkle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
