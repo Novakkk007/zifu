@@ -313,7 +313,7 @@ export default function Profile() {
                         name="defaultGender" 
                         value="male" 
                         checked={tempPrefs.defaultGender === 'male'}
-                        onChange={(e) => setTempPrefs({...tempPrefs, defaultGender: e.target.value as any})}
+                        onChange={(e) => setTempPrefs({...tempPrefs, defaultGender: e.target.value as 'male' | 'female' | 'other'})}
                         className="h-4 w-4 text-goldbright focus:ring-goldbright"
                       />
                       <span className="text-[14px] text-inktext">男</span>
@@ -324,7 +324,7 @@ export default function Profile() {
                         name="defaultGender" 
                         value="female" 
                         checked={tempPrefs.defaultGender === 'female'}
-                        onChange={(e) => setTempPrefs({...tempPrefs, defaultGender: e.target.value as any})}
+                        onChange={(e) => setTempPrefs({...tempPrefs, defaultGender: e.target.value as 'male' | 'female' | 'other'})}
                         className="h-4 w-4 text-goldbright focus:ring-goldbright"
                       />
                       <span className="text-[14px] text-inktext">女</span>
@@ -335,7 +335,7 @@ export default function Profile() {
                         name="defaultGender" 
                         value="other" 
                         checked={tempPrefs.defaultGender === 'other'}
-                        onChange={(e) => setTempPrefs({...tempPrefs, defaultGender: e.target.value as any})}
+                        onChange={(e) => setTempPrefs({...tempPrefs, defaultGender: e.target.value as 'male' | 'female' | 'other'})}
                         className="h-4 w-4 text-goldbright focus:ring-goldbright"
                       />
                       <span className="text-[14px] text-inktext">其他</span>

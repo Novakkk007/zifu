@@ -11,7 +11,7 @@ export class SafeStorage {
       globalThis.localStorage.setItem(testKey, 'test')
       globalThis.localStorage.removeItem(testKey)
       return true
-    } catch (e) {
+    } catch {
       return false
     }
   }
@@ -125,7 +125,7 @@ export type FavoriteItem = {
   type: string
   title: string
   createdAt: string
-  payload: any
+  payload: unknown
 }
 
 export type HistoryItem = {
@@ -133,7 +133,7 @@ export type HistoryItem = {
   type: string
   title: string
   createdAt: string
-  payload: any
+  payload: unknown
 }
 
 export type Preferences = {
