@@ -215,20 +215,72 @@ export interface DailySummary {
   hourLuck: HourLuck[]
 }
 
-export function getDailySummary(date?: Date): DailySummary {
+export interface DailySummaryOptions {
+  /** IANA 时区（如 Asia/Shanghai）。缺省用运行环境本地时区 */
+  ianaTimezone?: string
+}
+
+/** 提取某绝对时刻在指定 IANA 时区的墙钟字段（Intl 实现，无外部依赖） */
+export function wallClockFields(utcMs: number, ianaTimezone: string): {
+  year: number
+  month: number
+  day: number
+  hour: number
+  minute: number
+  second: number
+} {
+  let y = 0, mo = 0, d = 0, h = 0, mi = 0, s = 0
+  for (const p of new Intl.DateTimeFormat('en-US', {
+    timeZone: ianaTimezone,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+  }).formatToParts(utcMs)) {
+    if (p.type === 'year') y = Number(p.value)
+    else if (p.type === 'month') mo = Number(p.value)
+    else if (p.type === 'day') d = Number(p.value)
+    else if (p.type === 'hour') h = Number(p.value) % 24 // hour12:false 仍可能给 24
+    else if (p.type === 'minute') mi = Number(p.value)
+    else if (p.type === 'second') s = Number(p.value)
+  }
+  return { year: y, month: mo, day: d, hour: h, minute: mi, second: s }
+}
+
+export function getDailySummary(date?: Date, opts?: DailySummaryOptions): DailySummary {
   const d = date ?? new Date()
-  // 精密历法源：lunar-typescript（销号 V11-INT-02/03）
-  const lunar = Solar.fromDate(d).getLunar()
+  const tz = opts?.ianaTimezone
+  // 精密历法源：lunar-typescript（销号 V11-INT-02/03）。
+  // 关键事实：lunar 的节气表固定按北京时间(+8)生成，年柱/月柱/节气判定
+  // 用「运行环境本地墙钟 vs 表墙钟」比较——非 +8 环境会错位（实测 UTC 下
+  // 立春后 1.5h 仍判乙巳年）。修复：统一把绝对时刻换算为北京时间墙钟喂入。
+  const bj = wallClockFields(d.getTime(), 'Asia/Shanghai')
+  const eff = new Date(bj.year, bj.month - 1, bj.day, bj.hour, bj.minute, bj.second)
+  const lunar = Solar.fromDate(eff).getLunar()
   // Exact 版：交节时刻精确换界（ByLiChun/getMonthInGanZhi 整日粒度会在
   // 立春/节气当日 00:00 提前换柱，Kimi 金标 04:01→乙巳己丑 / 04:03→丙午庚寅
-  // 要求精确到分钟，故用 Exact 系列）
+  // 要求精确到分钟，故用 Exact 系列）。
+  // 年柱/月柱/节气：交节是天文绝对时刻，与观看时区无关——直接用原绝对时刻。
   const yearGanzhiStr = lunar.getYearInGanZhiExact() // 立春交节时刻界年干支
   const monthGanzhiStr = lunar.getMonthInGanZhiExact() // 节气交节时刻界月干支
-  const dayGanzhiStr = lunar.getDayInGanZhi() // 日干支
   const prevJieQi = lunar.getPrevJieQi(false) // 上一个节或气（真实交节）
-  const y = d.getFullYear()
-  const m = d.getMonth() + 1
-  const day = d.getDate()
+
+  // INT-04：日柱与 date 字段按目标时区的墙钟日历日。
+  // 干支日的本质：自锚点（1900-01-01 甲戌）起每个日历日进一位，
+  // 只依赖日历日标签，与运行环境时区无关——直接把目标日历日喂给
+  // Solar.fromYmd（其内部用本地时区解读，日历日标签自洽）。
+  let y: number, m: number, day: number, dayGanzhiStr: string
+  if (tz) {
+    const w = wallClockFields(d.getTime(), tz)
+    y = w.year
+    m = w.month
+    day = w.day
+    dayGanzhiStr = Solar.fromYmd(y, m, day).getLunar().getDayInGanZhi()
+  } else {
+    y = d.getFullYear()
+    m = d.getMonth() + 1
+    day = d.getDate()
+    dayGanzhiStr = lunar.getDayInGanZhi()
+  }
 
   const dayStem = dayGanzhiStr[0]
   const dayBranch = dayGanzhiStr[1]

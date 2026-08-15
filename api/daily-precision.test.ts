@@ -35,7 +35,7 @@ const KEY_ALIASES: Record<string, string[]> = {
   惊蛰: ["惊蛰", "JING_ZHE"],
 }
 
-/** 从 lunar 交节表取某年某节气交节时刻的本地 Date（字段构造，时区自洽） */
+/** 从 lunar 交节表取某年某节气交节时刻的绝对时刻（表字段固定为北京时间墙钟） */
 function jieqiInstant(year: number, name: string): Date {
   const table = Solar.fromYmd(year, 1, 15).getLunar().getJieQiTable() as Record<string, unknown>
   for (const key of KEY_ALIASES[name] ?? [name]) {
@@ -43,7 +43,9 @@ function jieqiInstant(year: number, name: string): Date {
     if (!s || typeof (s as { getYear?: unknown }).getYear !== "function") continue
     const j = s as { getYear(): number; getMonth(): number; getDay(): number; getHour(): number; getMinute(): number; getSecond(): number }
     if (j.getYear() !== year) continue // 跳过跨年遗留的同名节气
-    return new Date(j.getYear(), j.getMonth() - 1, j.getDay(), j.getHour(), j.getMinute(), j.getSecond())
+    // 表字段 = 北京时间墙钟 → 绝对时刻 = 字段当 UTC 减 8h（任何环境一致）
+    const asUtc = Date.UTC(j.getYear(), j.getMonth() - 1, j.getDay(), j.getHour(), j.getMinute(), j.getSecond())
+    return new Date(asUtc - 8 * 3_600_000)
   }
   throw new Error(`节气表未找到 ${year} ${name}`)
 }
