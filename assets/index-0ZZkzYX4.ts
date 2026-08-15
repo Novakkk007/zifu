@@ -5,11 +5,19 @@
  *   六十甲子索引 i ∈ [0, 59]，天干 = i % 10，地支 = i % 12。
  *   禁止使用 `i / 12 | 0`、`stem * 12 + branch` 等非等价的混用编码。
  *
- * 节气：公历近似日期表（非 lunar-typescript 真实计算，标注 approximate）。
+ * 历法精度（V12 起）：
+ *   - 纯函数（yearJiazi / dayJiazi / monthJiazi / hourJiazi）保留确定性公式实现，
+ *     作为独立校验锚点（1900–2100 与 lunar-typescript 全量对拍见 daily-core.test.ts）。
+ *   - getDailySummary 使用 lunar-typescript 精密历法：
+ *     年干支以立春为界、月干支以节气为界（销号 V11-INT-02/03）、
+ *     节气名为真实交节而非近似日期表。
+ *   - monthJiazi（公历月近似）保留导出并标注 approximate，仅供对拍与兼容。
  * 宜忌：按日干静态映射（公版黄历基础规则）。
  *
  * 迁移自：src/components/content/ganzhi.ts + almanac.ts
  */
+
+import { Solar } from 'lunar-typescript'
 
 // ===================== 常量 =====================
 
@@ -103,7 +111,7 @@ export function hourBranchOf(clockHour: number): number {
 
 // ===================== 节气 =====================
 
-/** 当前节气（公历近似） */
+/** 当前节气（公历近似；精密版见 getDailySummary / preciseSolarTerm） */
 export function currentSolarTerm(date: Date): string {
   const m = date.getMonth() + 1
   const d = date.getDate()
@@ -112,6 +120,31 @@ export function currentSolarTerm(date: Date): string {
     if (m > tm || (m === tm && d >= td)) return name
   }
   return SOLAR_TERMS[SOLAR_TERMS.length - 1][2]
+}
+
+/** 精密版当前节气名（lunar-typescript 真实交节，INT-03 销号产物） */
+export function preciseSolarTerm(date: Date): string {
+  return Solar.fromDate(date).getLunar().getPrevJieQi(false).getName()
+}
+
+/** 精密版下一节气（真实交节时刻，含精确剩余天数） */
+export function preciseNextSolarTerm(date: Date): { name: string; daysTo: number } {
+  const lunar = Solar.fromDate(date).getLunar()
+  const next = lunar.getNextJieQi(false)
+  if (!next) return { name: preciseSolarTerm(date), daysTo: 0 }
+  const solar = next.getSolar()
+  const nextMs = new Date(
+    solar.getYear(), solar.getMonth() - 1, solar.getDay(),
+    solar.getHour(), solar.getMinute(), solar.getSecond(),
+  ).getTime()
+  const daysTo = Math.ceil((nextMs - date.getTime()) / 86400000)
+  return { name: next.getName(), daysTo: Math.max(0, daysTo) }
+}
+
+/** 某日是否为交节日（当天发生节气交接），返回节气名或 null */
+export function solarTermStartsOn(date: Date): string | null {
+  const jieQi = Solar.fromDate(date).getLunar().getJieQi() // string：当天节气名或空串
+  return jieQi || null
 }
 
 // ===================== 宜忌 =====================
@@ -184,25 +217,32 @@ export interface DailySummary {
 
 export function getDailySummary(date?: Date): DailySummary {
   const d = date ?? new Date()
+  // 精密历法源：lunar-typescript（销号 V11-INT-02/03）
+  const lunar = Solar.fromDate(d).getLunar()
+  // Exact 版：交节时刻精确换界（ByLiChun/getMonthInGanZhi 整日粒度会在
+  // 立春/节气当日 00:00 提前换柱，Kimi 金标 04:01→乙巳己丑 / 04:03→丙午庚寅
+  // 要求精确到分钟，故用 Exact 系列）
+  const yearGanzhiStr = lunar.getYearInGanZhiExact() // 立春交节时刻界年干支
+  const monthGanzhiStr = lunar.getMonthInGanZhiExact() // 节气交节时刻界月干支
+  const dayGanzhiStr = lunar.getDayInGanZhi() // 日干支
+  const prevJieQi = lunar.getPrevJieQi(false) // 上一个节或气（真实交节）
   const y = d.getFullYear()
   const m = d.getMonth() + 1
   const day = d.getDate()
 
-  const yearIdx = yearJiazi(y)
-  const dayIdx = dayJiazi(y, m, day)
-  const dayStemIdx = jiaziStem(dayIdx)
-  const monthIdx = monthJiazi(jiaziStem(yearIdx), m)
-  const term = currentSolarTerm(d)
-  const yj = yijiOf(STEMS[dayStemIdx])
+  const dayStem = dayGanzhiStr[0]
+  const dayBranch = dayGanzhiStr[1]
+  const dayStemIdx = STEMS.indexOf(dayStem as (typeof STEMS)[number])
+  const yj = yijiOf(dayStem)
 
   return {
     date: `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-    yearGanzhi: ganzhiLabel(yearIdx),
-    monthGanzhi: ganzhiLabel(monthIdx),
-    dayGanzhi: ganzhiLabel(dayIdx),
-    solarTerm: term,
-    dayStem: STEMS[dayStemIdx],
-    dayBranch: BRANCHES[jiaziBranch(dayIdx)],
+    yearGanzhi: yearGanzhiStr,
+    monthGanzhi: monthGanzhiStr,
+    dayGanzhi: dayGanzhiStr,
+    solarTerm: prevJieQi.getName(),
+    dayStem,
+    dayBranch,
     yi: yj.yi,
     ji: yj.ji,
     hourLuck: Array.from({ length: 24 }, (_, h) => hourLuck(h, dayStemIdx)),
