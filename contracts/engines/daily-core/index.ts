@@ -143,8 +143,8 @@ export function preciseNextSolarTerm(date: Date): { name: string; daysTo: number
 
 /** 某日是否为交节日（当天发生节气交接），返回节气名或 null */
 export function solarTermStartsOn(date: Date): string | null {
-  const jieQi = Solar.fromDate(date).getLunar().getJieQi()
-  return jieQi ? jieQi.getName() : null
+  const jieQi = Solar.fromDate(date).getLunar().getJieQi() // string：当天节气名或空串
+  return jieQi || null
 }
 
 // ===================== 宜忌 =====================
@@ -219,8 +219,11 @@ export function getDailySummary(date?: Date): DailySummary {
   const d = date ?? new Date()
   // 精密历法源：lunar-typescript（销号 V11-INT-02/03）
   const lunar = Solar.fromDate(d).getLunar()
-  const yearGanzhiStr = lunar.getYearInGanZhiByLiChun() // 立春界年干支
-  const monthGanzhiStr = lunar.getMonthInGanZhi() // 节气界月干支
+  // Exact 版：交节时刻精确换界（ByLiChun/getMonthInGanZhi 整日粒度会在
+  // 立春/节气当日 00:00 提前换柱，Kimi 金标 04:01→乙巳己丑 / 04:03→丙午庚寅
+  // 要求精确到分钟，故用 Exact 系列）
+  const yearGanzhiStr = lunar.getYearInGanZhiExact() // 立春交节时刻界年干支
+  const monthGanzhiStr = lunar.getMonthInGanZhiExact() // 节气交节时刻界月干支
   const dayGanzhiStr = lunar.getDayInGanZhi() // 日干支
   const prevJieQi = lunar.getPrevJieQi(false) // 上一个节或气（真实交节）
   const y = d.getFullYear()
@@ -229,7 +232,7 @@ export function getDailySummary(date?: Date): DailySummary {
 
   const dayStem = dayGanzhiStr[0]
   const dayBranch = dayGanzhiStr[1]
-  const dayStemIdx = STEMS.indexOf(dayStem)
+  const dayStemIdx = STEMS.indexOf(dayStem as (typeof STEMS)[number])
   const yj = yijiOf(dayStem)
 
   return {
