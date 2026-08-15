@@ -106,6 +106,10 @@ export function randomInt(min: number, maxExclusive: number): number {
   if (!Number.isInteger(range) || range <= 0) {
     throw new Error('randomInt 区间无效')
   }
+  // 拒绝采样基于 Uint32（[0, 2^32)）；range 超过 2^32 时 limit 会归零导致死循环，显式拒绝
+  if (range > 0x1_0000_0000) {
+    throw new Error('randomInt 区间超出 32 位随机源覆盖范围')
+  }
   const limit = Math.floor(0x1_0000_0000 / range) * range
   const buf = new Uint32Array(1)
   for (;;) {
