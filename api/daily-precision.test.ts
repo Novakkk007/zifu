@@ -61,8 +61,17 @@ describe("INT-02/03 金标：立春交节换年换月（相对断言，时区自
     expect(s1.monthGanzhi).toBe("己丑")
     expect(s2.yearGanzhi).toBe("丙午")
     expect(s2.monthGanzhi).toBe("庚寅")
-    // 换界前后日柱不变（同日）
+    // 换界前后日柱不变，且 = 己酉（Kimi 金标明确值）
     expect(s1.dayGanzhi).toBe(s2.dayGanzhi)
+    expect(s1.dayGanzhi).toBe("己酉")
+  })
+
+  it("清明交节前后 1 分钟：辛卯月 → 壬辰月", () => {
+    const qingming = jieqiInstant(2026, "清明")
+    const before = getDailySummary(new Date(qingming.getTime() - 60_000))
+    const after = getDailySummary(new Date(qingming.getTime() + 60_000))
+    expect(before.monthGanzhi).toBe("辛卯")
+    expect(after.monthGanzhi).toBe("壬辰")
   })
 
   it("惊蛰换月：交节前后 1 分钟 庚寅月 → 辛卯月（年柱不动）", () => {
@@ -99,5 +108,14 @@ describe("INT-03 金标：绝对交节时刻（仅 UTC+8 断言，其他时区�
     const dongzhi = jieqiInstant(2026, "冬至")
     expect([dongzhi.getMonth(), dongzhi.getDate(), dongzhi.getHours(), dongzhi.getMinutes(), dongzhi.getSeconds()])
       .toEqual([11, 22, 4, 50, 14])
+  })
+
+  it.skipIf(!isCST)("清明 2026 = 2026-04-05 02:40:00；夏至 2026 = 2026-06-21 16:24:30", () => {
+    const qingming = jieqiInstant(2026, "清明")
+    expect([qingming.getMonth(), qingming.getDate(), qingming.getHours(), qingming.getMinutes(), qingming.getSeconds()])
+      .toEqual([3, 5, 2, 40, 0])
+    const xiazhi = jieqiInstant(2026, "夏至")
+    expect([xiazhi.getMonth(), xiazhi.getDate(), xiazhi.getHours(), xiazhi.getMinutes(), xiazhi.getSeconds()])
+      .toEqual([5, 21, 16, 24, 30])
   })
 })
