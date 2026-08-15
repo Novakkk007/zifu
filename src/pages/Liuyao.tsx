@@ -15,7 +15,7 @@ import {
   type CastResponse,
 } from '@/components/liuyao/api'
 import { useEngine } from '@/hooks/useEngine'
-import { castLiuyao, coinTossLiuyao } from '@/engines/client'
+import { castLiuyao, coinTossLiuyao } from '@/engines/client/liuyao'
 
 type CoinFace = 'zi' | 'bei'
 

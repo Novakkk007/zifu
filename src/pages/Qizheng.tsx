@@ -9,7 +9,7 @@ import { DeepButton, GoldButton } from '@/components/Buttons'
 import { BRANCHES, MANSIONS } from '@/components/sanshi/astro'
 import { trpc } from '@/providers/trpc'
 import { useEngine } from '@/hooks/useEngine'
-import { paipanQizheng } from '@/engines/client'
+import { paipanQizheng } from '@/engines/client/qizheng'
 import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
 import { useAuth } from '@/hooks/useAuth'
 import { LOGIN_PATH } from '@/const'
@@ -93,7 +93,7 @@ function AiPanel({ chartId }: { chartId: number | null }) {
         </p>
         <p className="mx-auto mt-3 max-w-[460px] text-[13px] leading-[1.9] text-silkmuted">
           AI 参详仅向登录用户开放：星盘自动落库，服务端基于落库结果构建摘要；
-          live 参详每次消耗 1 灵签，演示引擎免费，失败不扣费。
+          live 参详每次消耗 1 灵签，模板参详免费，失败不扣费。
         </p>
         <DeepButton to={LOGIN_PATH} className="mt-7 border border-gold/50">
           前往登录
@@ -180,7 +180,7 @@ function AiPanel({ chartId }: { chartId: number | null }) {
                 </span>
               ) : (
                 <span className="rounded-full border border-silkmuted/40 px-3 py-1 text-silkmuted">
-                  fallback · 演示引擎（免费）
+                  fallback · 模板参详（免费）
                 </span>
               )}
             </p>

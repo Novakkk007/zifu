@@ -13,7 +13,7 @@ import type { HepanReport } from '@contracts/engines/hepan-core'
 import type { EngineResult } from '@contracts/engines/engine-result'
 import { WUXING_COLORS } from '@/lib/wuxing-style'
 import { useEngine } from '@/hooks/useEngine'
-import { analyzeHepan } from '@/engines/client'
+import { analyzeHepan } from '@/engines/client/hepan'
 
 /** 合盘表单（公历、不校正）→ BirthInput */
 function toBirthInput(p: PersonFormState): BirthInput {

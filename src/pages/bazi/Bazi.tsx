@@ -21,7 +21,7 @@ import { ChengguCard, RelationsTable, ShenshaTable, TenGodsTable } from '@/compo
 import type { PaipanPayload, PaipanResponse } from '@/components/bazi-v2/api'
 import { trpc } from '@/providers/trpc'
 import { useEngine } from '@/hooks/useEngine'
-import { paipanBazi } from '@/engines/client'
+import { paipanBazi } from '@/engines/client/bazi'
 
 const HERO_POOL = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸', '子', '丑', '寅', '卯', '财', '官', '印', '食']
 
