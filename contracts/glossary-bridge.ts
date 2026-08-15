@@ -33,17 +33,17 @@ export const BAZI_LINKS: EngineGlossaryLink[] = [
   },
   {
     engineField: "pillars[].shensha[]",
-    glossaryTerms: [],
+    glossaryTerms: ["空亡", "桃花", "驿马", "华盖", "将星", "天乙贵人", "文昌", "羊刃", "禄神", "合化", "刑冲克害", "旺相休囚死"],
     books: ["sanming", "yuanhai"],
   },
   {
     engineField: "wuxingAnalysis",
-    glossaryTerms: ["身强身弱", "格局", "日主", "纳音"],
+    glossaryTerms: ["身强身弱", "格局", "日主", "纳音", "用神", "喜神", "忌神"],
     books: ["ditiansui", "ziping", "qiongtong"],
   },
   {
     engineField: "dayun[]",
-    glossaryTerms: ["大运", "流年"],
+    glossaryTerms: ["大运", "流年", "长生", "帝旺", "墓库"],
     books: ["ziping", "sanming"],
   },
   {

@@ -1,39 +1,449 @@
 {
-  "甲": { "def": "十天干之首，五行属阳木，取象栋梁之材、生发向上。", "books": ["ditiansui", "ziping", "qiongtong", "sanming", "yuanhai"] },
-  "乙": { "def": "十天干之二，五行属阴木，取象花草藤蔓、柔韧曲折。", "books": ["ditiansui", "ziping", "qiongtong", "sanming", "yuanhai"] },
-  "丙": { "def": "十天干之三，五行属阳火，取象太阳之光、猛烈外显。", "books": ["ditiansui", "ziping", "qiongtong", "sanming", "yuanhai"] },
-  "丁": { "def": "十天干之四，五行属阴火，取象灯烛星火、文明内敛。", "books": ["ditiansui", "ziping", "qiongtong", "sanming", "yuanhai"] },
-  "戊": { "def": "十天干之五，五行属阳土，取象高山厚土、稳重承载。", "books": ["ditiansui", "ziping", "qiongtong", "sanming", "yuanhai"] },
-  "己": { "def": "十天干之六，五行属阴土，取象田园湿土、孕育化生。", "books": ["ditiansui", "ziping", "qiongtong", "sanming", "yuanhai"] },
-  "庚": { "def": "十天干之七，五行属阳金，取象刀剑矿铁、刚健肃杀。", "books": ["ditiansui", "ziping", "qiongtong", "sanming", "yuanhai"] },
-  "辛": { "def": "十天干之八，五行属阴金，取象珠玉首饰、精微清润。", "books": ["ditiansui", "ziping", "qiongtong", "sanming", "yuanhai"] },
-  "壬": { "def": "十天干之九，五行属阳水，取象江河湖海、奔流浩荡。", "books": ["ditiansui", "ziping", "qiongtong", "sanming", "yuanhai"] },
-  "癸": { "def": "十天干之末，五行属阴水，取象雨露溪流、滋润潜藏。", "books": ["ditiansui", "ziping", "qiongtong", "sanming", "yuanhai"] },
-  "子": { "def": "十二地支之首，五行属阳水，对应生肖鼠、夜半子时（23 至 1 时）。", "books": ["sanming", "ziping", "yuanhai"] },
-  "丑": { "def": "十二地支之二，五行属阴土，对应生肖牛、丑时（1 至 3 时），为湿寒之土。", "books": ["sanming", "ziping", "yuanhai"] },
-  "寅": { "def": "十二地支之三，五行属阳木，对应生肖虎、平旦寅时（3 至 5 时），为火之长生。", "books": ["sanming", "ziping", "yuanhai"] },
-  "卯": { "def": "十二地支之四，五行属阴木，对应生肖兔、日出卯时（5 至 7 时），居正东之位。", "books": ["sanming", "ziping", "yuanhai"] },
-  "辰": { "def": "十二地支之五，五行属阳土，对应生肖龙、辰时（7 至 9 时），为水库湿土。", "books": ["sanming", "ziping", "yuanhai"] },
-  "巳": { "def": "十二地支之六，五行属阴火，对应生肖蛇、巳时（9 至 11 时），为金之长生。", "books": ["sanming", "ziping", "yuanhai"] },
-  "午": { "def": "十二地支之七，五行属阳火，对应生肖马、正午午时（11 至 13 时），居正南之位。", "books": ["sanming", "ziping", "yuanhai"] },
-  "未": { "def": "十二地支之八，五行属阴土，对应生肖羊、未时（13 至 15 时），为木库燥土。", "books": ["sanming", "ziping", "yuanhai"] },
-  "申": { "def": "十二地支之九，五行属阳金，对应生肖猴、申时（15 至 17 时），为水之长生。", "books": ["sanming", "ziping", "yuanhai"] },
-  "酉": { "def": "十二地支之十，五行属阴金，对应生肖鸡、日入酉时（17 至 19 时），居正西之位。", "books": ["sanming", "ziping", "yuanhai"] },
-  "戌": { "def": "十二地支之十一，五行属阳土，对应生肖狗、黄昏戌时（19 至 21 时），为火库燥土。", "books": ["sanming", "ziping", "yuanhai"] },
-  "亥": { "def": "十二地支之末，五行属阴水，对应生肖猪、人定亥时（21 至 23 时），为木之长生。", "books": ["sanming", "ziping", "yuanhai"] },
-  "身强身弱": { "def": "以日主得令、得地、得势衡量其旺衰程度：偏旺为身强，宜抑宜泄；偏弱为身弱，宜扶宜助。是扶抑取用的前提判断。", "books": ["ditiansui", "ziping", "qiongtong"] },
-  "格局": { "def": "以月令为主、参看透干会支归纳出的命局结构类型（如正官格、食神格等），用以把握命局整体层次与取用方向。", "books": ["ditiansui", "ziping", "qiongtong", "sanming"] },
-  "日主": { "def": "四柱中日柱的天干，又称日元、日干，代表命主自身，是定十神、论旺衰的全盘参照中心。", "books": ["ditiansui", "ziping", "qiongtong", "sanming"] },
-  "纳音": { "def": "六十甲子每两组干支配一种五行别称（如甲子、乙丑为海中金），共三十种，用于辅助取象与合婚参看。", "books": ["ditiansui", "ziping", "qiongtong"] },
-  "大运": { "def": "以月柱为起点、按阳男阴女顺行阴男阳女逆行排布的运势周期，每运十年，与命局合参以论阶段性吉凶。", "books": ["ziping", "sanming"] },
-  "流年": { "def": "逐年更替的太岁干支，与命局、大运合参，用以推断具体年份的运势变化。", "books": ["ziping", "sanming"] },
-  "正官": { "def": "克日主且与日主阴阳异性的天干，十神之一，主约束、名位、责任与规范。", "books": ["ditiansui", "ziping", "sanming", "yuanhai"] },
-  "七杀": { "def": "克日主且与日主阴阳同性的天干，十神之一，又称偏官，主威权、压力与竞争。", "books": ["ziping", "sanming", "yuanhai"] },
-  "正印": { "def": "生日主且与日主阴阳异性的天干，十神之一，主学业、庇护、文书与德行。", "books": ["ditiansui", "ziping", "sanming", "yuanhai"] },
-  "食神": { "def": "日主所生且与日主阴阳同性的天干，十神之一，主才华、表达、福禄与温和。", "books": ["ziping", "sanming", "yuanhai"] },
-  "伤官": { "def": "日主所生且与日主阴阳异性的天干，十神之一，主机巧、表现欲与破格创新。", "books": ["ziping", "sanming", "yuanhai"] },
-  "正财": { "def": "日主所克且与日主阴阳异性的天干，十神之一，主正当收入、稳妥之财与勤俭。", "books": ["ziping", "sanming", "yuanhai"] },
-  "偏财": { "def": "日主所克且与日主阴阳同性的天干，十神之一，主流动之财、意外收获与慷慨。", "books": ["ziping", "sanming", "yuanhai"] },
-  "比肩": { "def": "与日主五行相同且阴阳同性的天干，十神之一，主同辈、自我主张与分担竞争。", "books": ["ziping", "sanming", "yuanhai"] },
-  "劫财": { "def": "与日主五行相同且阴阳异性的天干，十神之一，主争夺、破耗与合作中的竞争。", "books": ["ziping", "sanming", "yuanhai"] }
+  "甲": {
+    "def": "十天干之首，五行属阳木，取象栋梁之材、生发向上。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "乙": {
+    "def": "十天干之二，五行属阴木，取象花草藤蔓、柔韧曲折。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "丙": {
+    "def": "十天干之三，五行属阳火，取象太阳之光、猛烈外显。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "丁": {
+    "def": "十天干之四，五行属阴火，取象灯烛星火、文明内敛。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "戊": {
+    "def": "十天干之五，五行属阳土，取象高山厚土、稳重承载。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "己": {
+    "def": "十天干之六，五行属阴土，取象田园湿土、孕育化生。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "庚": {
+    "def": "十天干之七，五行属阳金，取象刀剑矿铁、刚健肃杀。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "辛": {
+    "def": "十天干之八，五行属阴金，取象珠玉首饰、精微清润。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "壬": {
+    "def": "十天干之九，五行属阳水，取象江河湖海、奔流浩荡。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "癸": {
+    "def": "十天干之末，五行属阴水，取象雨露溪流、滋润潜藏。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "子": {
+    "def": "十二地支之首，五行属阳水，对应生肖鼠、夜半子时（23 至 1 时）。",
+    "books": [
+      "sanming",
+      "ziping",
+      "yuanhai"
+    ]
+  },
+  "丑": {
+    "def": "十二地支之二，五行属阴土，对应生肖牛、丑时（1 至 3 时），为湿寒之土。",
+    "books": [
+      "sanming",
+      "ziping",
+      "yuanhai"
+    ]
+  },
+  "寅": {
+    "def": "十二地支之三，五行属阳木，对应生肖虎、平旦寅时（3 至 5 时），为火之长生。",
+    "books": [
+      "sanming",
+      "ziping",
+      "yuanhai"
+    ]
+  },
+  "卯": {
+    "def": "十二地支之四，五行属阴木，对应生肖兔、日出卯时（5 至 7 时），居正东之位。",
+    "books": [
+      "sanming",
+      "ziping",
+      "yuanhai"
+    ]
+  },
+  "辰": {
+    "def": "十二地支之五，五行属阳土，对应生肖龙、辰时（7 至 9 时），为水库湿土。",
+    "books": [
+      "sanming",
+      "ziping",
+      "yuanhai"
+    ]
+  },
+  "巳": {
+    "def": "十二地支之六，五行属阴火，对应生肖蛇、巳时（9 至 11 时），为金之长生。",
+    "books": [
+      "sanming",
+      "ziping",
+      "yuanhai"
+    ]
+  },
+  "午": {
+    "def": "十二地支之七，五行属阳火，对应生肖马、正午午时（11 至 13 时），居正南之位。",
+    "books": [
+      "sanming",
+      "ziping",
+      "yuanhai"
+    ]
+  },
+  "未": {
+    "def": "十二地支之八，五行属阴土，对应生肖羊、未时（13 至 15 时），为木库燥土。",
+    "books": [
+      "sanming",
+      "ziping",
+      "yuanhai"
+    ]
+  },
+  "申": {
+    "def": "十二地支之九，五行属阳金，对应生肖猴、申时（15 至 17 时），为水之长生。",
+    "books": [
+      "sanming",
+      "ziping",
+      "yuanhai"
+    ]
+  },
+  "酉": {
+    "def": "十二地支之十，五行属阴金，对应生肖鸡、日入酉时（17 至 19 时），居正西之位。",
+    "books": [
+      "sanming",
+      "ziping",
+      "yuanhai"
+    ]
+  },
+  "戌": {
+    "def": "十二地支之十一，五行属阳土，对应生肖狗、黄昏戌时（19 至 21 时），为火库燥土。",
+    "books": [
+      "sanming",
+      "ziping",
+      "yuanhai"
+    ]
+  },
+  "亥": {
+    "def": "十二地支之末，五行属阴水，对应生肖猪、人定亥时（21 至 23 时），为木之长生。",
+    "books": [
+      "sanming",
+      "ziping",
+      "yuanhai"
+    ]
+  },
+  "身强身弱": {
+    "def": "以日主得令、得地、得势衡量其旺衰程度：偏旺为身强，宜抑宜泄；偏弱为身弱，宜扶宜助。是扶抑取用的前提判断。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong"
+    ]
+  },
+  "格局": {
+    "def": "以月令为主、参看透干会支归纳出的命局结构类型（如正官格、食神格等），用以把握命局整体层次与取用方向。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong",
+      "sanming"
+    ]
+  },
+  "日主": {
+    "def": "四柱中日柱的天干，又称日元、日干，代表命主自身，是定十神、论旺衰的全盘参照中心。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong",
+      "sanming"
+    ]
+  },
+  "纳音": {
+    "def": "六十甲子每两组干支配一种五行别称（如甲子、乙丑为海中金），共三十种，用于辅助取象与合婚参看。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong"
+    ]
+  },
+  "大运": {
+    "def": "以月柱为起点、按阳男阴女顺行阴男阳女逆行排布的运势周期，每运十年，与命局合参以论阶段性吉凶。",
+    "books": [
+      "ziping",
+      "sanming"
+    ]
+  },
+  "流年": {
+    "def": "逐年更替的太岁干支，与命局、大运合参，用以推断具体年份的运势变化。",
+    "books": [
+      "ziping",
+      "sanming"
+    ]
+  },
+  "正官": {
+    "def": "克日主且与日主阴阳异性的天干，十神之一，主约束、名位、责任与规范。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "七杀": {
+    "def": "克日主且与日主阴阳同性的天干，十神之一，又称偏官，主威权、压力与竞争。",
+    "books": [
+      "ziping",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "正印": {
+    "def": "生日主且与日主阴阳异性的天干，十神之一，主学业、庇护、文书与德行。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "食神": {
+    "def": "日主所生且与日主阴阳同性的天干，十神之一，主才华、表达、福禄与温和。",
+    "books": [
+      "ziping",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "伤官": {
+    "def": "日主所生且与日主阴阳异性的天干，十神之一，主机巧、表现欲与破格创新。",
+    "books": [
+      "ziping",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "正财": {
+    "def": "日主所克且与日主阴阳异性的天干，十神之一，主正当收入、稳妥之财与勤俭。",
+    "books": [
+      "ziping",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "偏财": {
+    "def": "日主所克且与日主阴阳同性的天干，十神之一，主流动之财、意外收获与慷慨。",
+    "books": [
+      "ziping",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "比肩": {
+    "def": "与日主五行相同且阴阳同性的天干，十神之一，主同辈、自我主张与分担竞争。",
+    "books": [
+      "ziping",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "劫财": {
+    "def": "与日主五行相同且阴阳异性的天干，十神之一，主争夺、破耗与合作中的竞争。",
+    "books": [
+      "ziping",
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "长生": {
+    "def": "十二长生之首，象征事物初生阶段，生命力开始萌发。",
+    "books": [
+      "ziping",
+      "sanming"
+    ]
+  },
+  "帝旺": {
+    "def": "十二长生之巅，象征事物最旺盛阶段，能量达到顶峰。",
+    "books": [
+      "ziping",
+      "sanming"
+    ]
+  },
+  "墓库": {
+    "def": "十二长生之终，象征事物收藏归藏阶段，能量暂时潜伏。",
+    "books": [
+      "ziping",
+      "sanming"
+    ]
+  },
+  "空亡": {
+    "def": "干支组合中无地支支持的状态，象征虚无、不实或力量缺失。",
+    "books": [
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "桃花": {
+    "def": "又名咸池，象征魅力、人缘、艺术天赋和感情机遇。",
+    "books": [
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "驿马": {
+    "def": "象征变动、旅行、迁移和事业发展中的动态因素。",
+    "books": [
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "华盖": {
+    "def": "象征智慧、艺术、宗教信仰和孤独倾向的特殊星象。",
+    "books": [
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "将星": {
+    "def": "象征领导才能、管理能力、军事天赋和权威地位。",
+    "books": [
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "天乙贵人": {
+    "def": "象征贵人相助、逢凶化吉、关键时刻获得重要帮助。",
+    "books": [
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "文昌": {
+    "def": "象征学业成就、文才出众、考试顺利和文化修养。",
+    "books": [
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "羊刃": {
+    "def": "象征极端力量、激烈性格、潜在危险和需要谨慎对待的能量。",
+    "books": [
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "禄神": {
+    "def": "象征稳定收入、物质保障、职位俸禄和生活资源。",
+    "books": [
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "合化": {
+    "def": "指天干地支相互作用产生新五行属性的转化过程。",
+    "books": [
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "刑冲克害": {
+    "def": "四种基本关系：惩罚、冲击、克制、伤害，表示矛盾冲突。",
+    "books": [
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "旺相休囚死": {
+    "def": "五行在四季中的五种状态：旺盛、次旺、休息、囚禁、死亡。",
+    "books": [
+      "sanming",
+      "yuanhai"
+    ]
+  },
+  "用神": {
+    "def": "命局中最需扶持或抑制的关键五行，用以平衡全局。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong"
+    ]
+  },
+  "喜神": {
+    "def": "对命局有益、能增强用神力量的五行元素。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong"
+    ]
+  },
+  "忌神": {
+    "def": "对命局有害、会削弱用神力量的五行元素。",
+    "books": [
+      "ditiansui",
+      "ziping",
+      "qiongtong"
+    ]
+  }
 }
