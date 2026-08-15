@@ -16,8 +16,8 @@ import {
 /**
  * V11 方向3：GanzhiTool / ShichenTool 改由本页调用层直接接共享引擎
  * @contracts/engines/daily-core（ToolkitTools.tsx 为共用组件文件，保持不动）。
- * INT-02 硬约束：daily-core 月柱为公历月近似（非节气换月），不得上屏——
- * 三柱卡片的月柱继续用 content/ganzhi.ts monthPillar()（节气换月 + 五虎遁）。
+ * V12 INT-02 销号：daily-core 已接入 lunar-typescript 精密历法，
+ * 年月日三柱均由 getDailySummary 直接给出（年立春界、月节气界、交节时刻精确）。
  */
 import {
   getDailySummary,
@@ -25,7 +25,7 @@ import {
   hourLuck as coreHourLuck,
   jiaziStem,
 } from '@contracts/engines/daily-core'
-import { BRANCHES, HOUR_RANGES, monthPillar } from '@/components/content/ganzhi'
+import { BRANCHES, HOUR_RANGES } from '@/components/content/ganzhi'
 
 const HERO_POOL = ['时辰', '生肖', '干支', '星座', '星宿', '黄历', '五行', '子', '午', '甲', '辰', '宝']
 
@@ -123,10 +123,7 @@ function GanzhiTool() {
     if (!y || !m || !d) return null
     // 年柱 / 日柱：daily-core 真实计算（日柱锚定 1900-01-01 甲戌日）
     const summary = getDailySummary(new Date(y, m - 1, d))
-    // INT-02：daily-core 月柱为公历月近似（非节气换月），不得上屏；
-    // 月柱继续采用 content/ganzhi.ts monthPillar()（节气换月 + 五虎遁）
-    const month = monthPillar(y, m, d)
-    return { year: summary.yearGanzhi, month: month.label, day: summary.dayGanzhi }
+    return { year: summary.yearGanzhi, month: summary.monthGanzhi, day: summary.dayGanzhi }
   }, [iso])
 
   return (
@@ -158,8 +155,8 @@ function GanzhiTool() {
           </div>
         )}
         <p className="mt-5 max-w-[520px] text-center font-sans text-[12px] leading-[1.9] text-inkmuted">
-          年柱、日柱由共享引擎 daily-core 真实计算（日柱锚定 1900-01-01 甲戌日）；
-          月柱按节气近似表与五虎遁起月干（引擎月柱为公历月近似，不上屏）
+          年柱以立春为界、月柱以节气为界、日柱锚定 1900-01-01 甲戌日——共享引擎 daily-core
+          精密历法真实推算（lunar-typescript 真实交节时刻）
         </p>
       </div>
     </div>
