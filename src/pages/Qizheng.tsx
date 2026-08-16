@@ -15,6 +15,8 @@ import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
 import { useAuth } from '@/hooks/useAuth'
 import { LOGIN_PATH } from '@/const'
 import { cn } from '@/lib/utils'
+import { SafeStorage, STORAGE_KEYS } from '@/lib/storage'
+import type { FavoriteItem, HistoryItem } from '@/lib/storage'
 
 const HERO_POOL = [
   '角', '亢', '氐', '房', '心', '尾', '箕', '斗', '牛', '女', '虚', '危', '室', '壁',
@@ -97,7 +99,7 @@ function AiPanel({ chartId }: { chartId: number | null }) {
           登录后使用 AI 参详
         </p>
         <p className="mx-auto mt-3 max-w-[460px] text-[13px] leading-[1.9] text-silkmuted">
-          AI 参详仅向登录用户开放：星盘自动落库，服务端基于落库结果构建摘要；
+          星盘会自动保存在本机；AI 参详登录后直连服务，服务不可用时进入降级模式。
           live 参详每次消耗 1 灵签，模板参详免费，失败不扣费。
         </p>
         <DeepButton to={LOGIN_PATH} className="mt-7 border border-gold/50">
@@ -111,7 +113,7 @@ function AiPanel({ chartId }: { chartId: number | null }) {
     return (
       <div className="rounded-xl border border-golddim/25 bg-deep/60 p-8 text-center">
         <p className="text-[13px] leading-[1.9] text-silkmuted">
-          当前星盘未落库，无法发起 AI 参详。请重新排盘（登录状态下自动落库）。
+          星盘已保存在本机；当前为 AI 降级模式。请在服务可用且已登录时重新排盘，以启用直连参详。
         </p>
       </div>
     )
@@ -214,12 +216,27 @@ export default function Qizheng() {
   const [gender, setGender] = useState<Gender>('male')
   const [dateError, setDateError] = useState<string | null>(null)
   const [runId, setRunId] = useState(0)
+  const [savedTitle, setSavedTitle] = useState('')
+  const [favoriteStatus, setFavoriteStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const chartRef = useRef<HTMLDivElement>(null)
 
   // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.qizheng.paipan 一致
   const paipan = useEngine(paipanQizheng, {
-    onSuccess: () => {
+    onSuccess: (res, variables) => {
+      const title = `七政命盘 ${variables.datetime.slice(0, 10)}`
+      setSavedTitle(title)
       setRunId((n) => n + 1)
+      if (res.result.data) {
+        const item: HistoryItem = {
+          id: `hist-${Date.now()}`,
+          type: 'qizheng',
+          title,
+          createdAt: new Date().toISOString(),
+          payload: res.result.data,
+        }
+        const existing = SafeStorage.get<HistoryItem[]>(STORAGE_KEYS.HISTORY, [])
+        SafeStorage.set(STORAGE_KEYS.HISTORY, [item, ...existing].slice(0, 10))
+      }
       requestAnimationFrame(() => chartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
     },
   })
@@ -228,8 +245,31 @@ export default function Qizheng() {
     document.title = '七政四余 · 紫府 — 果老星宗，真实星历论命'
   }, [])
 
+  useEffect(() => {
+    if (favoriteStatus === 'idle') return
+    const timer = window.setTimeout(() => setFavoriteStatus('idle'), 1800)
+    return () => window.clearTimeout(timer)
+  }, [favoriteStatus])
+
   const chart = paipan.data?.result ?? null
   const chartId = paipan.data?.chartId ?? null
+
+  const handleFavorite = () => {
+    if (!chart?.data) return
+    const item: FavoriteItem = {
+      id: `fav-${chartId ?? 'local'}-${Date.now()}`,
+      type: 'qizheng',
+      title: savedTitle || `七政命盘 ${chart.data.datetimeUtc.slice(0, 10)}`,
+      createdAt: new Date().toISOString(),
+      payload: chart.data,
+    }
+    const existing = SafeStorage.get<FavoriteItem[]>(STORAGE_KEYS.FAVORITES, [])
+    const deduped = existing.filter((favorite) => {
+      if (favorite.type !== 'qizheng') return true
+      return (favorite.payload as { datetimeUtc?: string })?.datetimeUtc !== chart.data.datetimeUtc
+    })
+    setFavoriteStatus(SafeStorage.set(STORAGE_KEYS.FAVORITES, [item, ...deduped]) ? 'success' : 'error')
+  }
 
   const updateYear = (nextYear: string) => {
     setYear(nextYear)
@@ -394,6 +434,20 @@ export default function Qizheng() {
                 命宫在{chart.data.minggong.branch}（{chart.data.minggong.zodiac} · {MANSIONS[chart.data.minggong.mansionIndex]}宿）
                 · 星历时刻 {chart.data.datetimeUtc.replace('T', ' ').replace(/\.\d+Z$/, ' UTC')}
               </p>
+              <div className="mt-6 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleFavorite}
+                  aria-live="polite"
+                  className="zf-link-more inline-flex items-center gap-1 text-[14px] font-medium tracking-[0.1em] text-golddim"
+                >
+                  {favoriteStatus === 'success'
+                    ? '已收藏'
+                    : favoriteStatus === 'error'
+                      ? '保存失败'
+                      : '收藏'}
+                </button>
+              </div>
             </div>
           </motion.section>
         )}

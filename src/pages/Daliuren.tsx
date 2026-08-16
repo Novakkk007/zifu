@@ -19,6 +19,8 @@ import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabl
 import { LOGIN_PATH } from '@/const'
 import { cn } from '@/lib/utils'
 import type { ReadingResponse } from '@/components/bazi-v2/api'
+import { SafeStorage, STORAGE_KEYS } from '@/lib/storage'
+import type { FavoriteItem, HistoryItem } from '@/lib/storage'
 
 const HERO_POOL = [
   '贵人', '螣蛇', '朱雀', '六合', '勾陈', '青龙',
@@ -59,6 +61,12 @@ function nowParts() {
 
 /** 时辰支序 → 代表时刻（取时辰中点小时：子=0、丑=2……避免子初换日歧义） */
 const hourOfBranch = (b: number) => (2 * b) % 24
+
+function chartTitle(chart: DaliurenChart): string {
+  return chart.input.question?.trim()
+    ? `${chart.input.question.trim()} · 大六壬`
+    : `大六壬课 ${chart.standardTime}`
+}
 
 /* ================= AI 参详（chartId → ai.reading，同六爻模式） ================= */
 
@@ -112,7 +120,7 @@ function AiReadingSection({ chartId }: { chartId: number | null }) {
           登录后使用 AI 参详
         </p>
         <p className="mx-auto mt-3 max-w-[460px] text-[13px] leading-[1.9] text-silkmuted">
-          AI 参详仅向登录用户开放：起课自动落库，服务端基于落库课传构建摘要，
+          课传会自动保存在本机；AI 参详登录后直连服务，服务不可用时进入降级模式。
           每日 20 次额度；live 参详每次消耗 1 灵签，模板参详免费，失败不扣费。
         </p>
         <DeepButton to={LOGIN_PATH} className="mt-7 border border-gold/50">
@@ -175,7 +183,7 @@ function AiReadingSection({ chartId }: { chartId: number | null }) {
         </GoldButton>
         {chartId === null && (
           <p className="mt-3 text-[12.5px] text-silkmuted">
-            本课尚未落库（可能起课时未登录）——请在登录状态下重新起课一次，即可使用 AI 参详。
+            课传已保存在本机；当前为 AI 降级模式。请在服务可用且已登录时重新起课，以启用直连参详。
           </p>
         )}
         <p className="mt-3 text-[11.5px] text-silkmuted">
@@ -255,6 +263,7 @@ export default function Daliuren() {
   const [result, setResult] = useState<EngineResult<DaliurenChart> | null>(null)
   const [chartId, setChartId] = useState<number | null>(null)
   const [runId, setRunId] = useState(0)
+  const [favoriteStatus, setFavoriteStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const panRef = useRef<HTMLElement | null>(null)
 
   // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.daliuren.qike 一致
@@ -263,6 +272,17 @@ export default function Daliuren() {
       setResult(res.result as unknown as EngineResult<DaliurenChart>)
       setChartId(res.chartId)
       setRunId((n) => n + 1)
+      if (res.result.data) {
+        const item: HistoryItem = {
+          id: `hist-${Date.now()}`,
+          type: 'daliuren',
+          title: chartTitle(res.result.data),
+          createdAt: new Date().toISOString(),
+          payload: res.result.data,
+        }
+        const existing = SafeStorage.get<HistoryItem[]>(STORAGE_KEYS.HISTORY, [])
+        SafeStorage.set(STORAGE_KEYS.HISTORY, [item, ...existing].slice(0, 10))
+      }
       requestAnimationFrame(() => panRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
     },
   })
@@ -270,6 +290,12 @@ export default function Daliuren() {
   useEffect(() => {
     document.title = '大六壬 · 紫府 — 月将加时，三传定事之始中末'
   }, [])
+
+  useEffect(() => {
+    if (favoriteStatus === 'idle') return
+    const timer = window.setTimeout(() => setFavoriteStatus('idle'), 1800)
+    return () => window.clearTimeout(timer)
+  }, [favoriteStatus])
 
   const submit = () => {
     qike.mutate({
@@ -287,6 +313,24 @@ export default function Daliuren() {
 
   const chart = result?.data ?? null
   const meta = result?.meta ?? null
+
+  const handleFavorite = () => {
+    if (!chart) return
+    const item: FavoriteItem = {
+      id: `fav-${chartId ?? 'local'}-${Date.now()}`,
+      type: 'daliuren',
+      title: chartTitle(chart),
+      createdAt: new Date().toISOString(),
+      payload: chart,
+    }
+    const existing = SafeStorage.get<FavoriteItem[]>(STORAGE_KEYS.FAVORITES, [])
+    const deduped = existing.filter((favorite) => {
+      if (favorite.type !== 'daliuren') return true
+      const saved = favorite.payload as Partial<DaliurenChart>
+      return saved.standardTime !== chart.standardTime || saved.input?.question !== chart.input.question
+    })
+    setFavoriteStatus(SafeStorage.set(STORAGE_KEYS.FAVORITES, [item, ...deduped]) ? 'success' : 'error')
+  }
 
   return (
     <div>
@@ -514,6 +558,20 @@ export default function Daliuren() {
                   </div>
                 </div>
               </div>
+              <div className="mt-8 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleFavorite}
+                  aria-live="polite"
+                  className="zf-link-more inline-flex items-center gap-1 text-[14px] font-medium tracking-[0.1em] text-golddim"
+                >
+                  {favoriteStatus === 'success'
+                    ? '已收藏'
+                    : favoriteStatus === 'error'
+                      ? '保存失败'
+                      : '收藏'}
+                </button>
+              </div>
             </div>
           </motion.section>
         )}
@@ -530,7 +588,7 @@ export default function Daliuren() {
               dark
               eyebrow="Interpretation"
               title="参 详"
-              sub="初传为始，中传为移，末传为归——服务端基于落库课传，两种人格两种深度"
+              sub="初传为始，中传为移，末传为归——AI 参详采用服务直连，后端不可用时显示降级提示"
             />
             <div className="mt-14">
               <AiReadingSection key={runId} chartId={chartId} />

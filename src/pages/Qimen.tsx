@@ -30,6 +30,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabled'
 import { LOGIN_PATH } from '@/const'
 import { cn } from '@/lib/utils'
+import { SafeStorage, STORAGE_KEYS } from '@/lib/storage'
+import type { FavoriteItem, HistoryItem } from '@/lib/storage'
 
 const HERO_POOL = [
   '休', '生', '伤', '杜', '景', '死', '惊', '开',
@@ -76,6 +78,12 @@ const YONGSHEN_LIST: Yongshen[] = [
   { key: '失物', hint: '玄武主遗失', type: 'god', value: '玄武' },
   { key: '置业', hint: '九地主田土', type: 'god', value: '九地' },
 ]
+
+function chartTitle(chart: QimenChart): string {
+  return chart.question.trim()
+    ? `${chart.question.trim()} · 奇门遁甲`
+    : `奇门局 ${chart.standardTime}`
+}
 
 function yongshenPalace(chart: QimenChart, y: Yongshen): number {
   const found = chart.palaces.find((p) => {
@@ -141,7 +149,7 @@ function QimenAiReading({ chartId }: { chartId: number | null }) {
           登录后使用 AI 参详
         </p>
         <p className="mx-auto mt-3 max-w-[460px] text-[13px] leading-[1.9] text-silkmuted">
-          AI 参详仅向登录用户开放：起局后局盘自动落库，服务端基于落库结果构建摘要，
+          局盘会自动保存在本机；AI 参详登录后直连服务，服务不可用时进入降级模式。
           每日 20 次额度；live 参详每次消耗 1 灵签，模板参详免费，失败不扣费。
         </p>
         <DeepButton to={LOGIN_PATH} className="mt-7 border border-gold/50">
@@ -212,7 +220,7 @@ function QimenAiReading({ chartId }: { chartId: number | null }) {
         </GoldButton>
         {chartId === null && (
           <p className="mt-3 text-[12.5px] text-silkmuted">
-            当前局盘尚未落库（起局时未登录或落库失败）——请在登录状态下重新起局一次，即可使用 AI 参详。
+            局盘已保存在本机；当前为 AI 降级模式。请在服务可用且已登录时重新起局，以启用直连参详。
           </p>
         )}
         <p className="mt-3 text-[11.5px] text-silkmuted">
@@ -295,6 +303,7 @@ export default function Qimen() {
   const [runId, setRunId] = useState(0)
   const [selected, setSelected] = useState<QimenPalace | null>(null)
   const [ysIdx, setYsIdx] = useState(0)
+  const [favoriteStatus, setFavoriteStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const plateRef = useRef<HTMLElement | null>(null)
 
   // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.qimen.qiju 一致
@@ -303,6 +312,17 @@ export default function Qimen() {
       setOut({ result: res.result, chartId: res.chartId })
       setYsIdx(0)
       setRunId((n) => n + 1)
+      if (res.result.data) {
+        const item: HistoryItem = {
+          id: `hist-${Date.now()}`,
+          type: 'qimen',
+          title: chartTitle(res.result.data),
+          createdAt: new Date().toISOString(),
+          payload: res.result.data,
+        }
+        const existing = SafeStorage.get<HistoryItem[]>(STORAGE_KEYS.HISTORY, [])
+        SafeStorage.set(STORAGE_KEYS.HISTORY, [item, ...existing].slice(0, 10))
+      }
       requestAnimationFrame(() =>
         plateRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
       )
@@ -312,6 +332,12 @@ export default function Qimen() {
   useEffect(() => {
     document.title = '奇门遁甲 · 紫府 — 时家拆补法，真实节气起局'
   }, [])
+
+  useEffect(() => {
+    if (favoriteStatus === 'idle') return
+    const timer = window.setTimeout(() => setFavoriteStatus('idle'), 1800)
+    return () => window.clearTimeout(timer)
+  }, [favoriteStatus])
 
   const submit = () => {
     if (!datetime) return
@@ -326,6 +352,23 @@ export default function Qimen() {
   const meta = out?.result.meta ?? null
   const yongshen = YONGSHEN_LIST[ysIdx]
   const ysPalace = chart ? yongshenPalace(chart, yongshen) : 5
+
+  const handleFavorite = () => {
+    if (!chart) return
+    const item: FavoriteItem = {
+      id: `fav-${out?.chartId ?? 'local'}-${Date.now()}`,
+      type: 'qimen',
+      title: chartTitle(chart),
+      createdAt: new Date().toISOString(),
+      payload: chart,
+    }
+    const existing = SafeStorage.get<FavoriteItem[]>(STORAGE_KEYS.FAVORITES, [])
+    const deduped = existing.filter((favorite) => {
+      if (favorite.type !== 'qimen') return true
+      return (favorite.payload as Partial<QimenChart>)?.utcTime !== chart.utcTime
+    })
+    setFavoriteStatus(SafeStorage.set(STORAGE_KEYS.FAVORITES, [item, ...deduped]) ? 'success' : 'error')
+  }
 
   return (
     <div>
@@ -465,6 +508,20 @@ export default function Qimen() {
                   {meta.warnings.join('；')}
                 </p>
               )}
+              <div className="mt-6 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleFavorite}
+                  aria-live="polite"
+                  className="zf-link-more inline-flex items-center gap-1 text-[14px] font-medium tracking-[0.1em] text-golddim"
+                >
+                  {favoriteStatus === 'success'
+                    ? '已收藏'
+                    : favoriteStatus === 'error'
+                      ? '保存失败'
+                      : '收藏'}
+                </button>
+              </div>
             </div>
           </motion.section>
         )}
