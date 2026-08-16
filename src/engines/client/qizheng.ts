@@ -9,7 +9,7 @@ import { computeQizheng } from '@contracts/engines/qizheng-core'
 import type { QizhengChartData } from '@contracts/engines/qizheng-core'
 import type { EngineResult } from '@contracts/engines/engine-result'
 import { hourToBranch } from '@contracts/engines/time-protocol'
-import { parseWith, engineCall, assertTz } from './shared'
+import { isValidSolarDate, parseWith, engineCall, assertTz } from './shared'
 
 /* ------------------------------------------------------------------ */
 /* 七政四余（api/qizheng-router.ts paipan）                              */
@@ -58,6 +58,9 @@ function resolveInstant(input: {
     civil.hour > 23 || civil.minute > 59
   ) {
     throw new Error('无效的日期时间，请检查输入。')
+  }
+  if (!isValidSolarDate(civil.year, civil.month, civil.day)) {
+    throw new Error('无效的日期，请检查年月日。')
   }
 
   let utcMs: number
