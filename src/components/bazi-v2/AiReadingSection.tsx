@@ -209,6 +209,13 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
   const [directBusy, setDirectBusy] = useState(false)
   const [directResult, setDirectResult] = useState<DirectReadingResult | null>(null)
   const [directError, setDirectError] = useState<string | null>(null)
+  const [provider, setProvider] = useState<'kimi' | 'deepseek'>(() => {
+    try {
+      return (localStorage.getItem('zifu:ai-provider') as 'kimi' | 'deepseek') || 'kimi'
+    } catch {
+      return 'kimi'
+    }
+  })
 
   const runDirect = async () => {
     if (!chart || !directKey.trim() || directBusy) return
@@ -221,6 +228,7 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
         chartSummary: summary,
         persona,
         depth,
+        provider,
         apiKey: directKey.trim(),
       })
       setDirectResult(r)
@@ -256,16 +264,33 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
             自带密钥 · AI 直连参详
           </p>
           <p className="mx-auto mt-3 max-w-[520px] text-[13px] leading-[1.9] text-silkmuted">
-            在下方填入你的 Kimi（OpenAI 兼容）API 密钥，即可在本机浏览器直接调用
+            在下方填入你的 Kimi 或 DeepSeek（OpenAI 兼容）API 密钥，即可在本机浏览器直接调用
             AI 参详——密钥只保存在你自己的浏览器（localStorage），不上传任何服务器。
             未填密钥时仍可使用免费的模板参详（非 AI 生成）。
           </p>
           <div className="mx-auto mt-5 flex max-w-[460px] items-center gap-2">
+            <select
+              value={provider}
+              onChange={(e) => {
+                const p = e.target.value as 'kimi' | 'deepseek'
+                setProvider(p)
+                try {
+                  localStorage.setItem('zifu:ai-provider', p)
+                } catch {
+                  /* 隐私模式忽略 */
+                }
+              }}
+              className="shrink-0 rounded-lg border border-golddim/40 bg-black/30 px-3 py-2.5 text-[13px] text-silktext focus:border-goldbright focus:outline-none"
+              aria-label="选择 AI 后端"
+            >
+              <option value="kimi">Kimi</option>
+              <option value="deepseek">DeepSeek</option>
+            </select>
             <input
               type="password"
               value={directKeyDraft}
               onChange={(e) => setDirectKeyDraft(e.target.value)}
-              placeholder="sk-...（Kimi 平台 API Key）"
+              placeholder={provider === 'deepseek' ? 'sk-...（DeepSeek 平台 API Key）' : 'sk-...（Kimi 平台 API Key）'}
               className="w-full rounded-lg border border-golddim/40 bg-black/30 px-4 py-2.5 text-[13px] text-silktext placeholder:text-silkmuted/50 focus:border-goldbright focus:outline-none"
             />
             <button
@@ -276,7 +301,9 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
             </button>
           </div>
           {directKey && (
-            <p className="mt-2 text-[11.5px] text-golddim">已保存密钥（仅本机）· 直连端点 api.moonshot.cn · 模型 kimi-k3</p>
+            <p className="mt-2 text-[11.5px] text-golddim">
+              已保存密钥（仅本机）· 直连端点 {provider === 'deepseek' ? 'api.deepseek.com' : 'api.moonshot.cn'} · 模型 {provider === 'deepseek' ? 'deepseek-chat' : 'kimi-k3'}
+            </p>
           )}
           {stageLabel && (
             <p className="mt-3 text-[12.5px] text-goldbright">
