@@ -284,8 +284,10 @@ export default function Home() {
           className="animate-spin-slow pointer-events-none absolute -bottom-10 -right-10 w-[320px] opacity-[0.1]"
         />
 
-        {/* 品牌区：底部对齐至视口 62%，金葫芦母标 + 巨字 + 双 CTA */}
-        <div className="hero-brand absolute inset-x-0 top-[64%] flex -translate-y-full flex-col items-center px-6 text-center sm:top-[62%]">
+        {/* 品牌区：文档流布局，顶部留导航余量（80px），向下自然排列。
+            任何窗口高度都不裁剪、不遮挡（原 absolute+bottom 锚定在矮视口
+            上沿越界压住导航——版面事故根因） */}
+        <div className="hero-brand relative z-10 mt-[80px] flex flex-col items-center px-6 pb-20 text-center">
           <span className="hero-mark inline-block will-change-transform">
             <span className="inline-block sm:hidden">
               <BrandLogo variant="mark" size={64} />

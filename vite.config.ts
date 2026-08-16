@@ -14,6 +14,8 @@ export default defineConfig({
     inspectAttr(), react()],
   server: {
     port: 3000,
+    // 允许隧道/代理域名访问 dev server
+    allowedHosts: true,
   },
   preview: {
     // 允许隧道/代理域名访问预览（默认仅 localhost，会 403 外网域名）
