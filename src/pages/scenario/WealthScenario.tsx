@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import Layout from '@/components/Layout';
-import { BaziChartV2 } from '@contracts/bazi-core';
-import { computeChartV2 } from '@contracts/bazi-core';
+import { computeChartV2, type BaziChartV2 } from '@contracts/bazi-core';
 import MasterHintsSection from '@/components/bazi-v2/MasterHintsSection';
 import { TenGodsTable } from '@/components/bazi-v2/ChartDetails';
 
