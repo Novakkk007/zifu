@@ -43,3 +43,5 @@ export function analyzeWithMasters(chart: BaziChartV2, maxHints = 6): MasterHint
 }
 
 export { SWH_RULES, LXR_RULES }
+export { TIAOHOU_TABLE, TIAOHOU_STEMS, TIAOHOU_MONTH_BRANCHES, tiaohouOf } from './tiaohou'
+export type { TiaohouEntry } from './tiaohou'
