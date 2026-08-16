@@ -42,7 +42,11 @@ export interface ReadingResponse {
 
 /** 每次起卦会话生成一次幂等键（重摇即重新生成） */
 export function newCastIdempotencyKey(): string {
-  return `liuyao-cast:${crypto.randomUUID()}`
+  const uuid =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.trunc(performance.now() * 1000).toString(36)}`
+  return `liuyao-cast:${uuid}`
 }
 
 /** 从 tRPC 错误对象提取服务端错误码 */
