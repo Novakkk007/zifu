@@ -23,6 +23,7 @@ const Account = lazy(() => import("@/pages/Account"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Login = lazy(() => import("@/pages/Login"));
 const ScenarioPlaceholder = lazy(() => import("@/pages/ScenarioPlaceholder"));
+const FengshuiScenario = lazy(() => import("@/pages/scenario/FengshuiScenario"));
 const WealthScenario = lazy(() => import("@/pages/scenario/WealthScenario"));
 
 export default function App() {
@@ -54,7 +55,7 @@ export default function App() {
           />
           <Route
             path="/scenario/fengshui"
-            element={<ScenarioPlaceholder scenario="fengshui" />}
+            element={<FengshuiScenario />}
           />
           <Route path="/toolkit" element={<Toolkit />} />
           <Route path="/wiki" element={<Wiki />} />
