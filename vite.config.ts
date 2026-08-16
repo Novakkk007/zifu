@@ -45,9 +45,14 @@ export default defineConfig({
             return "vendor-react";
           }
           if (
-            /[\\/]node_modules[\\/](framer-motion|motion-dom|motion-utils|gsap|@gsap)[\\/]/.test(id)
+            /[\\/]node_modules[\\/](framer-motion|motion-dom|motion-utils|@gsap)[\\/]/.test(id)
           ) {
             return "vendor-anim";
+          }
+          if (
+            /[\\/]node_modules[\\/](gsap)[\\/]/.test(id)
+          ) {
+            return "vendor-gsap";
           }
           if (
             /[\\/]node_modules[\\/](recharts|victory-vendor|d3-[a-z-]+|react-is|decimal\.js-light)[\\/]/.test(id)
@@ -57,9 +62,17 @@ export default defineConfig({
           if (/[\\/]node_modules[\\/]astronomy-engine[\\/]/.test(id)) {
             return "vendor-astro";
           }
+          if (/[\\/]node_modules[\\/](lodash|date-fns|nanoid)[\\/]/.test(id)) {
+            return "vendor-utils";
+          }
           return undefined;
         },
       },
     },
+    // 启用压缩和代码分割优化
+    sourcemap: false,
+    minify: "esbuild",
+    // 启用 gzip 和 brotli 压缩
+    assetsInlineLimit: 4096,
   },
 });
