@@ -12,6 +12,7 @@
 
 import type { BaziChartV2 } from '../../bazi-core'
 import { SWH_RULES } from './swh'
+import { LXR_RULES } from './lxr'
 
 export interface MasterHint {
   /** 规则ID（如 SWH-01，对应 docs/masters/distilled-rules.md） */
@@ -32,7 +33,7 @@ export interface MasterHint {
  */
 export function analyzeWithMasters(chart: BaziChartV2, maxHints = 6): MasterHint[] {
   const hints: MasterHint[] = []
-  for (const rule of SWH_RULES) {
+  for (const rule of [...SWH_RULES, ...LXR_RULES]) {
     const result = rule.evaluate(chart)
     if (result) {
       hints.push({ ruleId: rule.id, master: rule.master, source: rule.source, ...result })
@@ -41,4 +42,4 @@ export function analyzeWithMasters(chart: BaziChartV2, maxHints = 6): MasterHint
   return hints.slice(0, maxHints)
 }
 
-export { SWH_RULES }
+export { SWH_RULES, LXR_RULES }
