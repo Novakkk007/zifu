@@ -16,6 +16,7 @@ import WuxingSection from '@/components/bazi-v2/WuxingSection'
 import DetailTabs from '@/components/bazi-v2/DetailTabs'
 import LifeChart from '@/components/bazi-v2/LifeChart'
 import AiReadingSection from '@/components/bazi-v2/AiReadingSection'
+import MasterHintsSection from '@/components/bazi-v2/MasterHintsSection'
 import HistorySection from '@/components/bazi-v2/HistorySection'
 import { ChengguCard, RelationsTable, ShenshaTable, TenGodsTable } from '@/components/bazi-v2/ChartDetails'
 import type { PaipanPayload, PaipanResponse } from '@/components/bazi-v2/api'
@@ -177,6 +178,9 @@ export default function Bazi() {
 
               {/* 五行分析 */}
               <WuxingSection chart={chart} />
+
+              {/* 名家视角（蒸馏规则引擎参详提示） */}
+              <MasterHintsSection chart={chart} />
 
               {/* 十神明细 / 合冲刑害破 / 神煞 / 称骨 */}
               <TenGodsTable chart={chart} />
