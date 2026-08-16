@@ -485,14 +485,14 @@ export default function Home() {
           <div className="hero-line mt-7 flex items-center gap-4">
             <span className="h-px w-10 bg-gold/40" />
             <span className="font-serif text-[16px] font-semibold tracking-[0.3em] text-goldbright">
-              古籍为根 · AI 参详
+              以古人之智 · 照今日之心
             </span>
             <span className="h-px w-10 bg-gold/40" />
           </div>
           <p className="hero-line mt-5 font-sans text-[15.5px] font-light leading-[1.95] text-silktext">
             以《周易》《滴天髓》《三命通会》等典籍原文为基
             <br />
-            AI 逐句引经参详，克制而专业；按次付费，无需订阅
+            AI 逐句引经参详，让流传千年的智慧，成为关照自己的方式
           </p>
           <div className="mt-9 flex flex-col items-center gap-4 sm:flex-row">
             <span className="hero-cta inline-block">
