@@ -59,9 +59,9 @@ const THREE_REALMS: {
     sub: 'THE EARTH · 地利',
     desc: '立地之道曰柔与刚。方位、宅局、环境布局，皆属地利——居处于何处，安宅而参。',
     items: [
-      { to: '/daily', label: '九宫飞星' },
-      { to: '/daily', label: '安床择吉' },
-      { to: '/scenario/health', label: '方位参详 · 即启' },
+      { to: '/scenario/fengshui', label: '九宫飞星 · 即启' },
+      { to: '/scenario/fengshui', label: '安床择吉 · 即启' },
+      { to: '/scenario/fengshui', label: '阳宅参详 · 即启' },
     ],
   },
   {
