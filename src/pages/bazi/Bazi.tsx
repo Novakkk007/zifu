@@ -22,15 +22,18 @@ import type { PaipanPayload, PaipanResponse } from '@/components/bazi-v2/api'
 import { trpc } from '@/providers/trpc'
 import { useEngine } from '@/hooks/useEngine'
 import { paipanBazi } from '@/engines/client/bazi'
-import { SafeStorage, STORAGE_KEYS } from '@/lib/storage'
+import { SafeStorage, STORAGE_KEYS, consumeRestoreItem } from '@/lib/storage'
 
 const HERO_POOL = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸', '子', '丑', '寅', '卯', '财', '官', '印', '食']
 
 export default function Bazi() {
   const reduce = useReducedMotion()
+  const [restored] = useState(() => consumeRestoreItem('bazi'))
+  const restoredChart = restored?.payload as BaziChartV2 | undefined
+  const initialChart = restoredChart?.pillars && restoredChart.input ? restoredChart : null
   const [form, setForm] = useState<BirthFormState>(defaultBirthForm())
-  const [chart, setChart] = useState<BaziChartV2 | null>(null)
-  const [chartTitle, setChartTitle] = useState<string>('')
+  const [chart, setChart] = useState<BaziChartV2 | null>(initialChart)
+  const [chartTitle, setChartTitle] = useState<string>(initialChart ? restored?.title ?? '' : '')
   const [chartId, setChartId] = useState<number | null>(null)
   const [persisted, setPersisted] = useState(false)
   /** 人生轨迹图「AI 解释此阶段」的阶段标签（接力给 AI 详批区） */

@@ -14,7 +14,7 @@ import { HOUR_OPTIONS, HUA_COLOR, PALACE_DUTY, liunianOf } from '@/components/zi
 import { useEngine } from '@/hooks/useEngine'
 import { paipanZiwei } from '@/engines/client/ziwei'
 import { cn } from '@/lib/utils'
-import { SafeStorage, STORAGE_KEYS } from '@/lib/storage'
+import { SafeStorage, STORAGE_KEYS, consumeRestoreItem } from '@/lib/storage'
 import type { FavoriteItem, HistoryItem } from '@/lib/storage'
 
 type Tab = 'daxian' | 'liunian'
@@ -29,7 +29,29 @@ function getSubmittedName(variables: ZiweiSubmission | null): string {
   return title.slice(0, -CHART_TITLE_SUFFIX.length)
 }
 
+function readRestoredZiwei(): {
+  result: EngineResult<ZiweiChartData>
+  snapshot: ZiweiSubmission
+} | null {
+  const restored = consumeRestoreItem('ziwei')
+  const chart = restored?.payload as ZiweiChartData | undefined
+  if (!chart?.input || !Array.isArray(chart.palaces)) return null
+
+  try {
+    const snapshot = { ...chart.input, title: restored?.title ?? '' }
+    const rebuilt = paipanZiwei(snapshot)
+    return {
+      result: { ...rebuilt.result, data: chart },
+      snapshot,
+    }
+  } catch (error) {
+    console.warn('紫微回看恢复失败:', error)
+    return null
+  }
+}
+
 export default function Ziwei() {
+  const [restored] = useState(readRestoredZiwei)
   const [name, setName] = useState('')
   const [gender, setGender] = useState<'male' | 'female'>('male')
   const [calendar, setCalendar] = useState<'solar' | 'lunar'>('solar')
@@ -40,11 +62,12 @@ export default function Ziwei() {
   const [isLeapMonth, setIsLeapMonth] = useState(false)
   const [yearError, setYearError] = useState<string | null>(null)
 
-  const [result, setResult] = useState<EngineResult<ZiweiChartData> | null>(null)
-  const [successfulSnapshot, setSuccessfulSnapshot] = useState<ZiweiSubmission | null>(null)
+  const [result, setResult] = useState<EngineResult<ZiweiChartData> | null>(restored?.result ?? null)
+  const [successfulSnapshot, setSuccessfulSnapshot] = useState<ZiweiSubmission | null>(restored?.snapshot ?? null)
   const [chartId, setChartId] = useState<number | null>(null)
   const [selCell, setSelCell] = useState<ZiweiPalace | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [favoriteStatus, setFavoriteStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
   const [tab, setTab] = useState<Tab>('daxian')
   const [dxIdx, setDxIdx] = useState<number | null>(null)
@@ -56,6 +79,12 @@ export default function Ziwei() {
   useEffect(() => {
     document.title = '紫微斗数 · 紫府 — 北派全书安星法，十二宫排盘'
   }, [])
+
+  useEffect(() => {
+    if (favoriteStatus === 'idle') return
+    const timer = window.setTimeout(() => setFavoriteStatus('idle'), 1800)
+    return () => window.clearTimeout(timer)
+  }, [favoriteStatus])
 
   const chart = result?.data ?? null
 
@@ -143,7 +172,7 @@ export default function Ziwei() {
       if (favorite.type !== 'ziwei') return true
       return JSON.stringify((favorite.payload as { palaces?: unknown })?.palaces) !== signature
     })
-    SafeStorage.set(STORAGE_KEYS.FAVORITES, [item, ...deduped])
+    setFavoriteStatus(SafeStorage.set(STORAGE_KEYS.FAVORITES, [item, ...deduped]) ? 'success' : 'error')
   }
 
   return (
@@ -359,7 +388,11 @@ export default function Ziwei() {
                 onClick={handleFavorite}
                 className="zf-link-more inline-flex items-center gap-1 text-[14px] font-medium tracking-[0.1em] text-golddim"
               >
-                收藏
+                {favoriteStatus === 'success'
+                  ? '已收藏'
+                  : favoriteStatus === 'error'
+                    ? '保存失败'
+                    : '收藏'}
               </button>
             </div>
           </div>

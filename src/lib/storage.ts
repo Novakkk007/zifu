@@ -43,16 +43,19 @@ export class SafeStorage {
    * 安全写入 localStorage
    * @param key 键名
    * @param value 值
+   * @returns 写入成功时为 true，不支持或写入失败时为 false
    */
-  static set<T>(key: string, value: T): void {
+  static set<T>(key: string, value: T): boolean {
     if (!this.isSupported()) {
-      return
+      return false
     }
 
     try {
       globalThis.localStorage.setItem(key, JSON.stringify(value))
+      return true
     } catch (e) {
       console.warn(`SafeStorage.set failed for key ${key}:`, e)
+      return false
     }
   }
 
@@ -117,7 +120,60 @@ export const STORAGE_KEYS = {
   FAVORITES: 'zifu:favorites',
   HISTORY: 'zifu:history',
   PREFS: 'zifu:prefs',
+  RESTORE: 'zifu:restore',
 } as const
+
+export const RESTORE_ROUTES = {
+  bazi: '/bazi',
+  liuyao: '/liuyao',
+  ziwei: '/ziwei',
+} as const
+
+export type RestoreType = keyof typeof RESTORE_ROUTES
+
+export type RestoreItem = {
+  type: RestoreType
+  title: string
+  payload: unknown
+}
+
+/** 将个人中心选中的命盘暂存到当前标签页，供目标排盘页恢复。 */
+export function saveRestoreItem(item: RestoreItem): boolean {
+  try {
+    globalThis.sessionStorage.setItem(STORAGE_KEYS.RESTORE, JSON.stringify(item))
+    return true
+  } catch (e) {
+    console.warn('saveRestoreItem failed:', e)
+    return false
+  }
+}
+
+/**
+ * 一次性读取当前页面对应的恢复数据。类型不匹配时保留数据，避免误消费；
+ * 匹配或数据损坏时清除，防止刷新后重复恢复。
+ */
+export function consumeRestoreItem(type: RestoreType): RestoreItem | null {
+  try {
+    const raw = globalThis.sessionStorage.getItem(STORAGE_KEYS.RESTORE)
+    if (!raw) return null
+
+    const item = JSON.parse(raw) as Partial<RestoreItem>
+    if (item.type !== type) return null
+
+    globalThis.sessionStorage.removeItem(STORAGE_KEYS.RESTORE)
+    if (typeof item.title !== 'string' || !('payload' in item)) return null
+
+    return item as RestoreItem
+  } catch (e) {
+    console.warn('consumeRestoreItem failed:', e)
+    try {
+      globalThis.sessionStorage.removeItem(STORAGE_KEYS.RESTORE)
+    } catch {
+      // sessionStorage 不可用时无需继续处理
+    }
+    return null
+  }
+}
 
 // 类型定义
 export type FavoriteItem = {
