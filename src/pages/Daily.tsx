@@ -42,6 +42,7 @@ import {
   hourLuck as coreHourLuck,
   jiaziStem,
   yijiOf,
+  sleepAdviceOf,
 } from '@contracts/engines/daily-core'
 import { hebenReading, lunarApprox } from '@/components/content/almanac'
 import type { HourLuck } from '@/components/content/ganzhi'
@@ -103,6 +104,42 @@ function Reveal({
 }
 
 /* ================= S2 · 今日宜忌 ================= */
+
+/** 今晚安寝卡（五行养生 · 文化参考，非医疗建议） */
+function SleepCard({ dayStem }: { dayStem: DayStem }) {
+  const advice = sleepAdviceOf(dayStem)
+  return (
+    <div className="mx-auto w-full max-w-[960px] rounded-xl border border-golddim/25 bg-deep p-8">
+      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+        <div>
+          <p className="font-latin text-[12px] font-medium uppercase tracking-[0.3em] text-golddim">
+            Nightly Rest
+          </p>
+          <h3 className="mt-1 font-serif text-[22px] font-bold tracking-[0.08em] text-silktext">
+            🌙 今晚安寝 · {advice.theme}
+          </h3>
+        </div>
+        <span className="rounded-full border border-golddim/40 px-4 py-1.5 text-[11.5px] tracking-[0.12em] text-silkmuted">
+          五行养生 · 文化参考 · 不构成医疗建议
+        </span>
+      </div>
+      <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="rounded-lg border border-golddim/15 bg-black/20 p-5">
+          <p className="text-[12px] tracking-[0.2em] text-goldbright">安寝提示</p>
+          <p className="mt-2.5 font-serif text-[15px] leading-[1.95] text-silktext">
+            {advice.tip}
+          </p>
+        </div>
+        <div className="rounded-lg border border-golddim/15 bg-black/20 p-5">
+          <p className="text-[12px] tracking-[0.2em] text-goldbright">时辰参详（子午流注）</p>
+          <p className="mt-2.5 font-serif text-[15px] leading-[1.95] text-silktext">
+            {advice.hourHint}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function YijiCards({ dayStem }: { dayStem: DayStem }) {
   // 宜忌：共享引擎 daily-core（公版黄历基础规则，按日干映射）
@@ -807,6 +844,13 @@ export default function Daily() {
             <YijiCards dayStem={summary.dayStem} />
             <WuxingStrip stem={summary.dayStem} branch={summary.dayBranch} />
           </div>
+        </div>
+      </section>
+
+      {/* S2b · 今晚安寝（睡眠方向 · 五行养生文化参考） */}
+      <section className="relative bg-silk pb-24 pt-4">
+        <div className="relative zf-container">
+          <SleepCard dayStem={summary.dayStem} />
         </div>
       </section>
 
