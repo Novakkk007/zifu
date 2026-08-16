@@ -23,6 +23,7 @@ const Account = lazy(() => import("@/pages/Account"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Login = lazy(() => import("@/pages/Login"));
 const ScenarioPlaceholder = lazy(() => import("@/pages/ScenarioPlaceholder"));
+const WealthScenario = lazy(() => import("@/pages/scenario/WealthScenario"));
 
 export default function App() {
   return (
@@ -41,7 +42,7 @@ export default function App() {
           <Route path="/daily" element={<Daily />} />
           <Route
             path="/scenario/wealth"
-            element={<ScenarioPlaceholder scenario="wealth" />}
+            element={<WealthScenario />}
           />
           <Route
             path="/scenario/love"
