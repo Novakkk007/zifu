@@ -22,10 +22,10 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const Account = lazy(() => import("@/pages/Account"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Login = lazy(() => import("@/pages/Login"));
-const ScenarioPlaceholder = lazy(() => import("@/pages/ScenarioPlaceholder"));
+const FengshuiScenario = lazy(() => import("@/pages/scenario/FengshuiScenario"));
 const WealthScenario = lazy(() => import("@/pages/scenario/WealthScenario"));
 const LoveScenario = lazy(() => import("@/pages/scenario/LoveScenario"));
-const FengshuiScenario = lazy(() => import("@/pages/scenario/FengshuiScenario"));
+const HealthScenario = lazy(() => import("@/pages/scenario/HealthScenario"));
 
 export default function App() {
   return (
@@ -52,7 +52,7 @@ export default function App() {
           />
           <Route
             path="/scenario/health"
-            element={<ScenarioPlaceholder scenario="health" />}
+            element={<HealthScenario />}
           />
           <Route
             path="/scenario/fengshui"
