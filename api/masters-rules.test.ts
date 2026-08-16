@@ -80,4 +80,29 @@ describe('analyzeWithMasters（名家参详提示）', () => {
       expect(full).not.toMatch(/治疗|投资建议|离婚|死亡/)
     }
   })
+
+  it('LXR-01：冬月调候火与扶抑用神一致 → 三轨同向', () => {
+    const c = makeChart()
+    c.pillars = { ...(c.pillars as object), month: { branch: '子', stem: '壬' } } as never
+    c.yongshen = { ...c.yongshen, yongshen: '火' }
+    const hints = analyzeWithMasters(c)
+    expect(hints.some((h) => h.ruleId === 'LXR-01')).toBe(true)
+  })
+
+  it('LXR-02：冬月调候火与扶抑用神水相克 → 三轨冲突', () => {
+    const c = makeChart()
+    c.pillars = { ...(c.pillars as object), month: { branch: '子', stem: '壬' } } as never
+    c.yongshen = { ...c.yongshen, yongshen: '水' }
+    const hints = analyzeWithMasters(c)
+    expect(hints.some((h) => h.ruleId === 'LXR-02')).toBe(true)
+    expect(hints.some((h) => h.ruleId === 'LXR-01')).toBe(false)
+  })
+
+  it('LXR-04：旺衰偏强/偏弱 → 限定说明；中和则无', () => {
+    const c = makeChart()
+    c.wuxing.strength.grade = '偏强'
+    expect(analyzeWithMasters(c).some((h) => h.ruleId === 'LXR-04')).toBe(true)
+    c.wuxing.strength.grade = '中和'
+    expect(analyzeWithMasters(c).some((h) => h.ruleId === 'LXR-04')).toBe(false)
+  })
 })
