@@ -13,6 +13,7 @@ import type { Toss } from '@/components/liuyao/logic'
 import {
   newCastIdempotencyKey,
   type CastResponse,
+  type LiuyaoChart,
 } from '@/components/liuyao/api'
 import { useEngine } from '@/hooks/useEngine'
 import { castLiuyao, coinTossLiuyao } from '@/engines/client/liuyao'
@@ -20,6 +21,20 @@ import { SafeStorage, STORAGE_KEYS } from '@/lib/storage'
 import type { FavoriteItem, HistoryItem } from '@/lib/storage'
 
 type CoinFace = 'zi' | 'bei'
+
+function chartTitle(chart: LiuyaoChart): string {
+  return chart.question
+    ? `${chart.question} · 六爻起卦`
+    : `六爻起卦 ${new Date(chart.castAt).toLocaleDateString('zh-CN')}`
+}
+
+function favoriteSignature(chart: Partial<LiuyaoChart>): string {
+  return JSON.stringify([
+    chart.question ?? null,
+    chart.benGua?.name ?? null,
+    chart.castAt ?? null,
+  ])
+}
 
 export default function Liuyao() {
   const [question, setQuestion] = useState('')
@@ -44,12 +59,13 @@ export default function Liuyao() {
       // 自动保存历史（最近10条）。注意：浏览器直跑 chartId 恒为 null，
       // 不能作为保存条件——用时间戳生成本地 id
       if (res.result.data) {
+        const chart = res.result.data
         const item: HistoryItem = {
           id: `hist-${Date.now()}`,
           type: 'liuyao',
-          title: question.trim() ? `${question.trim()} · 六爻起卦` : `六爻起卦 ${new Date().toLocaleDateString('zh-CN')}`,
+          title: chartTitle(chart),
           createdAt: new Date().toISOString(),
-          payload: res.result.data,
+          payload: chart,
         }
         const existing = SafeStorage.get<HistoryItem[]>(STORAGE_KEYS.HISTORY, [])
         SafeStorage.set(STORAGE_KEYS.HISTORY, [item, ...existing].slice(0, 10))
@@ -128,16 +144,16 @@ export default function Liuyao() {
     const item: FavoriteItem = {
       id: `fav-${castData?.chartId ?? 'local'}-${Date.now()}`,
       type: 'liuyao',
-      title: question.trim() ? `${question.trim()} · 六爻起卦` : `六爻起卦 ${new Date().toLocaleDateString('zh-CN')}`,
+      title: chartTitle(chart),
       createdAt: new Date().toISOString(),
       payload: chart,
     }
     const existing = SafeStorage.get<FavoriteItem[]>(STORAGE_KEYS.FAVORITES, [])
-    // 去重：同一卦象（payload 摘要）不重复收藏
-    const signature = JSON.stringify(chart.benGua)
+    // 去重只移除同一次起卦的已有收藏；同卦名的不同问事或起卦时刻均保留。
+    const signature = favoriteSignature(chart)
     const deduped = existing.filter((favorite) => {
       if (favorite.type !== 'liuyao') return true
-      return JSON.stringify((favorite.payload as { benGua?: unknown })?.benGua) !== signature
+      return favoriteSignature(favorite.payload as Partial<LiuyaoChart>) !== signature
     })
     SafeStorage.set(STORAGE_KEYS.FAVORITES, [item, ...deduped])
   }
@@ -214,6 +230,7 @@ export default function Liuyao() {
                 placeholder="心中所念之事（可不填）"
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
+                disabled={tossing || tosses.length > 0}
                 maxLength={40}
               />
             </div>
@@ -249,7 +266,7 @@ export default function Liuyao() {
           <div className="zf-container">
             {castData ? (
               <>
-                <HexagramResult result={castData.result} question={question.trim()} />
+                <HexagramResult result={castData.result} question={chart?.question ?? ''} />
                 <div className="flex flex-wrap items-center justify-center gap-5 pt-2">
                   <button
                     type="button"
