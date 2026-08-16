@@ -7,10 +7,7 @@ import FeatureCard from "@/components/FeatureCard";
 import SiweiDemo from "@/components/SiweiDemo";
 import { GhostButton, GoldButton } from "@/components/Buttons";
 import BrandLogo from "@/components/BrandLogo";
-import {
-  usePaymentEnabled,
-  RECHARGE_CLOSED_HINT,
-} from "@/hooks/usePaymentEnabled";
+import { usePaymentEnabled } from "@/hooks/usePaymentEnabled";
 
 const BOOKS = [
   "周易",
@@ -760,24 +757,20 @@ export default function Home() {
             data-split="done"
             className="gs-chars font-serif text-[clamp(26px,3.6vw,42px)] font-bold leading-snug tracking-[0.12em] text-inktext"
           >
-            <Chars text="注册即赠" />
-            <Chars
-              text="36"
-              className="mx-1 align-baseline font-serif text-[1.4em] font-black text-golddim"
-            />
-            <Chars text="灵签" />
+            <Chars text="无需注册" />
+            <Chars text="即刻参详" />
           </h2>
           <p className="gs-reveal mt-4 text-[14px] tracking-[0.08em] text-inkmuted">
             {paymentEnabled
               ? "按次计费，无订阅；充值额外赠 15%"
-              : `按次计费，无订阅；${RECHARGE_CLOSED_HINT}`}
+              : "游客模式全功能可用 · AI 参详自带密钥直连 · 账号与充值系统即将上线"}
           </p>
           <div className="gs-cta-btn mt-10">
             <GoldButton
-              to="/auth"
+              to="/bazi"
               className="animate-gold-breathe px-12 py-4 text-[16px]"
             >
-              免费注册
+              开始排盘
             </GoldButton>
           </div>
         </div>
@@ -786,10 +779,11 @@ export default function Home() {
       {/* 浅 → 深 过渡带 */}
       <div className="zf-fade-to-deep h-[200px]" />
 
-      {/* ===== S8 · PWA 引导 ===== */}
+      {/* ===== S8 · PWA 引导（仅移动端展示；桌面端显示简化提示） ===== */}
       <section className="relative overflow-hidden bg-deep py-28">
         <FloatingGlyphs count={24} onDeep />
-        <div className="relative mx-auto flex w-full max-w-[640px] flex-col items-center px-6 text-center">
+        {/* 移动端：添加到桌面引导 */}
+        <div className="relative mx-auto flex w-full max-w-[640px] flex-col items-center px-6 text-center md:hidden">
           <div className="gs-app-icon">
             <img
               src="/assets/app-icon-512.png"
@@ -811,6 +805,19 @@ export default function Home() {
           </p>
           <p className="gs-reveal mt-6 text-[12.5px] tracking-[0.1em] text-silkmuted">
             使用手机浏览器访问本页，即可添加到桌面
+          </p>
+        </div>
+        {/* 桌面端：简化提示 */}
+        <div className="relative mx-auto hidden w-full max-w-[640px] flex-col items-center px-6 text-center md:flex">
+          <h2
+            data-split="done"
+            className="gs-chars mt-2 font-serif text-[clamp(24px,3vw,38px)] font-bold leading-snug tracking-[0.12em] text-silktext"
+          >
+            <Chars text="手机访问" />
+            <Chars text="体验更佳" className="text-goldbright" />
+          </h2>
+          <p className="gs-reveal mt-5 text-[14.5px] leading-[1.95] text-silktext/85">
+            每日时令、安寝参详、排盘解读，在手机上随手可得。
           </p>
         </div>
       </section>
