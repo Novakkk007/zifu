@@ -21,7 +21,7 @@ function RestoreLink({ item, children }: { item: FavoriteItem | HistoryItem; chi
   if (!Object.prototype.hasOwnProperty.call(RESTORE_ROUTES, item.type)) {
     return (
       <span
-        className="cursor-not-allowed text-[13px] text-inkmuted/60"
+        className="inline-flex min-h-11 items-center text-[13px] text-inkmuted/60 sm:min-h-0"
         aria-disabled="true"
         title="暂不支持回看此类型"
       >
@@ -42,7 +42,7 @@ function RestoreLink({ item, children }: { item: FavoriteItem | HistoryItem; chi
         })
         if (!saved) event.preventDefault()
       }}
-      className="text-[13px] text-golddim hover:text-goldbright"
+      className="inline-flex min-h-11 items-center text-[13px] text-golddim hover:text-goldbright sm:min-h-0"
     >
       {children}
     </Link>
@@ -161,6 +161,8 @@ export default function Profile() {
       SafeStorage.set(STORAGE_KEYS.HISTORY, examples)
       setHistory(examples)
     }
+    // Demo seeds intentionally run once on mount; storage setters are recreated by the hook.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   
   // 计算统计信息
@@ -192,7 +194,7 @@ export default function Profile() {
 
         {/* ===== 收藏功能 ===== */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-4">
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-4">
             <CardTitle eyebrow="FAVORITES">
               <span className="inline-flex items-center gap-2">
                 <Star className="h-5 w-5 text-golddim" aria-hidden />
@@ -222,9 +224,9 @@ export default function Profile() {
                 {favorites.slice(0, 10).map((fav) => (
                   <div 
                     key={fav.id} 
-                    className="flex items-center justify-between rounded-lg border border-gold/15 bg-silk2 p-4 hover:border-gold/30 transition-colors"
+                    className="flex flex-col items-stretch justify-between gap-3 rounded-lg border border-gold/15 bg-silk2 p-4 transition-colors hover:border-gold/30 sm:flex-row sm:items-center"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-goldbright">
                         {fav.type === 'bazi' && '八字'}
                         {fav.type === 'ziwei' && '紫微'}
@@ -233,15 +235,15 @@ export default function Profile() {
                         {fav.type === 'hecan' && '合参'}
                         {fav.type !== 'bazi' && fav.type !== 'ziwei' && fav.type !== 'qimen' && fav.type !== 'liuyao' && fav.type !== 'hecan' && '命盘'}
                       </div>
-                      <div>
-                        <h3 className="font-sans text-[15px] font-medium text-inktext">{fav.title}</h3>
+                      <div className="min-w-0">
+                        <h3 className="truncate font-sans text-[15px] font-medium text-inktext">{fav.title}</h3>
                         <p className="text-[12px] text-inkmuted">{fmtTime(fav.createdAt)}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-end gap-2">
                       <RestoreLink item={fav}>查看</RestoreLink>
                       <button 
-                        className="text-[13px] text-zifured hover:text-zifured/80"
+                        className="inline-flex min-h-11 items-center text-[13px] text-zifured hover:text-zifured/80 sm:min-h-0"
                         onClick={() => {
                           const updated = favorites.filter(f => f.id !== fav.id)
                           SafeStorage.set(STORAGE_KEYS.FAVORITES, updated)
@@ -267,7 +269,7 @@ export default function Profile() {
 
         {/* ===== 历史回看 ===== */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-4">
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-4">
             <CardTitle eyebrow="HISTORY">
               <span className="inline-flex items-center gap-2">
                 <History className="h-5 w-5 text-golddim" aria-hidden />
@@ -297,9 +299,9 @@ export default function Profile() {
                 {history.slice(0, 10).map((item) => (
                   <div 
                     key={item.id} 
-                    className="flex items-center justify-between rounded-lg border border-gold/15 bg-silk2 p-4 hover:border-gold/30 transition-colors"
+                    className="flex flex-col items-stretch justify-between gap-3 rounded-lg border border-gold/15 bg-silk2 p-4 transition-colors hover:border-gold/30 sm:flex-row sm:items-center"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-goldbright">
                         {item.type === 'bazi' && '八字'}
                         {item.type === 'ziwei' && '紫微'}
@@ -308,12 +310,12 @@ export default function Profile() {
                         {item.type === 'hecan' && '合参'}
                         {item.type !== 'bazi' && item.type !== 'ziwei' && item.type !== 'qimen' && item.type !== 'liuyao' && item.type !== 'hecan' && '命盘'}
                       </div>
-                      <div>
-                        <h3 className="font-sans text-[15px] font-medium text-inktext">{item.title}</h3>
+                      <div className="min-w-0">
+                        <h3 className="truncate font-sans text-[15px] font-medium text-inktext">{item.title}</h3>
                         <p className="text-[12px] text-inkmuted">{fmtTime(item.createdAt)}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-end gap-2">
                       <RestoreLink item={item}>回看</RestoreLink>
                     </div>
                   </div>
@@ -325,7 +327,7 @@ export default function Profile() {
 
         {/* ===== 偏好设置 ===== */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-4">
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-4">
             <CardTitle eyebrow="PREFERENCES">
               <span className="inline-flex items-center gap-2">
                 <Settings className="h-5 w-5 text-golddim" aria-hidden />
@@ -343,8 +345,8 @@ export default function Profile() {
               <div className="space-y-6">
                 <div>
                   <h3 className="font-sans text-[15px] font-medium text-inktext mb-2">默认性别</h3>
-                  <div className="flex gap-3">
-                    <label className="flex items-center gap-2">
+                  <div className="flex flex-wrap gap-3">
+                    <label className="flex min-h-11 items-center gap-2 sm:min-h-0">
                       <input 
                         type="radio" 
                         name="defaultGender" 
@@ -355,7 +357,7 @@ export default function Profile() {
                       />
                       <span className="text-[14px] text-inktext">男</span>
                     </label>
-                    <label className="flex items-center gap-2">
+                    <label className="flex min-h-11 items-center gap-2 sm:min-h-0">
                       <input 
                         type="radio" 
                         name="defaultGender" 
@@ -366,7 +368,7 @@ export default function Profile() {
                       />
                       <span className="text-[14px] text-inktext">女</span>
                     </label>
-                    <label className="flex items-center gap-2">
+                    <label className="flex min-h-11 items-center gap-2 sm:min-h-0">
                       <input 
                         type="radio" 
                         name="defaultGender" 
@@ -380,12 +382,12 @@ export default function Profile() {
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <div>
                     <h3 className="font-sans text-[15px] font-medium text-inktext mb-1">真太阳时</h3>
                     <p className="text-[13px] text-inkmuted">使用真太阳时计算命盘（更精确）</p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  <label className="relative inline-flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center sm:min-h-0">
                     <input 
                       type="checkbox" 
                       className="sr-only peer" 

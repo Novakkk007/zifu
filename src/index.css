@@ -164,7 +164,7 @@
 @layer components {
   /* 容器 */
   .zf-container {
-    @apply mx-auto w-full max-w-[1200px] px-6 md:px-10;
+    @apply mx-auto w-full max-w-[1200px] px-4 sm:px-6 md:px-10;
   }
 
   /* 金色 hairline 分隔线（56px 居中） */
@@ -221,6 +221,13 @@
   }
   .zf-link-more:hover .zf-arrow {
     transform: translateX(6px);
+  }
+
+  @media (max-width: 639px) {
+    .zf-link-more {
+      min-height: 44px;
+      align-items: center;
+    }
   }
 
   /* 按钮微动效 */

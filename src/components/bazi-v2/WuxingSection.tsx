@@ -251,8 +251,12 @@ function SourceSplit({ chart }: { chart: BaziChartV2 }) {
   const th = 'px-3 py-2 text-left text-[11.5px] font-medium tracking-[0.08em] text-golddim'
   const td = 'px-3 py-2 text-[12.5px] text-inktext'
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[520px] border-collapse">
+    <div>
+      <p className="border-b border-golddim/15 px-3 py-2 text-[11px] tracking-[0.08em] text-inkmuted sm:hidden">
+        左右滑动查看完整表格 →
+      </p>
+      <div className="overflow-x-auto overscroll-x-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <table className="w-full min-w-[520px] border-collapse">
         <thead>
           <tr className="border-b border-golddim/25">
             <th className={th}>五行</th>
@@ -277,7 +281,8 @@ function SourceSplit({ chart }: { chart: BaziChartV2 }) {
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
   )
 }

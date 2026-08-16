@@ -277,7 +277,7 @@ export default function DetailTabs({ chart }: { chart: BaziChartV2 }) {
             aria-selected={tab === t}
             onClick={() => setTab(t)}
             className={cn(
-              'rounded-t-lg px-4 py-2.5 font-sans text-[13px] font-medium tracking-[0.1em] transition-colors',
+              'min-h-11 rounded-t-lg px-4 py-2.5 font-sans text-[13px] font-medium tracking-[0.1em] transition-colors sm:min-h-0',
               tab === t
                 ? 'bg-deep text-silk'
                 : 'text-inkmuted hover:bg-golddim/10 hover:text-inktext',
@@ -287,7 +287,10 @@ export default function DetailTabs({ chart }: { chart: BaziChartV2 }) {
           </button>
         ))}
       </div>
-      <div className="overflow-x-auto p-4">
+      <p className="border-b border-golddim/15 px-4 py-2 text-[11px] tracking-[0.08em] text-inkmuted sm:hidden">
+        左右滑动查看完整表格 →
+      </p>
+      <div className="overflow-x-auto overscroll-x-contain p-3 sm:p-4" style={{ WebkitOverflowScrolling: 'touch' }}>
         {tab === '四柱总表' && <PillarsTable chart={chart} />}
         {tab === '藏干十神' && <HiddenTable chart={chart} />}
         {tab === '纳音长生' && <NayinTable chart={chart} />}

@@ -15,13 +15,18 @@ const tdCls = 'border-b border-golddim/10 px-3 py-2.5 align-top text-[13px] lead
 
 function TableShell({ children, caption }: { children: ReactNode; caption: string }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-golddim/25 bg-silk2 shadow-card">
-      <table className="w-full min-w-[720px] border-collapse">
-        <caption className="px-4 pb-0 pt-4 text-left font-serif text-[15px] font-bold tracking-[0.12em] text-inktext">
-          {caption}
-        </caption>
-        {children}
-      </table>
+    <div className="overflow-hidden rounded-xl border border-golddim/25 bg-silk2 shadow-card">
+      <p className="border-b border-golddim/15 px-4 py-2 text-[11px] tracking-[0.08em] text-inkmuted sm:hidden">
+        左右滑动查看完整表格 →
+      </p>
+      <div className="overflow-x-auto overscroll-x-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <table className="w-full min-w-[720px] border-collapse">
+          <caption className="px-4 pb-0 pt-4 text-left font-serif text-[15px] font-bold tracking-[0.12em] text-inktext">
+            {caption}
+          </caption>
+          {children}
+        </table>
+      </div>
     </div>
   )
 }

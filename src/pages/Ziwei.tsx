@@ -428,7 +428,7 @@ export default function Ziwei() {
                   key={t.id}
                   onClick={() => setTab(t.id)}
                   className={cn(
-                    'relative rounded-full px-8 py-2 font-sans text-[13.5px] font-medium tracking-[0.14em] transition-colors',
+                    'relative min-h-11 rounded-full px-8 py-2 font-sans text-[13.5px] font-medium tracking-[0.14em] transition-colors sm:min-h-0',
                     tab === t.id ? 'text-deep3' : 'text-silkmuted hover:text-silktext',
                   )}
                 >

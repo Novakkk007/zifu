@@ -85,7 +85,7 @@ export function SegmentedControl<T extends string>({
             type="button"
             onClick={() => onChange(opt.value)}
             className={cn(
-              'relative rounded-full px-5 py-2 font-sans text-[13.5px] font-medium tracking-[0.08em] transition-colors',
+              'relative min-h-11 rounded-full px-5 py-2 font-sans text-[13.5px] font-medium tracking-[0.08em] transition-colors sm:min-h-0',
               active ? 'text-silk' : 'text-inkmuted hover:text-inktext',
             )}
           >

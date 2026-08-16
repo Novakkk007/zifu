@@ -482,7 +482,7 @@ export default function Home() {
         {/* 品牌区：文档流布局，顶部留导航余量（80px），向下自然排列。
             任何窗口高度都不裁剪、不遮挡（原 absolute+bottom 锚定在矮视口
             上沿越界压住导航——版面事故根因） */}
-        <div className="hero-brand relative z-10 mt-[80px] flex flex-col items-center px-6 pb-20 text-center">
+        <div className="hero-brand relative z-10 mt-[80px] flex flex-col items-center px-4 pb-20 text-center sm:px-6">
           <span className="hero-mark inline-block will-change-transform">
             <span className="inline-block sm:hidden">
               <BrandLogo variant="mark" size={64} />
@@ -491,7 +491,7 @@ export default function Home() {
               <BrandLogo variant="mark" size={132} />
             </span>
           </span>
-          <h1 className="mt-3 flex items-baseline font-serif text-[clamp(64px,13vw,148px)] font-black leading-[1.05] sm:mt-5">
+          <h1 className="mt-3 flex items-baseline font-serif text-[clamp(56px,17vw,148px)] font-black leading-[1.05] sm:mt-5">
             <span className="hero-zi inline-block text-silktext will-change-transform">
               紫
             </span>

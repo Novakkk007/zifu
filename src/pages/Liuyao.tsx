@@ -342,7 +342,7 @@ export default function Liuyao() {
                     cast.reset()
                     setCastData(null)
                   }}
-                  className="mt-4 rounded-full border border-golddim/50 px-6 py-2 text-[13px] text-golddim hover:bg-golddim/10"
+                  className="mt-4 min-h-11 rounded-full border border-golddim/50 px-6 py-2 text-[13px] text-golddim hover:bg-golddim/10"
                 >
                   重试起卦
                 </button>

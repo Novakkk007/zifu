@@ -123,14 +123,14 @@ export default function HistorySection({
                   onClick={() => recompute.mutate({ chartId: r.id })}
                   disabled={recompute.isPending}
                   title="按最新算法 / 规则重新计算此盘（生成新版本快照）"
-                  className="rounded-full border border-golddim/30 px-3 py-1 text-[11.5px] text-golddim transition-colors hover:border-golddim hover:bg-golddim/10 disabled:opacity-50"
+                  className="min-h-11 rounded-full border border-golddim/30 px-3 py-1 text-[11.5px] text-golddim transition-colors hover:border-golddim hover:bg-golddim/10 disabled:opacity-50 sm:min-h-0"
                 >
                   {recompute.isPending ? '重算中…' : '重算'}
                 </button>
                 <button
                   onClick={() => remove.mutate({ id: r.id })}
                   disabled={remove.isPending}
-                  className="rounded-full border border-golddim/30 px-3 py-1 text-[11.5px] text-inkmuted transition-colors hover:border-[#B04A3A]/60 hover:text-[#B04A3A] disabled:opacity-50"
+                  className="min-h-11 rounded-full border border-golddim/30 px-3 py-1 text-[11.5px] text-inkmuted transition-colors hover:border-[#B04A3A]/60 hover:text-[#B04A3A] disabled:opacity-50 sm:min-h-0"
                 >
                   删除
                 </button>

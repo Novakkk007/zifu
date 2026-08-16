@@ -83,7 +83,7 @@ function AnnotationCard({
       <button
         onClick={onClose}
         aria-label="关闭注解"
-        className="absolute right-3 top-3 rounded-full border border-golddim/40 px-2 py-0.5 text-[11px] text-silkmuted hover:text-goldbright"
+        className="absolute right-2 top-2 min-h-11 rounded-full border border-golddim/40 px-3 py-0.5 text-[11px] text-silkmuted hover:text-goldbright sm:right-3 sm:top-3 sm:min-h-0 sm:px-2"
       >
         关闭
       </button>
@@ -157,7 +157,7 @@ function AnnotationCard({
         <div className="mt-5 border-t border-golddim/15 pt-4 text-center">
           <button
             onClick={() => onAiExplain(title)}
-            className="zf-btn inline-flex items-center justify-center rounded-full border border-gold/60 bg-transparent px-6 py-2 text-[13px] font-medium tracking-[0.12em] text-goldbright hover:bg-gold/10"
+            className="zf-btn inline-flex min-h-11 items-center justify-center rounded-full border border-gold/60 bg-transparent px-6 py-2 text-[13px] font-medium tracking-[0.12em] text-goldbright hover:bg-gold/10 sm:min-h-0"
           >
             AI 解释此阶段
           </button>
@@ -221,7 +221,7 @@ export default function LifeChart({ chart, loading = false, error = null, onAiEx
               key={m}
               onClick={() => setYearMode(m === 'year')}
               className={cn(
-                'rounded-full border px-3 py-1 transition-colors',
+                'min-h-11 rounded-full border px-3 py-1 transition-colors sm:min-h-0',
                 (m === 'year') === yearMode
                   ? 'border-gold bg-gold/15 text-goldbright'
                   : 'border-golddim/40 text-silkmuted hover:border-golddim',
@@ -261,7 +261,10 @@ export default function LifeChart({ chart, loading = false, error = null, onAiEx
       ) : (
         <div className="relative mt-4">
           {/* 移动端横向滚动容器 */}
-          <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <p className="mt-4 text-[11px] tracking-[0.08em] text-silkmuted sm:hidden">
+            左右滑动查看完整轨迹 →
+          </p>
+          <div className="overflow-x-auto overscroll-x-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
             <svg
               viewBox={`0 0 ${W} ${H}`}
               className="min-w-[860px]"

@@ -260,7 +260,7 @@ export default function BirthFormCard({ value, onChange, loading, error, onSubmi
                 key={v}
                 type="button"
                 onClick={() => set('ziVariant', v)}
-                className={`rounded-full border px-3 py-1.5 font-sans text-[12px] tracking-[0.1em] transition-colors ${
+                className={`min-h-11 rounded-full border px-3 py-1.5 font-sans text-[12px] tracking-[0.1em] transition-colors sm:min-h-0 ${
                   value.ziVariant === v
                     ? 'border-gold bg-gold/15 text-golddim'
                     : 'border-inkmuted/30 text-inkmuted hover:border-golddim'
