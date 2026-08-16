@@ -36,6 +36,52 @@ type HomeEntry = {
   flagship?: boolean;
 };
 
+/** 三才 · 天地人（《易经·说卦》分类框架） */
+const THREE_REALMS: {
+  glyph: string;
+  name: string;
+  sub: string;
+  desc: string;
+  items: { to: string; label: string }[];
+}[] = [
+  {
+    glyph: '☰',
+    name: '天 · 时运',
+    sub: 'THE HEAVEN · 天时',
+    desc: '立天之道曰阴与阳。历法、节气、流年大势，皆属天时——何时做何事，顺时而参。',
+    items: [
+      { to: '/daily', label: '每日时令' },
+      { to: '/daily', label: '安寝时令' },
+      { to: '/qimen', label: '奇门时空' },
+      { to: '/scenario/wealth', label: '流年运势' },
+    ],
+  },
+  {
+    glyph: '☷',
+    name: '地 · 空间',
+    sub: 'THE EARTH · 地利',
+    desc: '立地之道曰柔与刚。方位、宅局、环境布局，皆属地利——居处于何处，安宅而参。',
+    items: [
+      { to: '/daily', label: '九宫飞星' },
+      { to: '/daily', label: '安床择吉' },
+      { to: '/scenario/health', label: '方位参详 · 即启' },
+    ],
+  },
+  {
+    glyph: '☴',
+    name: '人 · 命理',
+    sub: 'THE HUMAN · 人和',
+    desc: '立人之道曰仁与义。八字、星盘、人事合参，皆属人和——我是谁、我与谁，明己而参。',
+    items: [
+      { to: '/bazi', label: '八字排盘' },
+      { to: '/ziwei', label: '紫微斗数' },
+      { to: '/liuyao', label: '六爻起卦' },
+      { to: '/daliuren', label: '大六壬' },
+      { to: '/bazi/hepan', label: '合盘合参' },
+    ],
+  },
+];
+
 const SCENARIOS: (HomeEntry & { emoji: string; eyebrow: string })[] = [
   {
     glyph: "财",
@@ -525,6 +571,47 @@ export default function Home() {
                   </span>
                 </div>
               </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== S3b · 三才 · 天地人 ===== */}
+      <section className="bg-silk py-24 sm:py-28">
+        <div className="zf-container">
+          <SectionHeading
+            eyebrow="Three Realms"
+            title="三才 · 天地人"
+            sub="立天之道曰阴与阳，立地之道曰柔与刚，立人之道曰仁与义 ——《易经·说卦》"
+          />
+          <div className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-3">
+            {THREE_REALMS.map(realm => (
+              <div
+                key={realm.name}
+                className="rounded-2xl border border-golddim/20 bg-white/50 p-7"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-serif text-[26px] font-black text-goldbright">{realm.glyph}</span>
+                  <div>
+                    <h3 className="font-serif text-[20px] font-bold tracking-[0.1em] text-inktext">
+                      {realm.name}
+                    </h3>
+                    <p className="mt-0.5 text-[11.5px] tracking-[0.14em] text-inkmuted">{realm.sub}</p>
+                  </div>
+                </div>
+                <p className="mt-4 text-[13px] leading-[1.9] text-inkmuted">{realm.desc}</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {realm.items.map(item => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className="rounded-full border border-golddim/30 px-3.5 py-1.5 text-[12px] tracking-[0.08em] text-inktext transition-colors hover:border-goldbright hover:text-goldbright"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
