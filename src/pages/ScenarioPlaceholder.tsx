@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Link } from "react-router";
 import FloatingGlyphs from "@/components/FloatingGlyphs";
 
-export type ScenarioKind = "wealth" | "love" | "health";
+export type ScenarioKind = "wealth" | "love" | "health" | "fengshui";
 
 type ScenarioPlaceholderProps = {
   scenario: ScenarioKind;
@@ -38,6 +38,13 @@ const SCENARIOS: Record<
     title: "健康体质养生",
     desc: "从五行旺衰参看体质倾向与四时养护重点，仅作传统文化研究与日常生活参考。",
     preview: ["五行体质概览", "四时养护提示", "年度节律参看"],
+  },
+  fengshui: {
+    glyph: "宅",
+    eyebrow: "Dwelling & Space",
+    title: "阳宅风水参详",
+    desc: "以《黄帝宅经》等公版典籍为据，参详宅向、门主灶布局与空间环境，输出可验证的环境检查提示。",
+    preview: ["宅局环境检查", "门主灶参详", "公版原文依据"],
   },
 };
 

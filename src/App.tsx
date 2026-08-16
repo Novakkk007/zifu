@@ -51,6 +51,10 @@ export default function App() {
             path="/scenario/health"
             element={<ScenarioPlaceholder scenario="health" />}
           />
+          <Route
+            path="/scenario/fengshui"
+            element={<ScenarioPlaceholder scenario="fengshui" />}
+          />
           <Route path="/toolkit" element={<Toolkit />} />
           <Route path="/wiki" element={<Wiki />} />
           <Route path="/talks" element={<Talks />} />
