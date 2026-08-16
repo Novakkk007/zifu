@@ -179,6 +179,15 @@ export default function Profile() {
           <h1 className="mt-1 font-serif text-[30px] font-black tracking-[0.1em] text-inktext">
             个人中心
           </h1>
+          <div className="mt-4 flex flex-col gap-2 rounded-xl border border-golddim/25 bg-deep/95 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[12.5px] leading-[1.8] text-silkmuted">
+              🍃 当前为游客模式：收藏与历史保存在当前设备浏览器，无需注册即可使用。
+              更换设备后数据不互通。
+            </p>
+            <span className="shrink-0 rounded-full border border-golddim/40 px-4 py-1.5 text-[11.5px] tracking-[0.1em] text-golddim">
+              账号系统即将上线 · 支持云同步与充值
+            </span>
+          </div>
         </header>
 
         {/* ===== 收藏功能 ===== */}

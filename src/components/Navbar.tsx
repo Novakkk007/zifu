@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, LogOut, Menu, Sparkle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
-import { LOGIN_PATH } from '@/const'
 import BrandLogo from '@/components/BrandLogo'
 
 const YAN_MENU = [
@@ -211,10 +210,10 @@ export default function Navbar() {
             </div>
           ) : (
             <Link
-              to={LOGIN_PATH}
+              to="/profile"
               className="zf-btn rounded-full bg-deep px-5 py-2 font-sans text-[13px] font-medium tracking-[0.12em] text-silk"
             >
-              登录 / 注册
+              我的
             </Link>
           )}
           <button
@@ -260,7 +259,7 @@ export default function Navbar() {
                       { to: '/account', label: '用户中心' },
                       { to: '/', label: '退出登录', action: 'logout' as const },
                     ]
-                  : [{ to: LOGIN_PATH, label: '登录 / 注册' }]),
+                  : [{ to: '/profile', label: '我的' }]),
               ].map((item, i) => (
                 <motion.div
                   key={item.to + item.label}
