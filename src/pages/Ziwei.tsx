@@ -19,6 +19,16 @@ import type { FavoriteItem, HistoryItem } from '@/lib/storage'
 
 type Tab = 'daxian' | 'liunian'
 
+type ZiweiSubmission = Parameters<typeof paipanZiwei>[0]
+
+const CHART_TITLE_SUFFIX = '的紫微命盘'
+
+function getSubmittedName(variables: ZiweiSubmission | null): string {
+  const title = variables?.title?.trim()
+  if (!title?.endsWith(CHART_TITLE_SUFFIX)) return ''
+  return title.slice(0, -CHART_TITLE_SUFFIX.length)
+}
+
 export default function Ziwei() {
   const [name, setName] = useState('')
   const [gender, setGender] = useState<'male' | 'female'>('male')
@@ -28,8 +38,10 @@ export default function Ziwei() {
   const [day, setDay] = useState('15')
   const [hourBranch, setHourBranch] = useState('0')
   const [isLeapMonth, setIsLeapMonth] = useState(false)
+  const [yearError, setYearError] = useState<string | null>(null)
 
   const [result, setResult] = useState<EngineResult<ZiweiChartData> | null>(null)
+  const [successfulSnapshot, setSuccessfulSnapshot] = useState<ZiweiSubmission | null>(null)
   const [chartId, setChartId] = useState<number | null>(null)
   const [selCell, setSelCell] = useState<ZiweiPalace | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -49,8 +61,9 @@ export default function Ziwei() {
 
   // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.ziwei.paipan 一致
   const paipan = useEngine(paipanZiwei, {
-    onSuccess: async (data) => {
+    onSuccess: async (data, variables) => {
       setResult(data.result as EngineResult<ZiweiChartData>)
+      setSuccessfulSnapshot(variables)
       setChartId(data.chartId)
       setDxIdx(null)
       window.setTimeout(() => chartRef.current?.scrollIntoView({ behavior: 'smooth' }), 60)
@@ -60,7 +73,7 @@ export default function Ziwei() {
         const item: HistoryItem = {
           id: `hist-${Date.now()}`,
           type: 'ziwei',
-          title: name.trim() ? `${name.trim()}的紫微命盘` : `紫微命盘 ${new Date().toLocaleDateString('zh-CN')}`,
+          title: variables.title ?? `紫微命盘 ${new Date().toLocaleDateString('zh-CN')}`,
           createdAt: new Date().toISOString(),
           payload: data.result.data,
         }
@@ -71,7 +84,22 @@ export default function Ziwei() {
   })
 
   const handleSubmit = () => {
-    const y = Math.min(2026, Math.max(1920, Number(year) || 1995))
+    const rawYear = year.trim()
+    const y = Number(rawYear)
+    let validationError: string | null = null
+
+    if (!rawYear) {
+      validationError = '请输入出生年。'
+    } else if (!Number.isInteger(y)) {
+      validationError = '出生年须为整数。'
+    } else if (y < 1920 || y > thisYear) {
+      validationError = `出生年须在 1920–${thisYear} 年之间。`
+    }
+
+    setYearError(validationError)
+    if (validationError) return
+
+    const submittedName = name.trim()
     paipan.mutate({
       calendar,
       year: y,
@@ -80,7 +108,7 @@ export default function Ziwei() {
       hourBranch: Number(hourBranch),
       gender,
       isLeapMonth: calendar === 'lunar' ? isLeapMonth : undefined,
-      title: name.trim() ? `${name.trim()}的紫微命盘` : undefined,
+      title: submittedName ? `${submittedName}${CHART_TITLE_SUFFIX}` : `紫微命盘 ${new Date().toLocaleDateString('zh-CN')}`,
     })
   }
 
@@ -104,7 +132,7 @@ export default function Ziwei() {
     const item: FavoriteItem = {
       id: `fav-${chartId ?? 'local'}-${Date.now()}`,
       type: 'ziwei',
-      title: name.trim() ? `${name.trim()}的紫微命盘` : `紫微命盘 ${new Date().toLocaleDateString('zh-CN')}`,
+      title: successfulSnapshot?.title ?? `紫微命盘 ${new Date().toLocaleDateString('zh-CN')}`,
       createdAt: new Date().toISOString(),
       payload: chart,
     }
@@ -212,15 +240,28 @@ export default function Ziwei() {
                     ]}
                   />
                 </div>
-                <FormInput
-                  id="zw-year"
-                  label="出生年"
-                  type="number"
-                  min={1920}
-                  max={2026}
-                  value={year}
-                  onChange={(e) => setYear(e.target.value)}
-                />
+                <div>
+                  <FormInput
+                    id="zw-year"
+                    label="出生年"
+                    type="number"
+                    min={1920}
+                    max={thisYear}
+                    required
+                    value={year}
+                    onChange={(e) => {
+                      setYear(e.target.value)
+                      if (yearError) setYearError(null)
+                    }}
+                    aria-invalid={yearError ? true : undefined}
+                    aria-describedby={yearError ? 'zw-year-error' : undefined}
+                  />
+                  {yearError && (
+                    <p id="zw-year-error" className="mt-1.5 text-[12px] text-[#B03A2E]" role="alert">
+                      {yearError}
+                    </p>
+                  )}
+                </div>
                 <FormSelect id="zw-month" label="月" value={month} onChange={(e) => setMonth(e.target.value)}>
                   {Array.from({ length: 12 }, (_, i) => (
                     <option key={i + 1} value={i + 1}>
@@ -281,7 +322,7 @@ export default function Ziwei() {
             <SectionHeading
               eyebrow="THE CHART"
               title="十二宫盘"
-              sub={`${name.trim() || '缘主'} · ${gender === 'male' ? '乾造' : '坤造'} · 点击任一宫位查看详情`}
+              sub={`${getSubmittedName(successfulSnapshot) || '缘主'} · ${chart.input.gender === 'male' ? '乾造' : '坤造'} · 点击任一宫位查看详情`}
             />
             {/* 引擎 meta 徽章：流派 / 精度 / 算法版本 */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5 text-[12px]">
