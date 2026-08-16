@@ -38,12 +38,22 @@ const YEARS = Array.from({ length: 21 }, (_, i) => 2020 + i)
 const CHUAN_LABEL = ['初传', '中传', '末传'] as const
 
 function nowParts() {
-  const d = new Date()
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date())
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? ''
+  const hour = Number(get('hour'))
   return {
-    year: String(d.getFullYear()),
-    month: String(d.getMonth() + 1),
-    day: String(d.getDate()),
-    hour: String(Math.floor(((d.getHours() + 1) % 24) / 2)),
+    year: get('year'),
+    month: String(Number(get('month'))),
+    day: String(Number(get('day'))),
+    hour: String(Math.floor(((hour + 1) % 24) / 2)),
   }
 }
 

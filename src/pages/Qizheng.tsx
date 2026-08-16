@@ -10,6 +10,7 @@ import { BRANCHES, MANSIONS } from '@/components/sanshi/astro'
 import { trpc } from '@/providers/trpc'
 import { useEngine } from '@/hooks/useEngine'
 import { paipanQizheng } from '@/engines/client/qizheng'
+import { isValidSolarDate } from '@/engines/client/shared'
 import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
 import { useAuth } from '@/hooks/useAuth'
 import { LOGIN_PATH } from '@/const'
@@ -28,6 +29,10 @@ const HOUR_OPTIONS = BRANCHES.map((b, i) => {
 })
 
 const YEARS = Array.from({ length: 97 }, (_, i) => 1930 + i)
+
+function daysInMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate()
+}
 
 type Gender = 'male' | 'female'
 
@@ -207,6 +212,7 @@ export default function Qizheng() {
   const [day, setDay] = useState('15')
   const [hour, setHour] = useState('4')
   const [gender, setGender] = useState<Gender>('male')
+  const [dateError, setDateError] = useState<string | null>(null)
   const [runId, setRunId] = useState(0)
   const chartRef = useRef<HTMLDivElement>(null)
 
@@ -225,7 +231,24 @@ export default function Qizheng() {
   const chart = paipan.data?.result ?? null
   const chartId = paipan.data?.chartId ?? null
 
+  const updateYear = (nextYear: string) => {
+    setYear(nextYear)
+    setDay((current) => String(Math.min(Number(current), daysInMonth(Number(nextYear), Number(month)))))
+    setDateError(null)
+  }
+
+  const updateMonth = (nextMonth: string) => {
+    setMonth(nextMonth)
+    setDay((current) => String(Math.min(Number(current), daysInMonth(Number(year), Number(nextMonth)))))
+    setDateError(null)
+  }
+
   const submit = () => {
+    if (!isValidSolarDate(Number(year), Number(month), Number(day))) {
+      setDateError('无效的日期，请检查年月日。')
+      return
+    }
+    setDateError(null)
     // 时辰中点作为排盘时刻；按 Asia/Shanghai 墙钟（服务端换算 UTC）
     const hh = String((2 * Number(hour) + 24) % 24).padStart(2, '0')
     paipan.mutate({
@@ -278,22 +301,29 @@ export default function Qizheng() {
           />
           <div className="mt-12 w-full max-w-[680px] rounded-xl border border-golddim/25 bg-silk2 p-8 shadow-card md:p-10">
             <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
-              <FormSelect label="出生年" value={year} onChange={(e) => setYear(e.target.value)}>
+              <FormSelect label="出生年" value={year} onChange={(e) => updateYear(e.target.value)}>
                 {YEARS.map((y) => (
                   <option key={y} value={y}>
                     {y} 年
                   </option>
                 ))}
               </FormSelect>
-              <FormSelect label="月" value={month} onChange={(e) => setMonth(e.target.value)}>
+              <FormSelect label="月" value={month} onChange={(e) => updateMonth(e.target.value)}>
                 {Array.from({ length: 12 }, (_, i) => (
                   <option key={i + 1} value={i + 1}>
                     {i + 1} 月
                   </option>
                 ))}
               </FormSelect>
-              <FormSelect label="日" value={day} onChange={(e) => setDay(e.target.value)}>
-                {Array.from({ length: 31 }, (_, i) => (
+              <FormSelect
+                label="日"
+                value={day}
+                onChange={(e) => {
+                  setDay(e.target.value)
+                  setDateError(null)
+                }}
+              >
+                {Array.from({ length: daysInMonth(Number(year), Number(month)) }, (_, i) => (
                   <option key={i + 1} value={i + 1}>
                     {i + 1} 日
                   </option>
@@ -329,9 +359,9 @@ export default function Qizheng() {
                 {paipan.isPending ? '推算星历…' : '排星盘'}
               </GoldButton>
             </div>
-            {paipan.isError && (
-              <p className="mt-5 text-center text-[13px] text-red-700/90">
-                {paipan.error instanceof Error ? paipan.error.message : '排盘失败，请检查输入'}
+            {(dateError || paipan.isError) && (
+              <p role="alert" className="mt-5 text-center text-[13px] text-red-700/90">
+                {dateError ?? (paipan.error instanceof Error ? paipan.error.message : '排盘失败，请检查输入')}
               </p>
             )}
           </div>
