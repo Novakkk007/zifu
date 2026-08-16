@@ -29,7 +29,7 @@ export default function Footer() {
           </span>
         </Link>
         <p className="max-w-md text-[12.5px] leading-[1.8] text-silkmuted">
-          古籍数字化 · AI 参详 — 仅供文化研究与体验，不构成任何决策建议
+          仅供传统文化研究与娱乐参考，不构成任何医疗、投资、法律或人生决策建议。
         </p>
         <nav className="flex items-center gap-3 text-[13px] tracking-[0.1em]">
           {FOOT_LINKS.map((l, i) => (
