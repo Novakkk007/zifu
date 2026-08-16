@@ -14,6 +14,8 @@ export interface DirectReadingInput {
   chartSummary: string
   persona: string
   depth: string
+  /** AI 后端提供方（kimi/deepseek，默认 kimi） */
+  provider?: 'kimi' | 'deepseek'
   model?: string
   baseUrl?: string
   apiKey: string
@@ -85,10 +87,20 @@ export function buildReadingPrompt(input: { chartSummary: string; persona: strin
   )
 }
 
+/** AI 后端提供方（浏览器直连均实测 CORS 全开） */
+export type AIProvider = 'kimi' | 'deepseek'
+
+export const AI_PROVIDERS: Record<AIProvider, { label: string; baseUrl: string; defaultModel: string }> = {
+  kimi: { label: 'Kimi (Moonshot)', baseUrl: 'https://api.moonshot.cn/v1', defaultModel: 'kimi-k3' },
+  deepseek: { label: 'DeepSeek', baseUrl: 'https://api.deepseek.com/v1', defaultModel: 'deepseek-chat' },
+}
+
 /** 直连调用（OpenAI 兼容 chat/completions） */
 export async function aiDirectReading(input: DirectReadingInput): Promise<DirectReadingResult> {
-  const model = input.model || 'kimi-k3'
-  const baseUrl = (input.baseUrl || 'https://api.moonshot.cn/v1').replace(/\/$/, '')
+  const provider: AIProvider = input.provider ?? 'kimi'
+  const cfg = AI_PROVIDERS[provider] ?? AI_PROVIDERS.kimi
+  const model = input.model || cfg.defaultModel
+  const baseUrl = (input.baseUrl || cfg.baseUrl).replace(/\/$/, '')
   const res = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
