@@ -25,6 +25,9 @@ export interface DirectReadingResult {
   content: string
 }
 
+// 名家主题化上下文（LJM 十神角色映射——AI 参详增强，静态引入保持同步函数签名）
+import { ljmContextText } from '@contracts/engines/masters-rules/ljm'
+
 /**
  * 命盘 → 结构化摘要（直连 prompt 用）。仅含引擎产出的数据，
  * 不注入任何术语释义（红线）。
@@ -45,6 +48,13 @@ export function buildChartSummary(chart: unknown): string {
   lines.push(`四柱：年柱 ${fmt(p.year)}，月柱 ${fmt(p.month)}，日柱 ${fmt(p.day)}，时柱 ${fmt(p.hour)}`)
   if (c.tenGods && Object.keys(c.tenGods).length > 0) {
     lines.push(`十神：${Object.entries(c.tenGods).map(([k, v]) => `${k}=${v}`).join('，')}`)
+  }
+  // 名家主题化上下文（LJM 十神角色映射——文化解释层，不映射现实身份）
+  try {
+    const ljm = ljmContextText(chart as never)
+    if (ljm) lines.push(ljm)
+  } catch {
+    /* 规则层异常时静默跳过（增强不是依赖） */
   }
   return lines.join('\n')
 }

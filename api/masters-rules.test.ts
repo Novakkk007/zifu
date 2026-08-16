@@ -105,4 +105,21 @@ describe('analyzeWithMasters（名家参详提示）', () => {
     c.wuxing.strength.grade = '中和'
     expect(analyzeWithMasters(c).some((h) => h.ruleId === 'LXR-04')).toBe(false)
   })
+
+  it('LJM：十神主题化——按出现次数排序，主题为中性角色描述', async () => {
+    const { tenGodThemes, ljmContextText } = await import('../contracts/engines/masters-rules/ljm')
+    const c = makeChart()
+    c.tenGods = [
+      { tenGod: '正官', pillar: '年柱', char: '辛', layer: 'stem' },
+      { tenGod: '正官', pillar: '月柱', char: '辛', layer: 'stem' },
+      { tenGod: '正财', pillar: '日柱', char: '己', layer: 'hidden' },
+    ] as never
+    const themes = tenGodThemes(c)
+    expect(themes[0].tenGod).toBe('正官')
+    expect(themes[0].count).toBe(2)
+    expect(themes[0].theme).toBe('规则与担当')
+    const ctx = ljmContextText(c)
+    expect(ctx).toContain('正官（出现2次）')
+    expect(ctx).toContain('不映射现实身份')
+  })
 })
