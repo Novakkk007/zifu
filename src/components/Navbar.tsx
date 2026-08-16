@@ -219,7 +219,7 @@ export default function Navbar() {
                 to="/account"
                 title="用户中心"
                 aria-label={`用户中心（${user.name || '紫府同参'}）`}
-                className="max-w-[10rem] truncate rounded-full border border-[rgba(199,162,58,0.35)] px-4 py-1.5 font-sans text-[13px] tracking-[0.08em] text-golddim outline-none transition-colors hover:border-gold/60 hover:bg-gold/10 focus-visible:ring-2 focus-visible:ring-gold"
+                className="inline-flex min-h-11 max-w-[8rem] items-center truncate rounded-full border border-[rgba(199,162,58,0.35)] px-4 py-1.5 font-sans text-[13px] tracking-[0.08em] text-golddim outline-none transition-colors hover:border-gold/60 hover:bg-gold/10 focus-visible:ring-2 focus-visible:ring-gold sm:max-w-[10rem] lg:min-h-0"
               >
                 {user.name || '紫府同参'}
               </Link>
@@ -227,7 +227,7 @@ export default function Navbar() {
                 onClick={logout}
                 aria-label="退出登录"
                 title="退出登录"
-                className="rounded-full p-2 text-inkmuted transition-colors hover:text-golddim"
+                className="flex h-11 w-11 items-center justify-center rounded-full text-inkmuted transition-colors hover:text-golddim lg:h-auto lg:w-auto lg:p-2"
               >
                 <LogOut className="h-4 w-4" />
               </button>
@@ -235,13 +235,13 @@ export default function Navbar() {
           ) : (
             <Link
               to="/profile"
-              className="zf-btn rounded-full bg-deep px-5 py-2 font-sans text-[13px] font-medium tracking-[0.12em] text-silk"
+              className="zf-btn inline-flex min-h-11 items-center rounded-full bg-deep px-5 py-2 font-sans text-[13px] font-medium tracking-[0.12em] text-silk lg:min-h-0"
             >
               我的
             </Link>
           )}
           <button
-            className="p-2 text-inktext lg:hidden"
+            className="flex h-11 w-11 items-center justify-center text-inktext lg:hidden"
             onClick={() => setDrawerOpen(true)}
             aria-label="打开菜单"
           >
@@ -258,14 +258,14 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.24 }}
-            className="fixed inset-0 z-[60] flex flex-col bg-deep3 lg:hidden"
+            className="fixed inset-0 z-[60] flex flex-col bg-deep3 pb-[env(safe-area-inset-bottom)] lg:hidden"
           >
             <div className="flex h-16 items-center justify-between px-6">
               <span className="font-serif text-[20px] font-black tracking-[0.12em] text-goldbright">
                 紫府
               </span>
               <button
-                className="p-2 text-silkmuted"
+                className="flex h-11 w-11 items-center justify-center text-silkmuted"
                 onClick={() => setDrawerOpen(false)}
                 aria-label="关闭菜单"
               >
@@ -297,14 +297,14 @@ export default function Navbar() {
                         setDrawerOpen(false)
                         logout()
                       }}
-                      className="block py-2.5 text-center font-serif text-[22px] tracking-[0.2em] text-silktext transition-colors hover:text-goldbright"
+                      className="flex min-h-11 items-center justify-center py-2.5 text-center font-serif text-[22px] tracking-[0.2em] text-silktext transition-colors hover:text-goldbright"
                     >
                       {item.label}
                     </button>
                   ) : (
                     <NavLink
                       to={item.to}
-                      className="block py-2.5 text-center font-serif text-[22px] tracking-[0.2em] text-silktext transition-colors hover:text-goldbright"
+                      className="flex min-h-11 items-center justify-center py-2.5 text-center font-serif text-[22px] tracking-[0.2em] text-silktext transition-colors hover:text-goldbright"
                     >
                       {item.label}
                     </NavLink>

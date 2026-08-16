@@ -110,7 +110,7 @@ function render(
 /** 金色主按钮（深底 CTA 可叠加 breathing 金晕：加 animate-gold-breathe）。v6 等价物：ZifuButton variant="foil" */
 export function GoldButton(props: CommonProps) {
   return render(
-    'zf-btn inline-flex items-center justify-center rounded-full px-8 py-3 font-sans text-[14.5px] font-medium tracking-[0.14em] text-[#0B3B39] [background:linear-gradient(135deg,rgb(var(--gold-bright)),rgb(var(--gold)))]',
+    'zf-btn inline-flex min-h-[44px] items-center justify-center rounded-full px-8 py-3 font-sans text-[14.5px] font-medium tracking-[0.14em] text-[#0B3B39] [background:linear-gradient(135deg,rgb(var(--gold-bright)),rgb(var(--gold)))]',
     props,
   )
 }
@@ -118,7 +118,7 @@ export function GoldButton(props: CommonProps) {
 /** 深底主按钮（浅底上使用）。v6 等价物：ZifuButton variant="primary" */
 export function DeepButton(props: CommonProps) {
   return render(
-    'zf-btn inline-flex items-center justify-center rounded-full bg-deep px-8 py-3 font-sans text-[14.5px] font-medium tracking-[0.14em] text-silk',
+    'zf-btn inline-flex min-h-[44px] items-center justify-center rounded-full bg-deep px-8 py-3 font-sans text-[14.5px] font-medium tracking-[0.14em] text-silk',
     props,
   )
 }
@@ -126,7 +126,7 @@ export function DeepButton(props: CommonProps) {
 /** 金色描边次按钮（深底上使用）。v6 等价物：ZifuButton variant="ghost" */
 export function GhostButton(props: CommonProps) {
   return render(
-    'zf-btn inline-flex items-center justify-center rounded-full border border-gold/60 bg-transparent px-8 py-3 font-sans text-[14.5px] font-medium tracking-[0.14em] text-goldbright hover:bg-gold/10',
+    'zf-btn inline-flex min-h-[44px] items-center justify-center rounded-full border border-gold/60 bg-transparent px-8 py-3 font-sans text-[14.5px] font-medium tracking-[0.14em] text-goldbright hover:bg-gold/10',
     props,
   )
 }

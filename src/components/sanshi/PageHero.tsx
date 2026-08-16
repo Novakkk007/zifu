@@ -16,7 +16,7 @@ type PageHeroProps = {
 /** 功能页统一深色 Hero（38vh）：面包屑 + 单字图标 + H1 + 副题 + 漂浮字场 */
 export default function PageHero({ glyph, title, latin, subtitle, crumb, pool }: PageHeroProps) {
   return (
-    <section className="relative flex min-h-[38dvh] flex-col items-center justify-center overflow-hidden bg-deep px-6 py-20 text-center">
+    <section className="relative flex min-h-[38dvh] flex-col items-center justify-center overflow-hidden bg-deep px-4 py-16 text-center sm:px-6 sm:py-20">
       <GlyphField pool={pool} count={36} />
       <div className="relative flex flex-col items-center">
         <motion.nav
@@ -55,7 +55,7 @@ export default function PageHero({ glyph, title, latin, subtitle, crumb, pool }:
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.32, ease: 'easeOut' }}
-          className="mt-3 font-serif text-[clamp(34px,5vw,56px)] font-bold tracking-[0.08em] text-silktext"
+          className="mt-3 font-serif text-[clamp(30px,8vw,56px)] font-bold tracking-[0.06em] text-silktext sm:tracking-[0.08em]"
         >
           {title}
         </motion.h1>

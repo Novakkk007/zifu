@@ -114,11 +114,11 @@ export default function WealthScenario() {
   
   return (
     <Layout>
-      <main className="min-h-[78dvh] bg-deep px-6 py-12 sm:py-20">
+      <main className="min-h-[78dvh] bg-deep px-4 py-12 sm:px-6 sm:py-20">
         {/* 顶部说明 */}
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="font-serif text-[clamp(32px,5vw,52px)] font-bold tracking-[0.08em] text-silktext mb-4">
+            <h1 className="mb-4 font-serif text-[clamp(30px,8vw,52px)] font-bold tracking-[0.06em] text-silktext sm:tracking-[0.08em]">
               事业财富运程
             </h1>
             <p className="text-[15px] leading-[2] text-silkmuted max-w-3xl mx-auto">
@@ -131,7 +131,7 @@ export default function WealthScenario() {
           </div>
           
           {/* 中部：排盘表单 */}
-          <div className="bg-deep2/80 rounded-2xl border border-gold/25 p-6 sm:p-8 mb-12">
+          <div className="mb-12 rounded-2xl border border-gold/25 bg-deep2/80 p-4 sm:p-8">
             <h2 className="font-serif text-[22px] font-bold tracking-[0.08em] text-silktext mb-6">
               八字快速排盘
             </h2>
@@ -144,7 +144,7 @@ export default function WealthScenario() {
                     name="calendar" 
                     value={formData.calendar}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 rounded-lg border border-gold/25 bg-deep2 text-silktext focus:outline-none focus:ring-2 focus:ring-gold/50"
+                    className="min-h-11 w-full rounded-lg border border-gold/25 bg-deep2 px-3 py-2 text-silktext focus:outline-none focus:ring-2 focus:ring-gold/50"
                   >
                     <option value="solar">公历</option>
                     <option value="lunar">农历</option>
@@ -157,7 +157,7 @@ export default function WealthScenario() {
                     name="gender" 
                     value={formData.gender}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 rounded-lg border border-gold/25 bg-deep2 text-silktext focus:outline-none focus:ring-2 focus:ring-gold/50"
+                    className="min-h-11 w-full rounded-lg border border-gold/25 bg-deep2 px-3 py-2 text-silktext focus:outline-none focus:ring-2 focus:ring-gold/50"
                   >
                     <option value="male">男</option>
                     <option value="female">女</option>
@@ -173,7 +173,7 @@ export default function WealthScenario() {
                     onChange={handleInputChange}
                     min="1900" 
                     max="2100"
-                    className="w-full px-3 py-2 rounded-lg border border-gold/25 bg-deep2 text-silktext focus:outline-none focus:ring-2 focus:ring-gold/50"
+                    className="min-h-11 w-full rounded-lg border border-gold/25 bg-deep2 px-3 py-2 text-silktext focus:outline-none focus:ring-2 focus:ring-gold/50"
                   />
                 </div>
                 
@@ -186,7 +186,7 @@ export default function WealthScenario() {
                     onChange={handleInputChange}
                     min="1" 
                     max="12"
-                    className="w-full px-3 py-2 rounded-lg border border-gold/25 bg-deep2 text-silktext focus:outline-none focus:ring-2 focus:ring-gold/50"
+                    className="min-h-11 w-full rounded-lg border border-gold/25 bg-deep2 px-3 py-2 text-silktext focus:outline-none focus:ring-2 focus:ring-gold/50"
                   />
                 </div>
                 
@@ -199,7 +199,7 @@ export default function WealthScenario() {
                     onChange={handleInputChange}
                     min="1" 
                     max="31"
-                    className="w-full px-3 py-2 rounded-lg border border-gold/25 bg-deep2 text-silktext focus:outline-none focus:ring-2 focus:ring-gold/50"
+                    className="min-h-11 w-full rounded-lg border border-gold/25 bg-deep2 px-3 py-2 text-silktext focus:outline-none focus:ring-2 focus:ring-gold/50"
                   />
                 </div>
                 
@@ -209,7 +209,7 @@ export default function WealthScenario() {
                     name="hour" 
                     value={formData.hour}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 rounded-lg border border-gold/25 bg-deep2 text-silktext focus:outline-none focus:ring-2 focus:ring-gold/50"
+                    className="min-h-11 w-full rounded-lg border border-gold/25 bg-deep2 px-3 py-2 text-silktext focus:outline-none focus:ring-2 focus:ring-gold/50"
                   >
                     {[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23].map(h => (
                       <option key={h} value={h}>{h}时</option>
@@ -218,16 +218,16 @@ export default function WealthScenario() {
                 </div>
               </div>
               
-              <div className="flex flex-wrap gap-3 items-center mt-4">
+              <div className="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className={`px-6 py-3 rounded-lg font-semibold tracking-[0.1em] transition-colors ${loading ? 'bg-gold/50 cursor-not-allowed' : 'bg-gold hover:bg-goldbright'} text-deep`}
+                  className={`min-h-11 rounded-lg px-6 py-3 font-semibold tracking-[0.1em] transition-colors ${loading ? 'cursor-not-allowed bg-gold/50' : 'bg-gold hover:bg-goldbright'} text-deep`}
                 >
                   {loading ? '正在排盘...' : '开始排盘'}
                 </button>
                 
-                <label className="flex items-center text-[13px] text-silkmuted">
+                <label className="flex min-h-11 items-center text-[13px] text-silkmuted">
                   <input 
                     type="checkbox" 
                     name="useTrueSolarTime" 
@@ -243,8 +243,8 @@ export default function WealthScenario() {
           
           {/* 排盘结果区域 */}
           {chart && (
-            <div className="bg-deep2/80 rounded-2xl border border-gold/25 p-6 sm:p-8 mb-12">
-              <div className="flex justify-between items-center mb-6">
+            <div className="mb-12 rounded-2xl border border-gold/25 bg-deep2/80 p-4 sm:p-8">
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="font-serif text-[22px] font-bold tracking-[0.08em] text-silktext">
                   排盘结果
                 </h2>
@@ -306,7 +306,7 @@ export default function WealthScenario() {
           )}
           
           {/* 底部：AI参详入口 */}
-          <div className="bg-deep2/80 rounded-2xl border border-gold/25 p-6 sm:p-8 text-center">
+          <div className="rounded-2xl border border-gold/25 bg-deep2/80 p-4 text-center sm:p-8">
             <h2 className="font-serif text-[22px] font-bold tracking-[0.08em] text-silktext mb-4">
               深度参详
             </h2>
@@ -316,7 +316,7 @@ export default function WealthScenario() {
             </p>
             <button 
               onClick={() => navigate('/bazi')}
-              className="px-8 py-3 rounded-lg bg-gold hover:bg-goldbright font-semibold tracking-[0.1em] text-deep transition-colors"
+              className="min-h-11 rounded-lg bg-gold px-8 py-3 font-semibold tracking-[0.1em] text-deep transition-colors hover:bg-goldbright"
             >
               前往八字专业分析
             </button>

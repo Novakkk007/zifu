@@ -70,7 +70,7 @@ export default function SiweiPanel({ texts, caption = '参详输出 · 演示 mo
               type="button"
               onClick={() => setDepth(opt.value)}
               className={cn(
-                'relative rounded-full px-4 py-1.5 font-sans text-[12.5px] font-medium tracking-[0.08em] transition-colors',
+                'relative min-h-11 rounded-full px-4 py-1.5 font-sans text-[12.5px] font-medium tracking-[0.08em] transition-colors sm:min-h-0',
                 active ? 'text-[#0B3B39]' : 'text-silkmuted hover:text-silktext',
               )}
             >

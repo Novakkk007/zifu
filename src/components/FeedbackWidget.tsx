@@ -112,7 +112,7 @@ export default function FeedbackWidget() {
         <button
           type="button"
           aria-label="提交反馈"
-          className="fixed bottom-24 left-5 z-40 flex h-11 items-center gap-2 rounded-full border border-gold/40 bg-deep2/95 px-4 text-sm text-goldbright shadow-lg backdrop-blur transition hover:bg-deep3"
+          className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-4 z-40 flex h-11 items-center gap-2 rounded-full border border-gold/40 bg-deep2/95 px-4 text-sm text-goldbright shadow-lg backdrop-blur transition hover:bg-deep3 sm:bottom-24 sm:left-5"
         >
           <MessageSquarePlus className="h-4 w-4" />
           <span className="hidden sm:inline">反馈</span>

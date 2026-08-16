@@ -427,7 +427,7 @@ function MonthCalendar({ today }: { today: Date }) {
           type="button"
           onClick={() => shift(-1)}
           aria-label="上一月"
-          className="rounded-full border border-golddim/30 p-2 text-inkmuted transition-colors hover:border-gold hover:text-golddim"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-golddim/30 text-inkmuted transition-colors hover:border-gold hover:text-golddim"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -438,7 +438,7 @@ function MonthCalendar({ today }: { today: Date }) {
           type="button"
           onClick={() => shift(1)}
           aria-label="下一月"
-          className="rounded-full border border-golddim/30 p-2 text-inkmuted transition-colors hover:border-gold hover:text-golddim"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-golddim/30 text-inkmuted transition-colors hover:border-gold hover:text-golddim"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
@@ -537,7 +537,7 @@ function MonthCalendar({ today }: { today: Date }) {
                   type="button"
                   onClick={() => setPicked(null)}
                   aria-label="收起"
-                  className="text-inkmuted transition-colors hover:text-inktext"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-inkmuted transition-colors hover:text-inktext"
                 >
                   <X className="h-4 w-4" />
                 </button>

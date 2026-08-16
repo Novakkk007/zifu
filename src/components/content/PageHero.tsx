@@ -121,7 +121,7 @@ export default function PageHero({
   return (
     <section
       className={cn(
-        'relative flex flex-col items-center justify-center overflow-hidden bg-deep px-6 py-20 text-center',
+        'relative flex flex-col items-center justify-center overflow-hidden bg-deep px-4 py-16 text-center sm:px-6 sm:py-20',
         minH,
       )}
     >
@@ -171,7 +171,7 @@ export default function PageHero({
           variants={charContainer}
           initial="hidden"
           animate="show"
-          className="mt-3 font-serif text-[clamp(34px,5vw,56px)] font-bold tracking-[0.08em] text-silktext"
+          className="mt-3 font-serif text-[clamp(30px,8vw,56px)] font-bold tracking-[0.06em] text-silktext sm:tracking-[0.08em]"
         >
           {Array.from(title).map((ch, i) => (
             <motion.span key={i} variants={charItem} className="inline-block will-change-transform">

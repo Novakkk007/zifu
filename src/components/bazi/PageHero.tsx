@@ -37,7 +37,7 @@ export default function PageHero({ glyph, title, sub, pool, current }: PageHeroP
         <span className="text-goldbright">{current}</span>
       </motion.nav>
 
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 py-14 text-center">
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-12 text-center sm:px-6 sm:py-14">
         <motion.div
           initial={{ scale: 1.3, opacity: 0, filter: 'blur(10px)' }}
           animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
@@ -47,7 +47,7 @@ export default function PageHero({ glyph, title, sub, pool, current }: PageHeroP
           {glyph}
         </motion.div>
 
-        <h1 className="mt-7 font-serif text-[clamp(34px,5vw,56px)] font-bold leading-tight tracking-[0.08em] text-silktext">
+        <h1 className="mt-7 font-serif text-[clamp(30px,8vw,56px)] font-bold leading-tight tracking-[0.06em] text-silktext sm:tracking-[0.08em]">
           {Array.from(title).map((ch, i) => (
             <motion.span
               key={i}
