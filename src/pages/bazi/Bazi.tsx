@@ -17,6 +17,7 @@ import DetailTabs from '@/components/bazi-v2/DetailTabs'
 import LifeChart from '@/components/bazi-v2/LifeChart'
 import AiReadingSection from '@/components/bazi-v2/AiReadingSection'
 import MasterHintsSection from '@/components/bazi-v2/MasterHintsSection'
+import CoreSummary from '@/components/bazi-v2/CoreSummary'
 import HistorySection from '@/components/bazi-v2/HistorySection'
 import { ChengguCard, RelationsTable, ShenshaTable, TenGodsTable } from '@/components/bazi-v2/ChartDetails'
 import type { PaipanPayload, PaipanResponse } from '@/components/bazi-v2/api'
@@ -174,6 +175,9 @@ export default function Bazi() {
               <TimeAuditBar chart={chart} />
 
               {/* 四柱 + 命身宫 */}
+              {/* 命盘速览（人话版第一屏 + AI 解读主入口） */}
+              <CoreSummary chart={chart} onAiRead={() => handleAiExplain('AI 详批')} />
+
               <PillarsSection chart={chart} />
 
               {/* 五行分析 */}

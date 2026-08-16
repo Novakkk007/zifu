@@ -24,6 +24,26 @@ const BOOKS = [
   "烟波钓叟歌",
 ];
 
+/** 信任锚点（为什么信紫府） */
+const TRUST_ANCHORS = [
+  {
+    title: '历法 · 精确到秒',
+    desc: '节气交节时刻采用天文历双源金标对拍，跨时区换算，经得起核验。',
+  },
+  {
+    title: '引文 · 句句可溯',
+    desc: '参详引文全部来自公版古籍原文，每条标注出处，不编造不私藏。',
+  },
+  {
+    title: '规则 · 权重公开',
+    desc: '旺衰量化、神煞取格等规则权重全部公开，可复核可版本化。',
+  },
+  {
+    title: '关怀 · 不吓不敛',
+    desc: '不做灾祸恐吓，不承诺转运。解读以建设性收尾，痛苦时引导专业求助。',
+  },
+];
+
 type HomeEntry = {
   glyph: string;
   title: string;
@@ -510,6 +530,20 @@ export default function Home() {
           <span className="text-[12px] tracking-[0.24em] text-silkmuted">
             向下参看
           </span>
+        </div>
+      </section>
+
+      {/* ===== S2b · 为什么信紫府（信任锚点） ===== */}
+      <section className="bg-silk py-20">
+        <div className="zf-container">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-4">
+            {TRUST_ANCHORS.map((a) => (
+              <div key={a.title} className="rounded-xl border border-golddim/20 bg-white/60 p-6 text-center">
+                <p className="font-serif text-[15.5px] font-bold tracking-[0.1em] text-inktext">{a.title}</p>
+                <p className="mt-2.5 text-[12.5px] leading-[1.85] text-inkmuted">{a.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
