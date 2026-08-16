@@ -6,14 +6,31 @@ import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import BrandLogo from '@/components/BrandLogo'
 
-const YAN_MENU = [
-  { to: '/bazi', label: '八字排盘' },
-  { to: '/bazi/hepan', label: '八字合盘' },
-  { to: '/liuyao', label: '六爻起卦' },
-  { to: '/ziwei', label: '紫微斗数' },
-  { to: '/qizheng', label: '七政四余' },
-  { to: '/qimen', label: '奇门遁甲' },
-  { to: '/daliuren', label: '大六壬' },
+/** 术数推演菜单：三才分组（天·地·人） */
+const YAN_MENU: { group: '天 · 时运' | '地 · 空间' | '人 · 命理'; items: { to: string; label: string }[] }[] = [
+  {
+    group: '人 · 命理',
+    items: [
+      { to: '/bazi', label: '八字排盘' },
+      { to: '/bazi/hepan', label: '八字合盘' },
+      { to: '/liuyao', label: '六爻起卦' },
+      { to: '/ziwei', label: '紫微斗数' },
+      { to: '/qizheng', label: '七政四余' },
+      { to: '/daliuren', label: '大六壬' },
+    ],
+  },
+  {
+    group: '天 · 时运',
+    items: [
+      { to: '/daily', label: '每日时令' },
+      { to: '/daily', label: '安寝时令' },
+      { to: '/qimen', label: '奇门遁甲' },
+    ],
+  },
+  {
+    group: '地 · 空间',
+    items: [{ to: '/scenario/fengshui', label: '阳宅风水参详' }],
+  },
 ]
 
 const NAV_LINKS = [
@@ -150,15 +167,22 @@ export default function Navbar() {
                       items[next]?.focus()
                     }}
                   >
-                    {YAN_MENU.map((item) => (
-                      <NavLink
-                        key={item.to}
-                        to={item.to}
-                        role="menuitem"
-                        className="block px-5 py-2.5 font-sans text-[13.5px] tracking-[0.1em] text-inkmuted outline-none transition-colors hover:bg-silk2 hover:text-golddim focus-visible:bg-silk2 focus-visible:text-golddim"
-                      >
-                        {item.label}
-                      </NavLink>
+                    {YAN_MENU.map((group) => (
+                      <div key={group.group}>
+                        <div className="border-t border-gold/10 px-5 pt-2 pb-1 font-serif text-[11px] tracking-[0.24em] text-golddim first:border-t-0">
+                          {group.group}
+                        </div>
+                        {group.items.map((item) => (
+                          <NavLink
+                            key={item.to + item.label}
+                            to={item.to}
+                            role="menuitem"
+                            className="block px-5 py-2.5 font-sans text-[13.5px] tracking-[0.1em] text-inkmuted outline-none transition-colors hover:bg-silk2 hover:text-golddim focus-visible:bg-silk2 focus-visible:text-golddim"
+                          >
+                            {item.label}
+                          </NavLink>
+                        ))}
+                      </div>
                     ))}
                   </div>
                 </motion.div>
@@ -251,7 +275,7 @@ export default function Navbar() {
             <nav className="flex flex-1 flex-col items-center justify-center gap-1 overflow-y-auto px-8 pb-16">
               {[
                 { to: '/hecan', label: '✦ 三术合参' },
-                ...YAN_MENU,
+                ...YAN_MENU.flatMap((g) => g.items),
                 ...NAV_LINKS,
                 { to: '/talks', label: '主创说' },
                 ...(isAuthenticated
