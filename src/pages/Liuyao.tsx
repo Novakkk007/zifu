@@ -17,7 +17,7 @@ import {
 } from '@/components/liuyao/api'
 import { useEngine } from '@/hooks/useEngine'
 import { castLiuyao, coinTossLiuyao } from '@/engines/client/liuyao'
-import { SafeStorage, STORAGE_KEYS } from '@/lib/storage'
+import { SafeStorage, STORAGE_KEYS, consumeRestoreItem } from '@/lib/storage'
 import type { FavoriteItem, HistoryItem } from '@/lib/storage'
 
 type CoinFace = 'zi' | 'bei'
@@ -36,15 +36,45 @@ function favoriteSignature(chart: Partial<LiuyaoChart>): string {
   ])
 }
 
+function readRestoredLiuyao(): { chart: LiuyaoChart; response: CastResponse } | null {
+  const restored = consumeRestoreItem('liuyao')
+  const chart = restored?.payload as LiuyaoChart | undefined
+  if (
+    !chart ||
+    !Array.isArray(chart.coins) ||
+    chart.coins.length !== 18 ||
+    !Array.isArray(chart.tosses) ||
+    chart.tosses.length !== 6
+  ) {
+    return null
+  }
+
+  try {
+    const rebuilt = castLiuyao({
+      coins: chart.coins,
+      question: chart.question ?? undefined,
+    })
+    return {
+      chart,
+      response: { ...rebuilt, result: { ...rebuilt.result, data: chart } },
+    }
+  } catch (error) {
+    console.warn('六爻回看恢复失败:', error)
+    return null
+  }
+}
+
 export default function Liuyao() {
-  const [question, setQuestion] = useState('')
-  const [tosses, setTosses] = useState<Toss[]>([])
+  const [restored] = useState(readRestoredLiuyao)
+  const [question, setQuestion] = useState(restored?.chart.question ?? '')
+  const [tosses, setTosses] = useState<Toss[]>((restored?.chart.tosses as Toss[] | undefined) ?? [])
   /** 已收集的 18 枚铜钱结果（2=背 3=字，每 3 枚一摇） */
-  const coinsRef = useRef<number[]>([])
+  const coinsRef = useRef<number[]>(restored ? [...restored.chart.coins] : [])
   const [coins, setCoins] = useState<[CoinFace, CoinFace, CoinFace]>(['zi', 'zi', 'zi'])
   const [spin, setSpin] = useState(0)
   const [tossing, setTossing] = useState(false)
-  const [castData, setCastData] = useState<CastResponse | null>(null)
+  const [castData, setCastData] = useState<CastResponse | null>(restored?.response ?? null)
+  const [favoriteStatus, setFavoriteStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const timerRef = useRef<number | null>(null)
   const resultRef = useRef<HTMLDivElement>(null)
   /** 每次起卦会话一个幂等键（重摇即换），防止重复落库 */
@@ -76,6 +106,12 @@ export default function Liuyao() {
   useEffect(() => {
     document.title = '六爻起卦 · 紫府 — 依《增删卜易》《卜筮正宗》参详卦象'
   }, [])
+
+  useEffect(() => {
+    if (favoriteStatus === 'idle') return
+    const timer = window.setTimeout(() => setFavoriteStatus('idle'), 1800)
+    return () => window.clearTimeout(timer)
+  }, [favoriteStatus])
 
   useEffect(
     () => () => {
@@ -155,7 +191,7 @@ export default function Liuyao() {
       if (favorite.type !== 'liuyao') return true
       return favoriteSignature(favorite.payload as Partial<LiuyaoChart>) !== signature
     })
-    SafeStorage.set(STORAGE_KEYS.FAVORITES, [item, ...deduped])
+    setFavoriteStatus(SafeStorage.set(STORAGE_KEYS.FAVORITES, [item, ...deduped]) ? 'success' : 'error')
   }
 
   return (
@@ -273,7 +309,11 @@ export default function Liuyao() {
                     onClick={handleFavorite}
                     className="zf-link-more inline-flex items-center gap-1 text-[14px] font-medium tracking-[0.1em] text-golddim"
                   >
-                    收藏
+                    {favoriteStatus === 'success'
+                      ? '已收藏'
+                      : favoriteStatus === 'error'
+                        ? '保存失败'
+                        : '收藏'}
                   </button>
                 </div>
                 {castData.persisted && castData.chartId !== null && (

@@ -62,19 +62,21 @@ describe('SafeStorage', () => {
 
   describe('set', () => {
     it('should set value in localStorage', () => {
-      SafeStorage.set('test-key', { hello: 'world' })
+      const result = SafeStorage.set('test-key', { hello: 'world' })
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         'test-key',
         JSON.stringify({ hello: 'world' })
       )
+      expect(result).toBe(true)
     })
 
     it('should handle errors gracefully', () => {
       mockLocalStorage.setItem.mockImplementation(() => {
         throw new Error('Storage full')
       })
-      SafeStorage.set('test-key', { hello: 'world' })
+      const result = SafeStorage.set('test-key', { hello: 'world' })
       expect(mockLocalStorage.setItem).toHaveBeenCalled()
+      expect(result).toBe(false)
     })
   })
 

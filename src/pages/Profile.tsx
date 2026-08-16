@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router'
 import { Star, History, Settings } from 'lucide-react'
-import { SafeStorage, STORAGE_KEYS, useSafeStorage } from '@/lib/storage'
-import type { FavoriteItem, HistoryItem, Preferences } from '@/lib/storage'
+import { RESTORE_ROUTES, SafeStorage, STORAGE_KEYS, saveRestoreItem, useSafeStorage } from '@/lib/storage'
+import type { FavoriteItem, HistoryItem, Preferences, RestoreType } from '@/lib/storage'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/Card'
 import { ZifuButton } from '@/components/Buttons'
 import { EmptyState } from '@/components/EmptyState'
@@ -15,6 +15,38 @@ const DEFAULT_HISTORY: HistoryItem[] = []
 const DEFAULT_PREFS: Preferences = {
   defaultGender: 'male',
   useTrueSolarTime: false,
+}
+
+function RestoreLink({ item, children }: { item: FavoriteItem | HistoryItem; children: string }) {
+  if (!Object.prototype.hasOwnProperty.call(RESTORE_ROUTES, item.type)) {
+    return (
+      <span
+        className="cursor-not-allowed text-[13px] text-inkmuted/60"
+        aria-disabled="true"
+        title="暂不支持回看此类型"
+      >
+        暂不可看
+      </span>
+    )
+  }
+
+  const type = item.type as RestoreType
+  return (
+    <Link
+      to={RESTORE_ROUTES[type]}
+      onClick={(event) => {
+        const saved = saveRestoreItem({
+          type,
+          title: item.title,
+          payload: item.payload,
+        })
+        if (!saved) event.preventDefault()
+      }}
+      className="text-[13px] text-golddim hover:text-goldbright"
+    >
+      {children}
+    </Link>
+  )
 }
 
 export default function Profile() {
@@ -198,9 +230,7 @@ export default function Profile() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Link to="/bazi" className="text-[13px] text-golddim hover:text-goldbright">
-                        查看
-                      </Link>
+                      <RestoreLink item={fav}>查看</RestoreLink>
                       <button 
                         className="text-[13px] text-zifured hover:text-zifured/80"
                         onClick={() => {
@@ -275,9 +305,7 @@ export default function Profile() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Link to="/bazi" className="text-[13px] text-golddim hover:text-goldbright">
-                        回看
-                      </Link>
+                      <RestoreLink item={item}>回看</RestoreLink>
                     </div>
                   </div>
                 ))}
