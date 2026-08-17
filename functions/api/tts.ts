@@ -60,7 +60,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   if (!upstream.ok) {
     return Response.json({ error: `upstream ${upstream.status}` }, { status: 502 })
   }
-  const raw = (await upstream.json()) as { code?: number; message?: string; data?: string }
+  // 上游返回 text/plain 包裹的 JSON（可能分块）：读全文再解析
+  const rawText = await upstream.text()
+  let raw: { code?: number; message?: string; data?: string }
+  try {
+    raw = JSON.parse(rawText) as typeof raw
+  } catch {
+    // 分块/换行容错：取第一个 JSON 对象
+    const m = rawText.match(/\{[\s\S]*?\}/)
+    raw = m ? (JSON.parse(m[0]) as typeof raw) : { code: -1, message: 'parse failed' }
+  }
   if (raw.code !== 0 || !raw.data) {
     return Response.json({ error: raw.message ?? 'tts failed' }, { status: 502 })
   }
