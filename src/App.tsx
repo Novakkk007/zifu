@@ -16,6 +16,7 @@ const Daliuren = lazy(() => import("@/pages/Daliuren"));
 const Daily = lazy(() => import("@/pages/Daily"));
 const Toolkit = lazy(() => import("@/pages/Toolkit"));
 const Wiki = lazy(() => import("@/pages/Wiki"));
+const BookDetail = lazy(() => import("@/pages/BookDetail"));
 const Talks = lazy(() => import("@/pages/Talks"));
 const Terms = lazy(() => import("@/pages/Terms"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
@@ -60,6 +61,7 @@ export default function App() {
           />
           <Route path="/toolkit" element={<Toolkit />} />
           <Route path="/wiki" element={<Wiki />} />
+          <Route path="/wiki/:bookId" element={<BookDetail />} />
           <Route path="/talks" element={<Talks />} />
           <Route path="/terms" element={<Terms />} />
           {/* 旧 mock 登录页路由 → 统一进入真实 OAuth 登录 */}
