@@ -22,7 +22,12 @@ function getStoredProvider(): AIProvider {
 }
 
 function MessageContent({ content }: { content: string }) {
-  const sections = content.split(/\n{2,}/).filter((section) => section.trim().length > 0)
+  const cleaned = content
+    .replace(/^\s*#{1,6}\s+/gm, '')
+    .replace(/^\s*[-*+]\s+/gm, '')
+    .replace(/\*\*/g, '')
+    .replace(/(^|\s)\*([^*\n]+)\*(?=\s|$)/g, '$1$2')
+  const sections = cleaned.split(/\n{2,}/).filter((section) => section.trim().length > 0)
   return (
     <div className="space-y-3">
       {sections.map((section, index) => (
@@ -32,6 +37,41 @@ function MessageContent({ content }: { content: string }) {
       ))}
     </div>
   )
+}
+
+/** 先生之声：浏览器语音合成朗读（本地，零成本，不上传音频） */
+function useXianshengVoice() {
+  const [speaking, setSpeaking] = useState(false)
+  const speak = (text: string) => {
+    try {
+      const synth = window.speechSynthesis
+      if (!synth) return
+      synth.cancel()
+      const cleaned = text.replace(/\*\*|#{1,6}|\*/g, '')
+      const utter = new SpeechSynthesisUtterance(cleaned)
+      utter.lang = 'zh-CN'
+      utter.rate = 0.92
+      utter.pitch = 1.0
+      const voices = synth.getVoices()
+      const zh = voices.find((v) => v.lang.toLowerCase().startsWith('zh'))
+      if (zh) utter.voice = zh
+      utter.onend = () => setSpeaking(false)
+      utter.onerror = () => setSpeaking(false)
+      setSpeaking(true)
+      synth.speak(utter)
+    } catch {
+      /* 浏览器不支持语音时静默 */
+    }
+  }
+  const stop = () => {
+    try {
+      window.speechSynthesis.cancel()
+    } catch {
+      /* ignore */
+    }
+    setSpeaking(false)
+  }
+  return { speaking, speak, stop }
 }
 
 export default function DirectAiChat({
@@ -53,6 +93,7 @@ export default function DirectAiChat({
   const [model, setModel] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { speaking: voiceSpeaking, speak: voiceSpeak, stop: voiceStop } = useXianshengVoice()
 
   const hasAccess = savedKey.trim().length > 0 || BUILTIN_AI_KEY.length > 0
   const hasReading = messages.some((message) => message.role === 'assistant')
@@ -196,7 +237,19 @@ export default function DirectAiChat({
                         : 'max-w-[92%] rounded-2xl rounded-bl-sm border border-golddim/25 bg-black/20 px-5 py-4 text-silktext sm:max-w-[86%]'
                     }
                   >
-                    <p className="mb-2 text-[11px] tracking-[0.15em] text-golddim">{isVisitor ? '访客' : '先生'}</p>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <p className="text-[11px] tracking-[0.15em] text-golddim">{isVisitor ? '访客' : '先生'}</p>
+                      {!isVisitor && (
+                        <button
+                          type="button"
+                          onClick={() => (voiceSpeaking ? voiceStop() : voiceSpeak(message.content))}
+                          className="rounded-full border border-golddim/40 px-3 py-0.5 text-[11px] tracking-[0.1em] text-golddim transition-colors hover:border-goldbright hover:text-goldbright"
+                          aria-label={voiceSpeaking ? '停止朗读' : '先生朗读'}
+                        >
+                          {voiceSpeaking ? '◼ 停止' : '▶ 先生之声'}
+                        </button>
+                      )}
+                    </div>
                     <MessageContent content={message.content} />
                   </div>
                 </div>
