@@ -135,6 +135,7 @@
     @apply bg-silk text-inktext font-sans antialiased;
     font-size: 15.5px;
     line-height: 1.95;
+    overflow-x: hidden;
   }
 
   /* 主题切换 600ms 过渡（仅颜色类属性） */
