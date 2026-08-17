@@ -4,20 +4,29 @@
  */
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { evaluateYangzhai, type YangzhaiInput } from '@contracts/engines/fengshui-rules'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
 import LoupanDial from '@/components/fengshui/LoupanDial'
 import FloorPlanEditor, { type FloorPlanMark } from '@/components/fengshui/FloorPlanEditor'
 import { analyzeFloorPlan } from '@/components/fengshui/floor-plan-logic'
+import {
+  evaluateYangzhai,
+  type TraditionalSystem,
+  type YangzhaiInput,
+} from '@/lib/fengshui-rules'
+import { STORAGE_KEYS, useSafeStorage } from '@/lib/storage'
 
 const easeOut = [0.16, 1, 0.3, 1] as [number, number, number, number]
+const POSITION_NAMES = ['东南', '南', '西南', '东', '中宫', '西', '东北', '北', '西北'] as const
+
+type FormAnswer = string | string[] | undefined
+type FormAnswers = Record<string, FormAnswer>
 
 /** 表单问题（文化化表述 → YangzhaiInput 字段） */
 const QUESTIONS: {
   key: keyof YangzhaiInput
   label: string
   hint: string
-  kind: 'select' | 'bool' | 'multi'
+  kind: 'select' | 'bool' | 'multi' | 'number'
   options?: string[]
 }[] = [
   {
@@ -41,6 +50,12 @@ const QUESTIONS: {
     kind: 'bool',
   },
   {
+    key: 'floorNumber',
+    label: '住宅所在楼层',
+    hint: '用于结合周边遮挡、风环境与噪声复核，不作楼层吉凶推演',
+    kind: 'number',
+  },
+  {
     key: 'maintenanceIssues',
     label: '房屋现状（可多选）',
     hint: '选择存在的维护问题',
@@ -60,9 +75,21 @@ const QUESTIONS: {
     kind: 'bool',
   },
   {
+    key: 'crossBreezeOverStove',
+    label: '是否有强穿堂风直吹灶具',
+    hint: '观察开门窗或机械通风时，气流是否影响火焰稳定',
+    kind: 'bool',
+  },
+  {
     key: 'hasMeasure',
     label: '是否有真北朝向与现场测量数据',
     hint: '有可靠的真北测量与户型数据 → 是；只有大致方位印象 → 否',
+    kind: 'bool',
+  },
+  {
+    key: 'hasSiteData',
+    label: '是否有周边环境现场资料',
+    hint: '包括建筑遮挡、日照、风、噪声与热环境记录',
     kind: 'bool',
   },
   {
@@ -71,10 +98,37 @@ const QUESTIONS: {
     hint: '传统「宅命相配」属术数分类，本页只提供说明，不做吉凶判断',
     kind: 'bool',
   },
+  {
+    key: 'traditionalSystems',
+    label: '本次还采用了哪些传统分类',
+    hint: '可多选；不同年代的体系必须分别记录来源',
+    kind: 'multi',
+    options: ['宅经二十四路', '后世八宅', '门主灶', '未采用'],
+  },
+  {
+    key: 'traditionalLabelsConflict',
+    label: '不同传统体系的标签是否冲突',
+    hint: '只有实际得到相互冲突的标签时才选「是」',
+    kind: 'bool',
+  },
 ]
 
-function toInput(answers: Record<string, string | string[] | undefined>): YangzhaiInput {
+function toInput(
+  answers: FormAnswers,
+  orientation: number,
+  floorMarks: FloorPlanMark[],
+  hasFloorPlan: boolean,
+): YangzhaiInput {
   const bool = (k: string) => answers[k] === '是'
+  const floorValue = Number(answers['floorNumber'])
+  const findPosition = (type: FloorPlanMark['type']) => {
+    const mark = floorMarks.find((item) => item.type === type)
+    return mark ? POSITION_NAMES[mark.cell] : undefined
+  }
+  const selectedSystems = Array.isArray(answers['traditionalSystems'])
+    ? (answers['traditionalSystems'] as string[]).filter((value) => value !== '未采用') as TraditionalSystem[]
+    : undefined
+
   return {
     areaRatio: (answers['areaRatio'] as string) === '偏大' ? '大' : (answers['areaRatio'] as string) === '偏小' ? '小' : '中',
     doorSize: (answers['doorSize'] as string) === '偏大' ? '大' : (answers['doorSize'] as string) === '偏小' ? '小' : '中',
@@ -84,14 +138,23 @@ function toInput(answers: Record<string, string | string[] | undefined>): Yangzh
       : undefined,
     kitchenAdjacent: bool('kitchenAdjacent'),
     kitchenOnRoute: bool('kitchenOnRoute'),
+    crossBreezeOverStove: bool('crossBreezeOverStove'),
+    orientationDegrees: orientation,
+    floorNumber: Number.isInteger(floorValue) && floorValue > 0 ? floorValue : undefined,
     hasTrueNorth: bool('hasMeasure'),
     hasMeasure: bool('hasMeasure'),
+    hasFloorPlan,
+    doorPosition: findPosition('door'),
+    primaryRoomPosition: findPosition('master'),
+    hasSiteData: bool('hasSiteData'),
     ageGenderRequested: bool('ageGenderRequested'),
+    traditionalSystems: selectedSystems,
+    traditionalLabelsConflict: bool('traditionalLabelsConflict'),
   }
 }
 
 export default function FengshuiScenario() {
-  const [answers, setAnswers] = useState<Record<string, string | string[] | undefined>>({})
+  const [answers, setAnswers] = useSafeStorage<FormAnswers>(STORAGE_KEYS.FENGSHUI_FORM, {})
   const [evaluated, setEvaluated] = useState(false)
   const [floorMarks, setFloorMarks] = useState<FloorPlanMark[]>([])
   const [floorImage, setFloorImage] = useState<string | null>(null)
@@ -104,8 +167,8 @@ export default function FengshuiScenario() {
 
   const hints = useMemo(() => {
     if (!evaluated) return []
-    return evaluateYangzhai(toInput(answers))
-  }, [answers, evaluated])
+    return evaluateYangzhai(toInput(answers, orientation, floorMarks, floorImage !== null))
+  }, [answers, evaluated, floorImage, floorMarks, orientation])
 
   const answeredCount = Object.values(answers).filter((v) => {
     if (Array.isArray(v)) return v.length > 0
@@ -177,7 +240,7 @@ export default function FengshuiScenario() {
 
         {/* 表单卡 */}
         <section className="mt-10 rounded-2xl border border-gold/20 bg-silk2 p-6 sm:p-8">
-          <p className="font-serif text-[16px] font-bold tracking-[0.08em] text-inktext">宅局自查 · 八问</p>
+          <p className="font-serif text-[16px] font-bold tracking-[0.08em] text-inktext">宅局自查 · 十三项</p>
           <div className="mt-5 space-y-5">
             {QUESTIONS.map((q, i) => (
               <div key={q.key} className="border-b border-golddim/10 pb-5 last:border-0 last:pb-0">
@@ -202,6 +265,19 @@ export default function FengshuiScenario() {
                         {opt}
                       </button>
                     ))}
+                  {q.kind === 'number' && (
+                    <input
+                      type="number"
+                      min={1}
+                      max={200}
+                      step={1}
+                      inputMode="numeric"
+                      value={typeof answers[q.key] === 'string' ? answers[q.key] : ''}
+                      onChange={(event) => setAnswers((current) => ({ ...current, [q.key]: event.target.value }))}
+                      placeholder="请输入楼层"
+                      className="w-36 rounded-lg border border-golddim/30 bg-white/60 px-3 py-2 text-[12.5px] text-inktext outline-none focus:border-goldbright"
+                    />
+                  )}
                   {q.kind === 'bool' &&
                     ['是', '否'].map((opt) => (
                       <button
@@ -221,6 +297,7 @@ export default function FengshuiScenario() {
                     q.options?.map((opt) => {
                       const cur = Array.isArray(answers[q.key]) ? (answers[q.key] as string[]) : []
                       const active = cur.includes(opt)
+                      const emptyOption = opt === '无明显问题' || opt === '未采用'
                       return (
                         <button
                           key={opt}
@@ -228,7 +305,11 @@ export default function FengshuiScenario() {
                           onClick={() =>
                             setAnswers((a) => ({
                               ...a,
-                              [q.key]: active ? cur.filter((s) => s !== opt) : [...cur, opt],
+                              [q.key]: active
+                                ? cur.filter((s) => s !== opt)
+                                : emptyOption
+                                  ? [opt]
+                                  : [...cur.filter((s) => s !== '无明显问题' && s !== '未采用'), opt],
                             }))
                           }
                           className={`rounded-full border px-4 py-1.5 text-[12.5px] transition-colors ${
@@ -284,9 +365,20 @@ export default function FengshuiScenario() {
                       <span className="rounded bg-gold/15 px-2 py-0.5 font-mono text-[10.5px] tracking-[0.08em] text-goldbright">
                         {h.ruleId}
                       </span>
+                      <span
+                        className={`rounded px-2 py-0.5 text-[10.5px] font-semibold ${
+                          h.verdict === '凶' ? 'bg-red-900/40 text-red-200' : 'bg-amber-800/35 text-amber-100'
+                        }`}
+                      >
+                        检查状态 · {h.verdict}
+                      </span>
                       <span className="text-[11px] text-silkmuted">{h.source.sourceWork}</span>
                     </div>
-                    <p className="mt-2 text-[13.5px] leading-[1.9] text-silktext/90">{h.text}</p>
+                    <p className="mt-2 text-[13.5px] leading-[1.9] text-silktext/90">{h.message}</p>
+                    <p className="mt-2 text-[12.5px] leading-[1.85] text-silkmuted">
+                      <span className="text-golddim">化解建议：</span>
+                      {h.remedy}
+                    </p>
                   </li>
                 ))}
               </ul>
