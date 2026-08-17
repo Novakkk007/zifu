@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { setPageMeta } from '@/lib/pageMeta'
 import { useEngine } from '@/hooks/useEngine'
 import { drawLingqian } from '@/engines/client/draws'
 import { useAuth } from '@/hooks/useAuth'
@@ -748,7 +749,10 @@ export default function Daily() {
   }, [])
 
   useEffect(() => {
-    document.title = '每日时令 · 紫府 — 今日干支、节气与宜忌'
+    setPageMeta(
+      '每日时令 · 紫府 — 今日干支、节气与宜忌',
+      '紫府每日时令——今日干支、节气、宜忌与安寝时令，四季流转随身参考。',
+    );
   }, [])
 
   const y = now.getFullYear()

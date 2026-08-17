@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { gsap, ScrollTrigger } from '@/lib/anim'
+import { setPageMeta } from '@/lib/pageMeta'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
 import SectionHeading from '@/components/SectionHeading'
 import QuoteStrip from '@/components/QuoteStrip'
@@ -45,7 +46,10 @@ export default function Hecan() {
   const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    document.title = '三术合参 · 紫府 — 八字 × 紫微 × 七政三盘互证'
+    setPageMeta(
+      '三术合参 · 紫府 — 八字 × 紫微 × 七政三盘互证',
+      '紫府三术合参——八字、紫微斗数、七政四余三盘并置互证，锚定公版典籍原文，法度分明。',
+    );
   }, [])
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import FloatingGlyphs from '@/components/FloatingGlyphs'
 import QuoteStrip from '@/components/QuoteStrip'
 import SectionHeading from '@/components/SectionHeading'
 import { FormInput } from '@/components/FormControls'
+import { setPageMeta } from '@/lib/pageMeta'
 import AiReading from '@/components/liuyao/AiReading'
 import CoinToss from '@/components/liuyao/CoinToss'
 import HexagramResult from '@/components/liuyao/HexagramResult'
@@ -104,7 +105,10 @@ export default function Liuyao() {
   })
 
   useEffect(() => {
-    document.title = '六爻起卦 · 紫府 — 依《增删卜易》《卜筮正宗》参详卦象'
+    setPageMeta(
+      '六爻起卦 · 紫府 — 依《增删卜易》《卜筮正宗》参详卦象',
+      '紫府六爻起卦——铜钱摇卦，依《增删卜易》《卜筮正宗》锚定古籍参详卦象爻辞。',
+    );
   }, [])
 
   useEffect(() => {

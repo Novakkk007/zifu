@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router";
 import FloatingGlyphs from "@/components/FloatingGlyphs";
+import { setPageMeta } from "@/lib/pageMeta";
 
 export type ScenarioKind = "wealth" | "love" | "health" | "fengshui";
 
@@ -54,8 +55,11 @@ export default function ScenarioPlaceholder({
   const content = SCENARIOS[scenario];
 
   useEffect(() => {
-    document.title = `${content.title} · 紫府`;
-  }, [content.title]);
+    setPageMeta(
+      `${content.title} · 紫府`,
+      content.desc,
+    );
+  }, [content.title, content.desc]);
 
   return (
     <main className="relative min-h-[78dvh] overflow-hidden bg-deep px-6 py-24 sm:py-32">

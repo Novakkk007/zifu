@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import PageHero from '@/components/sanshi/PageHero'
+import { setPageMeta } from '@/lib/pageMeta'
 import SectionHeading from '@/components/SectionHeading'
 import QuoteStrip from '@/components/QuoteStrip'
 import StarRing, { type StarRingChart } from '@/components/sanshi/StarRing'
@@ -242,7 +243,10 @@ export default function Qizheng() {
   })
 
   useEffect(() => {
-    document.title = '七政四余 · 紫府 — 果老星宗，真实星历论命'
+    setPageMeta(
+      '七政四余 · 紫府 — 果老星宗，真实星历论命',
+      '紫府七政四余——果老星宗恒星制，以二十八宿与真实星历推先天禀赋。',
+    );
   }, [])
 
   useEffect(() => {

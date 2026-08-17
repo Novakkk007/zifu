@@ -2,14 +2,29 @@
  * 藏经阁书籍详情页——书目/朝代/作者/简介/公版摘录。
  * 数据源：src/data/books.json（经 books.ts 加载）。
  */
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link, useParams } from 'react-router'
 import { BOOKS } from '@/components/content/books'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
+import { setPageMeta } from '@/lib/pageMeta'
 
 export default function BookDetail() {
   const { bookId } = useParams<{ bookId: string }>()
   const book = useMemo(() => BOOKS.find((b) => b.id === bookId), [bookId])
+
+  useEffect(() => {
+    if (book) {
+      setPageMeta(
+        `${book.title} · 紫府藏经阁`,
+        `紫府藏经阁《${book.title}》——${book.dynasty ?? '公版'}典籍详情与原文摘录，出处可溯。`,
+      );
+    } else {
+      setPageMeta(
+        '未找到此书 · 紫府藏经阁',
+        '紫府藏经阁——书目可能有变，请回藏经阁重新浏览。',
+      );
+    }
+  }, [book])
 
   if (!book) {
     return (

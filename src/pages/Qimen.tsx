@@ -6,6 +6,7 @@ import QuoteStrip from '@/components/QuoteStrip'
 import JiugongPlate from '@/components/sanshi/JiugongPlate'
 import { FormInput, SegmentedControl } from '@/components/FormControls'
 import { DeepButton, GoldButton } from '@/components/Buttons'
+import { setPageMeta } from '@/lib/pageMeta'
 import {
   Drawer,
   DrawerContent,
@@ -330,7 +331,10 @@ export default function Qimen() {
   })
 
   useEffect(() => {
-    document.title = '奇门遁甲 · 紫府 — 时家拆补法，真实节气起局'
+    setPageMeta(
+      '奇门遁甲 · 紫府 — 时家拆补法，真实节气起局',
+      '紫府奇门遁甲——时家拆补法，真实节气起局，锚定用神梳理行动策略。',
+    );
   }, [])
 
   useEffect(() => {
