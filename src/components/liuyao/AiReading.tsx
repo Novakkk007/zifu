@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import SectionHeading from '@/components/SectionHeading'
 import { SegmentedControl } from '@/components/FormControls'
 import { DeepButton, GoldButton } from '@/components/Buttons'
+import DirectAiCard from '@/components/DirectAiCard'
 import { trpc } from '@/providers/trpc'
 import { useAuth } from '@/hooks/useAuth'
 import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabled'
@@ -159,28 +160,34 @@ export default function AiReading({ chartId, benName, bianName }: AiReadingProps
     />
   )
 
-  /* ---------- 游客 / 未落库引导卡 ---------- */
-  if ((!authLoading && !user) || chartId === null) {
+  /* ---------- 游客 / 未落库：直连参详卡（自带密钥） ---------- */
+  if (!authLoading && !user) {
+    const summary = `六爻卦例：本卦《${benName}》${bianName ? `，变卦《${bianName}》` : '，六爻安静'}。请以先生口吻为访客参详此卦所问之事，结合卦名卦象的文化寓意。`
+    return (
+      <div>
+        {heading}
+        <div className="mx-auto mt-12 max-w-3xl">
+          <DirectAiCard chartSummary={summary} title="自带密钥 · AI 直连参详此卦" />
+        </div>
+      </div>
+    )
+  }
+
+  if (chartId === null) {
     return (
       <div>
         {heading}
         <div className="mx-auto mt-12 max-w-3xl rounded-xl border border-gold/40 bg-deep p-10 text-center">
           <p className="font-serif text-[18px] font-bold tracking-[0.1em] text-silktext">
-            登录后使用 AI 参详
+            当前卦例未落库
           </p>
           <p className="mx-auto mt-3 max-w-[460px] text-[13px] leading-[1.9] text-silkmuted">
-            AI 参详仅向登录用户开放：起卦后卦例自动落库，服务端基于落库结果构建摘要，
-            每日 20 次额度；live 参详每次消耗 1 灵签，演示引擎免费，失败不扣费。
+            请在登录状态下重新起卦一次，卦例落库后即可使用 AI 参详
+            （每日 20 次额度；live 参详每次消耗 1 灵签，演示引擎免费，失败不扣费）。
           </p>
           <p className="mt-3 text-[12.5px] text-goldbright">
             本次起卦：《{benName}》{bianName ? `之《${bianName}》` : ' · 六爻安静'}
-            {user && chartId === null ? '（当前卦例未落库，请在登录状态下重新起卦一次）' : ''}
           </p>
-          {!user && (
-            <DeepButton to={LOGIN_PATH} className="mt-7 border border-gold/50">
-              前往登录
-            </DeepButton>
-          )}
         </div>
       </div>
     )
