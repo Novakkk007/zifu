@@ -509,10 +509,9 @@ export default function Home() {
             </span>
             <span className="h-px w-10 bg-gold/40" />
           </div>
-          <p className="hero-line mt-5 font-sans text-[15.5px] font-light leading-[1.95] text-silktext">
-            以《周易》《滴天髓》《三命通会》等典籍原文为基
-            <br />
-            AI 逐句引经参详，让流传千年的智慧，成为关照自己的方式
+          <p className="hero-line mt-5 max-w-full font-sans text-[14.5px] font-light leading-[1.95] text-silktext sm:text-[15.5px]">
+            <span className="block">以《周易》《滴天髓》《三命通会》等典籍原文为基</span>
+            <span className="block">AI 逐句引经参详，让流传千年的智慧，成为关照自己的方式</span>
           </p>
           <div className="mt-9 flex flex-col items-center gap-4 sm:flex-row">
             <span className="hero-cta inline-block">

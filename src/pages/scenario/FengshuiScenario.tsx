@@ -124,7 +124,7 @@ export default function FengshuiScenario() {
           <h1 className="mt-2 font-serif text-[30px] font-black tracking-[0.12em] text-silktext">
             阳宅风水参详
           </h1>
-          <p className="mx-auto mt-4 max-w-[620px] text-[13.5px] leading-[1.95] text-silkmuted">
+          <p className="mx-auto mt-4 max-w-[620px] break-words text-[13.5px] leading-[1.95] text-silkmuted">
             以《黄帝宅经》等公版典籍为据，参详宅向、门主灶布局与空间环境，
             输出可验证的环境检查提示。本页只给检查建议，不给吉凶结论。
           </p>
