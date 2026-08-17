@@ -18,7 +18,7 @@ type PageHeroProps = {
  */
 export default function PageHero({ glyph, title, sub, pool, current }: PageHeroProps) {
   return (
-    <section className="relative flex min-h-[38vh] flex-col overflow-hidden bg-deep">
+    <section className="relative flex min-h-[24vh] flex-col overflow-hidden bg-deep sm:min-h-[30vh] lg:min-h-[38vh]">
       <GlyphField pool={pool} count={24} />
 
       {/* breadcrumb */}

@@ -115,7 +115,7 @@ export default function PageHero({
   glyph,
   pool,
   glyphCount = 26,
-  minH = 'min-h-[38vh]',
+  minH = 'min-h-[24vh] sm:min-h-[30vh] lg:min-h-[38vh]',
   children,
 }: PageHeroProps) {
   return (
