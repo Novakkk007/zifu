@@ -6,6 +6,9 @@ import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { evaluateYangzhai, type YangzhaiInput } from '@contracts/engines/fengshui-rules'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
+import LoupanDial from '@/components/fengshui/LoupanDial'
+import FloorPlanEditor, { type FloorPlanMark } from '@/components/fengshui/FloorPlanEditor'
+import { analyzeFloorPlan } from '@/components/fengshui/floor-plan-logic'
 
 const easeOut = [0.16, 1, 0.3, 1] as [number, number, number, number]
 
@@ -90,6 +93,14 @@ function toInput(answers: Record<string, string | string[] | undefined>): Yangzh
 export default function FengshuiScenario() {
   const [answers, setAnswers] = useState<Record<string, string | string[] | undefined>>({})
   const [evaluated, setEvaluated] = useState(false)
+  const [floorMarks, setFloorMarks] = useState<FloorPlanMark[]>([])
+  const [floorImage, setFloorImage] = useState<string | null>(null)
+  const [orientation, setOrientation] = useState<number>(180)
+
+  const planAdvice = useMemo(
+    () => (floorMarks.length > 0 ? analyzeFloorPlan(floorMarks, orientation) : []),
+    [floorMarks, orientation],
+  )
 
   const hints = useMemo(() => {
     if (!evaluated) return []
@@ -118,6 +129,51 @@ export default function FengshuiScenario() {
             输出可验证的环境检查提示。本页只给检查建议，不给吉凶结论。
           </p>
         </header>
+
+        {/* 户型图参谋 */}
+        <section className="mt-10 rounded-2xl border border-gold/25 bg-silk2 p-6 sm:p-8">
+          <div className="flex items-center justify-between">
+            <p className="font-serif text-[16px] font-bold tracking-[0.08em] text-inktext">
+              户型图参谋 · 罗盘定位
+            </p>
+            <span className="rounded-full border border-golddim/40 px-3 py-1 text-[11px] text-inkmuted">
+              图仅本机处理 · 不上传
+            </span>
+          </div>
+          <p className="mt-2 text-[12.5px] leading-[1.9] text-inkmuted">
+            上传户型图 → 标注大门/主卧/厨房位置 → 用罗盘对准宅向（手机可用系统罗盘测朝向），
+            生成门主灶关系与环境参详。
+          </p>
+          <div className="mt-5 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_280px]">
+            <FloorPlanEditor
+              marks={floorMarks}
+              onMarksChange={setFloorMarks}
+              image={floorImage}
+              onImageChange={setFloorImage}
+            />
+            <LoupanDial degrees={orientation} onChange={setOrientation} />
+          </div>
+
+          {/* 户型参详结果 */}
+          {planAdvice.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: easeOut }}
+              className="mt-6 rounded-xl border border-golddim/20 bg-white/50 p-5"
+            >
+              <p className="font-serif text-[14.5px] font-bold text-inktext">户型参详</p>
+              <ul className="mt-3 space-y-2.5">
+                {planAdvice.map((a, i) => (
+                  <li key={i} className="rounded-lg border border-golddim/10 bg-silk p-3.5">
+                    <p className="text-[12px] font-semibold tracking-[0.08em] text-golddim">{a.title}</p>
+                    <p className="mt-1 text-[12.5px] leading-[1.85] text-inkmuted">{a.text}</p>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </section>
 
         {/* 表单卡 */}
         <section className="mt-10 rounded-2xl border border-gold/20 bg-silk2 p-6 sm:p-8">
