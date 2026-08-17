@@ -69,7 +69,7 @@ describe('神煞命中（甲寅日 命例）', () => {
       expect(s.verse.length).toBeGreaterThan(0)
       expect(s.source.length).toBeGreaterThan(0)
       expect(s.modernExplanation.length).toBeGreaterThan(0)
-      expect(s.rulesetVersion).toBe('1.1.0')
+      expect(s.rulesetVersion).toBe('1.2.0')
     }
   })
 })

@@ -40,10 +40,10 @@ function ctxFromFixture(input: ShenshaFixtureInput): ShenshaContext {
 }
 
 describe('神煞注册表元数据', () => {
-  it('注册表恰好 12 条，ruleId 唯一且格式规范', () => {
-    expect(SHENSHA_REGISTRY).toHaveLength(12)
+  it('注册表恰好 16 条，ruleId 唯一且格式规范', () => {
+    expect(SHENSHA_REGISTRY).toHaveLength(16)
     const ids = SHENSHA_REGISTRY.map((d) => d.ruleId)
-    expect(new Set(ids).size).toBe(12)
+    expect(new Set(ids).size).toBe(16)
     for (const id of ids) expect(id).toMatch(/^shensha\.[a-z]+\.v1$/)
   })
 
@@ -62,7 +62,7 @@ describe('神煞注册表元数据', () => {
 
   it('条目 rulesetVersion 与库 RULESET_VERSION 同步（1.1.0）', () => {
     expect(SHENSHA_RULESET_VERSION).toBe(RULESET_VERSION)
-    expect(RULESET_VERSION).toBe('1.1.0')
+    expect(RULESET_VERSION).toBe('1.2.0')
   })
 })
 

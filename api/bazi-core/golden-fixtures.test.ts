@@ -29,11 +29,11 @@ const mk = (over: Partial<BirthInput>): BirthInput => ({
 
 describe('版本', () => {
   it('RULESET_VERSION / ALGORITHM_VERSION 均为 1.1.0', () => {
-    expect(RULESET_VERSION).toBe('1.1.0')
-    expect(ALGORITHM_VERSION).toBe('1.1.0')
+    expect(RULESET_VERSION).toBe('1.2.0')
+    expect(ALGORITHM_VERSION).toBe('1.2.0')
     const chart = computeChartV2(mk({}))
-    expect(chart.rulesetVersion).toBe('1.1.0')
-    expect(chart.timeAudit.rulesetVersion).toBe('1.1.0')
+    expect(chart.rulesetVersion).toBe('1.2.0')
+    expect(chart.timeAudit.rulesetVersion).toBe('1.2.0')
   })
 })
 

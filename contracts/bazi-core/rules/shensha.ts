@@ -12,7 +12,7 @@
 import { BRANCHES, STEMS, kongWangBranches } from './stems-branches'
 
 export const RULE_META = {
-  name: '神煞规则集 v2',
+  name: '神煞规则集 v3（含红鸾/天喜/劫煞/灾煞）',
   source: '《三命通会》《渊海子平》神煞诸章（口诀为传统公共文献，解释为原创）',
 } as const
 
@@ -20,7 +20,7 @@ export const RULE_META = {
  * 本注册表条目的 rulesetVersion 字段值。
  * 与 rules/index.ts 的 RULESET_VERSION 保持一致（有测试断言同步）。
  */
-export const SHENSHA_RULESET_VERSION = '1.1.0'
+export const SHENSHA_RULESET_VERSION = '1.2.0'
 
 /** 神煞计算上下文（时柱可能缺失） */
 export interface ShenshaContext {
@@ -408,6 +408,86 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     testFixtures: [
       // 辛巳日（巳酉丑→酉），月支酉命中
       { input: { pillars: ['甲子', '癸酉', '辛巳', '戊子'] }, expectHits: ['月支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.hongluan.v1',
+    name: '红鸾',
+    variant: '以年支起例通行版',
+    inputBasis: 'yearBranch',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    // 卯上起子逆数：子→卯 丑→寅 寅→丑 卯→子 辰→亥 巳→戌 午→酉 未→申 申→未 酉→午 戌→巳 亥→辰
+    find: (ctx) => branchHits(ctx, [[3, 2, 1, 0, 11, 10, 9, 8, 7, 6, 5, 4][ctx.yearBranchIdx]]),
+    verse: '卯上起子，逆数至生年支，即是红鸾。',
+    basis: '以年支起例，地支见之为命中',
+    source: '《三命通会》论红鸾天喜',
+    modernExplanation:
+      '传统上主喜事、姻缘之象，常与桃花并参；现代可作为对婚恋与人际喜事话题的传统象征，不作具体事件断言。',
+    testFixtures: [
+      // 子年（子→卯），日支卯命中
+      { input: { pillars: ['甲子', '壬申', '丁卯', '辛亥'] }, expectHits: ['日支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.tianxi.v1',
+    name: '天喜',
+    variant: '以年支起例通行版',
+    inputBasis: 'yearBranch',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    // 红鸾对冲：子→酉 丑→申 寅→未 卯→午 辰→巳 巳→辰 午→卯 未→寅 申→丑 酉→子 戌→亥 亥→戌
+    find: (ctx) => branchHits(ctx, [[9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 11, 10][ctx.yearBranchIdx]]),
+    verse: '天喜者，红鸾之对冲位也。',
+    basis: '以年支起例，地支见之为命中',
+    source: '《三命通会》论红鸾天喜',
+    modernExplanation:
+      '与红鸾并称鸾喜，传统上主喜庆吉庆之象，多见于婚嫁择期参详；现代仅作文化象征，不作事件断言。',
+    testFixtures: [
+      // 子年（天喜→酉），时支酉命中
+      { input: { pillars: ['甲子', '壬申', '丁卯', '己酉'] }, expectHits: ['时支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.jiesha.v1',
+    name: '劫煞',
+    variant: '以日支起例（兼顾年支）通行版',
+    inputBasis: 'dayBranch',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    // 三合绝地：申子辰→巳 寅午戌→亥 巳酉丑→寅 亥卯未→申
+    find: (ctx) => branchHits(ctx, [[5, 11, 2, 8][SANHE_OF_BRANCH(ctx.dayBranchIdx)]]),
+    verse: '申子辰劫在巳，寅午戌劫在亥，巳酉丑劫在寅，亥卯未劫在申。',
+    basis: '以日支起例（兼顾年支），地支见之为命中',
+    source: '《三命通会》论劫煞',
+    modernExplanation:
+      '传统上主竞争与变动压力之象，吉凶随全局制化而定，不可单论；现代可理解为对激烈竞争环境的传统描述。',
+    testFixtures: [
+      // 壬子日（申子辰→巳），时支巳命中
+      { input: { pillars: ['甲寅', '壬申', '壬子', '乙巳'] }, expectHits: ['时支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.zaisha.v1',
+    name: '灾煞',
+    variant: '以日支起例（兼顾年支）通行版',
+    inputBasis: 'dayBranch',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    // 三合冲将星：申子辰→午 寅午戌→子 巳酉丑→卯 亥卯未→酉
+    find: (ctx) => branchHits(ctx, [[6, 0, 3, 9][SANHE_OF_BRANCH(ctx.dayBranchIdx)]]),
+    verse: '申子辰灾在午，寅午戌灾在子，巳酉丑灾在卯，亥卯未灾在酉。',
+    basis: '以日支起例（兼顾年支），地支见之为命中',
+    source: '《三命通会》论灾煞',
+    modernExplanation:
+      '传统上主波折与突发变动之象，须与全局喜忌同参，不单独构成事件判断；本馆不据此作任何具体断言。',
+    testFixtures: [
+      // 壬子日（申子辰→午），月支午命中
+      { input: { pillars: ['甲寅', '戊午', '壬子', '庚子'] }, expectHits: ['月支'] },
     ],
   },
 ]

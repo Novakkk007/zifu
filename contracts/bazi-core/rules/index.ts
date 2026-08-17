@@ -9,10 +9,10 @@
  *          TimeAudit 新增 ianaTimezone/timezoneSource。
  *          旧版 1.0.0 排盘结果仍为有效历史数据（不迁移、不作废）。
  */
-export const RULESET_VERSION = '1.1.0'
+export const RULESET_VERSION = '1.2.0'
 
 /** 算法版本（与 RULESET_VERSION 同步发布） */
-export const ALGORITHM_VERSION = '1.1.0'
+export const ALGORITHM_VERSION = '1.2.0'
 
 export * as stemsBranches from './stems-branches'
 export * as tengods from './tengods'

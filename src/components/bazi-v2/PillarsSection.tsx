@@ -3,7 +3,7 @@
  * 命宫/身宫为传统起法，单独列出作参考，绝不混称「六柱」。
  */
 import { motion, useReducedMotion } from 'framer-motion'
-import type { BaziChartV2, GongInfo, PillarInfo } from '@contracts/bazi-core'
+import type { BaziChartV2, GongInfo, PillarInfo, ShenshaHit } from '@contracts/bazi-core'
 import { cn } from '@/lib/utils'
 import { WUXING_COLORS, WUXING_ICONS } from '@/lib/wuxing-style'
 import GlossaryTooltip from '@/components/GlossaryTooltip'
@@ -12,10 +12,13 @@ function PillarCard({
   pillar,
   isDay,
   index,
+  shensha,
 }: {
   pillar: PillarInfo | null
   isDay?: boolean
   index: number
+  /** 该柱命中的神煞（按 pillar 字段前缀分组而来） */
+  shensha: ShenshaHit[]
 }) {
   const reduce = useReducedMotion()
   return (
@@ -72,6 +75,25 @@ function PillarCard({
               <span className="mx-1.5 text-inkmuted/50">｜</span>
               十二长生 <span className="text-inktext">{pillar.stage}</span>
             </p>
+            {shensha.length > 0 && (
+              <div className="mt-2 border-t border-dashed border-golddim/25 pt-2">
+                <p className="text-[11px] leading-[1.8] text-inkmuted">
+                  <span className="mr-1.5 font-serif text-golddim">神煞</span>
+                  {shensha.slice(0, 4).map((s, i) => (
+                    <span key={s.ruleId + s.char} className="mr-1.5">
+                      <GlossaryTooltip term={s.name} className="text-goldbright">
+                        {s.name}
+                      </GlossaryTooltip>
+                      <span className="text-inkmuted/60">({s.char})</span>
+                      {i < Math.min(shensha.length, 4) - 1 && <span className="text-inkmuted/40">、</span>}
+                    </span>
+                  ))}
+                  {shensha.length > 4 && (
+                    <span className="text-inkmuted/70"> 等{shensha.length}项</span>
+                  )}
+                </p>
+              </div>
+            )}
           </div>
         </>
       ) : (
@@ -101,6 +123,10 @@ export default function PillarsSection({ chart }: { chart: BaziChartV2 }) {
     { pillar: chart.pillars.day, isDay: true },
     { pillar: chart.pillars.hour },
   ]
+  /** 神煞按柱分组（pillar 字段如 '年支'/'日干'——取首字对应柱） */
+  const shenshaByPillar = (label: string): ShenshaHit[] =>
+    chart.shensha.filter((s) => s.pillar.startsWith(label))
+  const pillarLabels = ['年', '月', '日', '时']
   return (
     <div>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -110,6 +136,7 @@ export default function PillarsSection({ chart }: { chart: BaziChartV2 }) {
             pillar={p.pillar}
             isDay={p.isDay}
             index={i}
+            shensha={shenshaByPillar(pillarLabels[i])}
           />
         ))}
       </div>
