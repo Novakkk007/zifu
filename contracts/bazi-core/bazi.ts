@@ -431,11 +431,12 @@ function computeYongshen(dayStemIdx: number, wuxing: WuxingAnalysis): YongShenAn
 /* 神煞                                                                */
 /* ------------------------------------------------------------------ */
 
-function computeShensha(pillars: BaziChartV2['pillars']): ShenshaHit[] {
+function computeShensha(pillars: BaziChartV2['pillars'], gender: BirthInput['gender']): ShenshaHit[] {
   const ps = [pillars.year, pillars.month, pillars.day, pillars.hour].filter(
     (p): p is PillarInfo => p !== null,
   )
   const ctx = {
+    gender,
     dayStemIdx: pillars.day.stemIdx,
     dayBranchIdx: pillars.day.branchIdx,
     yearBranchIdx: pillars.year.branchIdx,
@@ -649,7 +650,7 @@ export function computeChartV2(input: BirthInput): BaziChartV2 {
   const wuxing = computeWuxing(pillars, dayStemIdx)
   const yongshen = computeYongshen(dayStemIdx, wuxing)
   const relations = computeRelations(pillars)
-  const shensha = computeShensha(pillars)
+  const shensha = computeShensha(pillars, input.gender)
   const chenggu = computeChenggu(input, resolved.lunar, resolved.effectiveMs)
   const birthSolarYear = resolved.civil.year
   const dayun = computeDayun(input, pillars, resolved.effectiveMs, birthSolarYear)
