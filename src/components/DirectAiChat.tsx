@@ -2,7 +2,7 @@
  * 游客 AI 直连多轮参详：先生先完整讲述，再围绕前文接续问答。
  * 密钥仅存 localStorage，所有请求从浏览器直达所选兼容端点。
  */
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useRef, useState } from 'react'
 import {
   aiDirectChat,
   aiDirectReading,
@@ -39,9 +39,28 @@ function MessageContent({ content }: { content: string }) {
   )
 }
 
-/** 先生之声：浏览器语音合成朗读（本地，零成本，不上传音频） */
+/** 先生之声：浏览器语音合成朗读（本地，零成本，不上传音频）。
+ * 齐静春式音色方向：优先温润中文男声（云希 Yunxi / 云健 Yunjian），
+ * 语速稍缓（0.9），像一位从容的先生。 */
 function useXianshengVoice() {
   const [speaking, setSpeaking] = useState(false)
+  const utterRef = useRef<SpeechSynthesisUtterance | null>(null)
+
+  const pickVoice = (): SpeechSynthesisVoice | null => {
+    try {
+      const synth = window.speechSynthesis
+      if (!synth) return null
+      const voices = synth.getVoices()
+      if (voices.length === 0) return null
+      // 温润男声优先级：云希（Yunxi）> 云健（Yunjian）> 任意 zh-CN
+      const byName = (kw: string) =>
+        voices.find((v) => v.name.toLowerCase().includes(kw) && v.lang.toLowerCase().startsWith('zh'))
+      return byName('yunxi') ?? byName('yunjian') ?? byName('yunyang') ?? voices.find((v) => v.lang.toLowerCase().startsWith('zh')) ?? null
+    } catch {
+      return null
+    }
+  }
+
   const speak = (text: string) => {
     try {
       const synth = window.speechSynthesis
@@ -50,13 +69,13 @@ function useXianshengVoice() {
       const cleaned = text.replace(/\*\*|#{1,6}|\*/g, '')
       const utter = new SpeechSynthesisUtterance(cleaned)
       utter.lang = 'zh-CN'
-      utter.rate = 0.92
-      utter.pitch = 1.0
-      const voices = synth.getVoices()
-      const zh = voices.find((v) => v.lang.toLowerCase().startsWith('zh'))
-      if (zh) utter.voice = zh
+      utter.rate = 0.9
+      utter.pitch = 0.95
+      const voice = pickVoice()
+      if (voice) utter.voice = voice
       utter.onend = () => setSpeaking(false)
       utter.onerror = () => setSpeaking(false)
+      utterRef.current = utter
       setSpeaking(true)
       synth.speak(utter)
     } catch {
@@ -69,6 +88,7 @@ function useXianshengVoice() {
     } catch {
       /* ignore */
     }
+    utterRef.current = null
     setSpeaking(false)
   }
   return { speaking, speak, stop }
