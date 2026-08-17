@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { LOGIN_PATH } from '@/const'
 import type { GuanyinSign } from '@contracts/engines/draws-core'
 import PageHero from '@/components/content/PageHero'
+import ZodiacClashCard from '@/components/ZodiacClashCard'
 import SectionHeading from '@/components/SectionHeading'
 import { FormSelect } from '@/components/FormControls'
 import { GhostButton, GoldButton } from '@/components/Buttons'
@@ -851,6 +852,9 @@ export default function Daily() {
       <section className="relative bg-silk pb-24 pt-4">
         <div className="relative zf-container">
           <SleepCard dayStem={summary.dayStem} />
+          <div className="mx-auto mt-6 w-full max-w-[960px]">
+            <ZodiacClashCard dayBranchIdx={summary.dayBranchIdx} />
+          </div>
         </div>
       </section>
 
