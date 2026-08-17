@@ -1,26 +1,25 @@
 /**
- * 紫府 TTS 服务（Cloudflare Pages Function）——火山引擎豆包语音合成。
- * 前端 POST { text } → 豆包 TTS 合成先生之声 → 返回 mp3。
- * Key 存于 Cloudflare 环境变量 VOLC_TTS_KEY（ark-xxx，不暴露前端）。
- * 未配置 key 时返回 503，前端回退浏览器语音合成。
+ * 紫府 TTS 服务（Cloudflare Pages Function）——豆包语音合成 2.0（seed-tts-2.0）。
+ * 前端 POST { text } → 单向非流式合成 → 返回 mp3。
+ * 密钥存 Cloudflare 环境变量：
+ *   VOLC_TTS_KEY  = 语音合成 APIKey（X-Api-Key）
+ *   VOLC_TTS_VOICE = 音色 ID（seed-tts-2.0 列表；默认沉稳男声占位，待配）
+ * 未配置时返回 503，前端回退浏览器语音。
  */
 interface Env {
   VOLC_TTS_KEY?: string
-  VOLC_TTS_APPID?: string
+  VOLC_TTS_VOICE?: string
 }
 
-const VOLC_TTS_URL = 'https://openspeech.bytedance.com/api/v1/tts'
-
-/** 齐静春式沉稳男声候选（豆包 voice_type）：
- * zh_male_M392_conversation_wvae_bigtts —— 通用对话男声（自然沉稳）
- * 备选：zh_male_qingrun_jingying_sunne（精英男声）、zh_male_wennuan_sunne（温暖男声）
- */
-const VOICE_TYPE = 'zh_male_M392_conversation_wvae_bigtts'
+const VOLC_TTS_URL = 'https://openspeech.bytedance.com/api/v3/tts/unidirectional'
+const RESOURCE_ID = 'seed-tts-2.0'
+/** 默认音色（示例验证可用的女声作占位；男声 ID 待从音色列表配置） */
+const DEFAULT_VOICE = 'zh_female_gaolengyujie_uranus_bigtts'
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const rawKey = context.env.VOLC_TTS_KEY
-  const appid = context.env.VOLC_TTS_APPID
-  if (!rawKey) {
+  const key = context.env.VOLC_TTS_KEY
+  const voice = context.env.VOLC_TTS_VOICE ?? DEFAULT_VOICE
+  if (!key) {
     return Response.json({ error: 'TTS not configured' }, { status: 503 })
   }
   let body: { text?: string }
@@ -34,39 +33,25 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return Response.json({ error: 'empty text' }, { status: 400 })
   }
 
-  // 鉴权双格式兼容：
-  // 1) 语音合成专属 APIKey（形式 "APIKey;xxx" 或存的就是带前缀完整串）→ Authorization 原文透传
-  // 2) 传统 access_token（appid 单独存 VOLC_TTS_APPID）→ Bearer;{token}
-  const authHeader = rawKey.startsWith('APIKey;') || rawKey.startsWith('APIKey ')
-    ? rawKey
-    : `Bearer;${rawKey}`
-
   const payload = {
-    app: {
-      appid: appid ?? 'zifu-palace',
-      token: 'access_token',
-      cluster: 'volcano_tts',
-    },
-    user: { uid: 'zifu-visitor' },
-    audio: {
-      voice_type: VOICE_TYPE,
-      encoding: 'mp3',
-      speed_ratio: 0.92,
-      volume_ratio: 1.0,
-      pitch_ratio: 0.96,
-    },
-    request: {
-      reqid: crypto.randomUUID(),
+    req_params: {
+      speaker: voice,
+      audio_params: {
+        format: 'mp3',
+        sample_rate: 24000,
+        // 沉稳先生：语速 0.92
+        speed_ratio: 0.92,
+      },
       text,
-      text_type: 'plain',
-      operation: 'query',
     },
   }
 
   const upstream = await fetch(VOLC_TTS_URL, {
     method: 'POST',
     headers: {
-      Authorization: authHeader,
+      'X-Api-Key': key,
+      'X-Api-Resource-Id': RESOURCE_ID,
+      'X-Api-Connect-Id': crypto.randomUUID(),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
@@ -75,13 +60,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   if (!upstream.ok) {
     return Response.json({ error: `upstream ${upstream.status}` }, { status: 502 })
   }
-  const ct = upstream.headers.get('content-type') ?? ''
-  if (ct.includes('audio') || ct.includes('mpeg')) {
-    const buf = new Uint8Array(await upstream.arrayBuffer())
-    return new Response(buf, {
-      headers: { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-store' },
-    })
+  const raw = (await upstream.json()) as { code?: number; message?: string; data?: string }
+  if (raw.code !== 0 || !raw.data) {
+    return Response.json({ error: raw.message ?? 'tts failed' }, { status: 502 })
   }
-  const errText = await upstream.text()
-  return Response.json({ error: errText.slice(0, 300) }, { status: 502 })
+  // data 为 mp3 base64
+  const buf = Uint8Array.from(atob(raw.data), (ch) => ch.charCodeAt(0))
+  return new Response(buf, {
+    headers: { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-store' },
+  })
 }
