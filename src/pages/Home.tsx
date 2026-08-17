@@ -6,6 +6,7 @@ import FeatureCard from "@/components/FeatureCard";
 import { GhostButton, GoldButton } from "@/components/Buttons";
 import BrandLogo from "@/components/BrandLogo";
 import { usePaymentEnabled } from "@/hooks/usePaymentEnabled";
+import { setPageMeta } from "@/lib/pageMeta";
 
 const SiweiDemo = lazy(() => import("@/components/SiweiDemo"));
 
@@ -294,6 +295,13 @@ function DeferredSiweiDemo() {
 export default function Home() {
   const rootRef = useRef<HTMLDivElement>(null);
   const paymentEnabled = usePaymentEnabled();
+
+  useEffect(() => {
+    setPageMeta(
+      "紫府 · 以古人之智，照今日之心",
+      "紫府以《周易》《滴天髓》《三命通会》等公版典籍原文为根，AI 逐句引经参详——星移有准，字字有根，法度示人，温言照心。",
+    );
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;

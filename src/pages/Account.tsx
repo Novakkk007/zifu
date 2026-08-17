@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Coins, ScrollText, ShieldAlert, UserRound, Wallet } from 'lucide-react'
 import { trpc } from '@/providers/trpc'
+import { setPageMeta } from '@/lib/pageMeta'
 import { useAuth } from '@/hooks/useAuth'
 import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabled'
 import { LOGIN_PATH } from '@/const'
@@ -66,7 +67,10 @@ export default function Account() {
   const utils = trpc.useUtils()
 
   useEffect(() => {
-    document.title = '用户中心 · 紫府'
+    setPageMeta(
+      '用户中心 · 紫府',
+      '紫府用户中心——个人资料与排盘记录管理。',
+    );
   }, [])
 
   const enabled = isAuthenticated

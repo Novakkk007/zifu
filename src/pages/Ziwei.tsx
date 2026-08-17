@@ -6,6 +6,7 @@ import QuoteStrip from '@/components/QuoteStrip'
 import SectionHeading from '@/components/SectionHeading'
 import { FormInput, FormSelect, SegmentedControl } from '@/components/FormControls'
 import { GoldButton } from '@/components/Buttons'
+import { setPageMeta } from '@/lib/pageMeta'
 import PalaceDrawer from '@/components/ziwei/PalaceDrawer'
 import ZiweiChart from '@/components/ziwei/ZiweiChart'
 import ZiweiAiReading from '@/components/ziwei/ZiweiAiReading'
@@ -77,7 +78,10 @@ export default function Ziwei() {
   const chartRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    document.title = '紫微斗数 · 紫府 — 北派全书安星法，十二宫排盘'
+    setPageMeta(
+      '紫微斗数 · 紫府 — 北派全书安星法，十二宫排盘',
+      '紫府紫微斗数——北派全书安星法十二宫排盘，观主星四化与大限流年。',
+    );
   }, [])
 
   useEffect(() => {

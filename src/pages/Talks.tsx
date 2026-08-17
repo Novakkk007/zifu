@@ -1,6 +1,7 @@
 import { memo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import PageHero from '@/components/content/PageHero'
+import { setPageMeta } from '@/lib/pageMeta'
 
 const HERO_POOL = ['言', '创', '说', '书', '灯', '案', '墨', '心']
 
@@ -101,7 +102,10 @@ function EssayTitle({ text }: { text: string }) {
 
 export default function Talks() {
   useEffect(() => {
-    document.title = '主创说 · 紫府'
+    setPageMeta(
+      '主创说 · 紫府',
+      '紫府主创说——研读名家方法论与研究思路，辨明方法适用范围与边界。',
+    );
   }, [])
 
   return (

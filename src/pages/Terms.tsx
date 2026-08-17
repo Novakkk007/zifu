@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import PageHero from '@/components/content/PageHero'
+import { setPageMeta } from '@/lib/pageMeta'
 
 const HERO_POOL = ['约', '条', '款', '信', '度', '规', '矩']
 
@@ -64,7 +65,10 @@ const CLAUSES: Clause[] = [
 
 export default function Terms() {
   useEffect(() => {
-    document.title = '服务条款 · 紫府'
+    setPageMeta(
+      '服务条款 · 紫府',
+      '紫府服务条款——平台服务规则与用户约定。',
+    );
   }, [])
 
   return (

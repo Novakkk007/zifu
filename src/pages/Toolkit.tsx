@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Link } from 'react-router'
 import { cn } from '@/lib/utils'
 import PageHero from '@/components/content/PageHero'
+import { setPageMeta } from '@/lib/pageMeta'
 import SectionHeading from '@/components/SectionHeading'
 import { TagPill } from '@/components/Buttons'
 import FeatureStatusBadge from '@/components/FeatureStatusBadge'
@@ -190,7 +191,10 @@ export default function Toolkit() {
   const ActivePanel = TOOLS[active].Panel
 
   useEffect(() => {
-    document.title = '百宝袋 · 紫府 — 寻时定盘，随身小工具'
+    setPageMeta(
+      '百宝袋 · 紫府 — 寻时定盘，随身小工具',
+      '紫府百宝袋——寻时定盘，随身小工具集，干支历法查询一次到位。',
+    );
   }, [])
 
   return (

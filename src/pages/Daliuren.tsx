@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowDown } from 'lucide-react'
 import PageHero from '@/components/sanshi/PageHero'
+import { setPageMeta } from '@/lib/pageMeta'
 import SectionHeading from '@/components/SectionHeading'
 import QuoteStrip from '@/components/QuoteStrip'
 import TiandiPan from '@/components/sanshi/TiandiPan'
@@ -288,7 +289,10 @@ export default function Daliuren() {
   })
 
   useEffect(() => {
-    document.title = '大六壬 · 紫府 — 月将加时，三传定事之始中末'
+    setPageMeta(
+      '大六壬 · 紫府 — 月将加时，三传定事之始中末',
+      '紫府大六壬——月将加时成课，三传定事之始中末，依《六壬大全》参详。',
+    );
   }, [])
 
   useEffect(() => {
