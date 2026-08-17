@@ -272,7 +272,9 @@ export default function Navbar() {
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <nav className="flex flex-1 flex-col items-center justify-center gap-1 overflow-y-auto px-8 pb-16">
+            {/* my-auto：内容少时居中，超高时可完整滚动（justify-center 与 overflow 冲突会裁切顶部） */}
+            <nav className="flex flex-1 flex-col items-center gap-1 overflow-y-auto px-8 pb-16 pt-4">
+              <div className="my-auto flex w-full flex-col items-center gap-1">
               {[
                 { to: '/hecan', label: '✦ 三术合参' },
                 ...YAN_MENU.flatMap((g) => g.items),
@@ -311,6 +313,7 @@ export default function Navbar() {
                   )}
                 </motion.div>
               ))}
+              </div>
             </nav>
           </motion.div>
         )}
