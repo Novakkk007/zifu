@@ -72,7 +72,16 @@ export default function DirectAiCard({
     }
   }
 
-  const paragraphs = result ? result.content.split(/\n{2,}|\n/).filter((p) => p.trim().length > 0) : []
+  /** 清洗模型偶尔输出的 markdown 符号（加粗/标题/列表） */
+  const cleanText = (t: string) =>
+    t
+      .replace(/^\s*#{1,6}\s+/gm, '')
+      .replace(/^\s*[-*+]\s+/gm, '')
+      .replace(/\*\*/g, '')
+      .replace(/(^|\s)\*([^*\n]+)\*(?=\s|$)/g, '$1$2')
+      .trim()
+
+  const paragraphs = result ? result.content.split(/\n{2,}|\n/).map(cleanText).filter((p) => p.length > 0) : []
 
   return (
     <div className="rounded-xl border border-gold/40 bg-deep p-8 text-center">
