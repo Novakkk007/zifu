@@ -57,7 +57,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const upstream = await fetch(VOLC_TTS_URL, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer;${key}`,
+      Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
