@@ -405,7 +405,7 @@ export default function Qimen() {
             title="起 局"
             sub="默认此时此刻（东八区），亦可自定时刻——同一时刻，局盘如一"
           />
-          <div className="mt-12 w-full max-w-[680px] rounded-xl border border-golddim/25 bg-silk2 p-8 shadow-card md:p-10">
+          <div className="mt-12 w-full max-w-[680px] rounded-xl border border-golddim/25 bg-silk2 p-4 shadow-card sm:p-8 md:p-10">
             <FormInput
               label="起局时刻（东八区墙钟）"
               type="datetime-local"
@@ -421,14 +421,14 @@ export default function Qimen() {
             />
             <div className="mt-6">
               <p className="mb-2 font-sans text-[13px] font-medium tracking-[0.08em] text-inkmuted">排法</p>
-              <div className="inline-flex items-center gap-1 rounded-full border border-golddim/30 bg-silk p-1">
-                <span className="rounded-full bg-deep px-5 py-2 font-sans text-[13.5px] font-medium tracking-[0.08em] text-silk">
+              <div className="inline-flex max-w-full flex-wrap items-center gap-1 rounded-2xl border border-golddim/30 bg-silk p-1 sm:rounded-full">
+                <span className="rounded-full bg-deep px-4 py-2 font-sans text-[13.5px] font-medium tracking-[0.08em] text-silk sm:px-5">
                   时家奇门 · 拆补法
                 </span>
                 {['置闰法', '日家', '月家'].map((m) => (
                   <span
                     key={m}
-                    className="cursor-not-allowed rounded-full px-5 py-2 font-sans text-[13.5px] tracking-[0.08em] text-inkmuted/50"
+                    className="cursor-not-allowed rounded-full px-4 py-2 font-sans text-[13.5px] tracking-[0.08em] text-inkmuted/50 sm:px-5"
                     title="陆续开放"
                   >
                     {m} · 待开放

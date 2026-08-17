@@ -339,8 +339,8 @@ export default function Qizheng() {
             title="排 星 盘"
             sub="录入生辰，以真实星历布十一曜于黄道十二宫与二十八宿"
           />
-          <div className="mt-12 w-full max-w-[680px] rounded-xl border border-golddim/25 bg-silk2 p-8 shadow-card md:p-10">
-            <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
+          <div className="mt-12 w-full max-w-[680px] rounded-xl border border-golddim/25 bg-silk2 p-4 shadow-card sm:p-8 md:p-10">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
               <FormSelect label="出生年" value={year} onChange={(e) => updateYear(e.target.value)}>
                 {YEARS.map((y) => (
                   <option key={y} value={y}>

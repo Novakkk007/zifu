@@ -115,7 +115,7 @@ function AiReadingSection({ chartId }: { chartId: number | null }) {
   /* ---------- 游客引导卡 ---------- */
   if (!authLoading && !user) {
     return (
-      <div className="rounded-xl border border-gold/40 bg-deep p-10 text-center">
+      <div className="rounded-xl border border-gold/40 bg-deep p-6 text-center sm:p-10">
         <p className="font-serif text-[18px] font-bold tracking-[0.1em] text-silktext">
           登录后使用 AI 参详
         </p>
@@ -355,8 +355,8 @@ export default function Daliuren() {
             title="起 课"
             sub="默认此时此刻，亦可自定年月日时——真实节气换将，同一时刻，课传如一"
           />
-          <div className="mt-12 w-full max-w-[680px] rounded-xl border border-golddim/25 bg-silk2 p-8 shadow-card md:p-10">
-            <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
+          <div className="mt-12 w-full max-w-[680px] rounded-xl border border-golddim/25 bg-silk2 p-4 shadow-card sm:p-8 md:p-10">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
               <FormSelect label="起课年" value={year} onChange={(e) => setYear(e.target.value)}>
                 {YEARS.map((y) => (
                   <option key={y} value={y}>
@@ -467,14 +467,14 @@ export default function Daliuren() {
                     <h3 className="font-serif text-[17px] font-bold tracking-[0.14em] text-inktext">
                       四课 <span className="ml-2 font-latin text-[11px] font-medium uppercase tracking-[0.3em] text-gold">Four Lessons</span>
                     </h3>
-                    <div className="mt-5 flex items-stretch">
+                    <div className="mt-5 grid grid-cols-2 gap-3 sm:flex sm:items-stretch sm:gap-0">
                       {chart.lessons.map((l, i) => (
-                        <div key={`${runId}-lesson-${i}`} className="flex flex-1 items-center">
+                        <div key={`${runId}-lesson-${i}`} className="flex min-w-0 items-center sm:flex-1">
                           <motion.div
                             initial={{ opacity: 0, x: -24 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.2 + i * 0.1, duration: 0.5, ease: 'easeOut' }}
-                            className="flex-1 rounded-lg border border-golddim/25 bg-silk2 px-3 py-4 text-center"
+                            className="min-w-0 flex-1 rounded-lg border border-golddim/25 bg-silk2 px-3 py-4 text-center"
                           >
                             <p className="text-[11px] tracking-[0.14em] text-inkmuted">第{['一', '二', '三', '四'][i]}课</p>
                             <p className="mt-2 font-serif text-[19px] font-bold leading-snug text-inktext">
@@ -485,7 +485,7 @@ export default function Daliuren() {
                             <p className="mt-1 text-[11px] text-inkmuted">上神 / 下神</p>
                             <p className="mt-1 text-[11px] tracking-[0.14em] text-golddim">{l.general}</p>
                           </motion.div>
-                          {i < 3 && <span className="mx-1 h-px w-3 shrink-0 self-center bg-gold/50 md:w-4" />}
+                          {i < 3 && <span className="mx-1 hidden h-px w-3 shrink-0 self-center bg-gold/50 sm:block md:w-4" />}
                         </div>
                       ))}
                     </div>

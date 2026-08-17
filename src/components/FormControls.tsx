@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 const fieldBase =
-  'h-11 w-full rounded-lg border border-golddim/30 bg-silk px-4 font-sans text-[14.5px] text-inktext outline-none transition-shadow placeholder:text-inkmuted/70 focus:border-gold/60 focus:ring-2 focus:ring-gold/30'
+  'h-11 min-w-0 w-full rounded-lg border border-golddim/30 bg-silk px-4 font-sans text-base text-inktext outline-none transition-shadow placeholder:text-inkmuted/70 focus:border-gold/60 focus:ring-2 focus:ring-gold/30 sm:text-[14.5px]'
 
 type FieldProps = {
   label?: ReactNode
@@ -14,7 +14,7 @@ type FieldProps = {
 /** 功能页统一输入框：绢米底 + 金边 + focus 金环 */
 export function FormInput({ label, hint, className, id, ...rest }: FieldProps) {
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('min-w-0 w-full', className)}>
       {label && (
         <label
           htmlFor={id}
@@ -38,7 +38,7 @@ type SelectProps = {
 /** 功能页统一选择框 */
 export function FormSelect({ label, className, id, children, ...rest }: SelectProps) {
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('min-w-0 w-full', className)}>
       {label && (
         <label
           htmlFor={id}
@@ -73,7 +73,7 @@ export function SegmentedControl<T extends string>({
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-1 rounded-full border border-golddim/30 bg-silk2 p-1',
+        'inline-flex max-w-full flex-wrap items-center justify-center gap-1 rounded-2xl border border-golddim/30 bg-silk2 p-1 sm:rounded-full',
         className,
       )}
     >
