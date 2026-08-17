@@ -103,9 +103,21 @@ export const AI_PROVIDERS: Record<AIProvider, { label: string; baseUrl: string; 
   deepseek: { label: 'DeepSeek', baseUrl: 'https://api.deepseek.com/v1', defaultModel: 'deepseek-chat' },
 }
 
+/** 内置密钥（测试版）：访客未填 key 时默认使用紫府内置 DeepSeek */
+export const BUILTIN_AI_KEY = (import.meta.env.VITE_DEEPSEEK_API_KEY as string | undefined) ?? ''
+export const BUILTIN_AI_PROVIDER: AIProvider = BUILTIN_AI_KEY ? 'deepseek' : 'kimi'
+
+/** 解析最终使用的密钥与后端：访客自带 key 优先，否则回退内置 */
+export function resolveAiAccess(inputKey: string, inputProvider?: AIProvider): { apiKey: string; provider: AIProvider } {
+  if (inputKey.trim()) {
+    return { apiKey: inputKey.trim(), provider: inputProvider ?? 'deepseek' }
+  }
+  return { apiKey: BUILTIN_AI_KEY, provider: BUILTIN_AI_PROVIDER }
+}
+
 /** 直连调用（OpenAI 兼容 chat/completions） */
 export async function aiDirectReading(input: DirectReadingInput): Promise<DirectReadingResult> {
-  const provider: AIProvider = input.provider ?? 'kimi'
+  const { apiKey, provider } = resolveAiAccess(input.apiKey, input.provider)
   const cfg = AI_PROVIDERS[provider] ?? AI_PROVIDERS.kimi
   const model = input.model || cfg.defaultModel
   const baseUrl = (input.baseUrl || cfg.baseUrl).replace(/\/$/, '')
@@ -113,12 +125,12 @@ export async function aiDirectReading(input: DirectReadingInput): Promise<Direct
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${input.apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model,
       messages: [
-        { role: 'system', content: '你是紫府平台的命理文化解读助手。' },
+        { role: 'system', content: '你是紫府的先生：通晓命理典籍，温和如春风，有分寸，无论如何给访客希望。' },
         {
           role: 'user',
           content: buildReadingPrompt({

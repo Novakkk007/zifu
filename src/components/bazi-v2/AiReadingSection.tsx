@@ -16,7 +16,7 @@ import { SegmentedControl } from '@/components/FormControls'
 import { DeepButton, GoldButton } from '@/components/Buttons'
 import { trpc } from '@/providers/trpc'
 import { useAuth } from '@/hooks/useAuth'
-import { aiDirectReading, buildChartSummary, getStoredAiKey, setStoredAiKey } from '@/lib/ai-direct'
+import { aiDirectReading, buildChartSummary, getStoredAiKey, setStoredAiKey, BUILTIN_AI_KEY } from '@/lib/ai-direct'
 import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
 import type { DirectReadingResult } from '@/lib/ai-direct'
 import { LOGIN_PATH } from '@/const'
@@ -218,7 +218,7 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
   })
 
   const runDirect = async () => {
-    if (!chart || !directKey.trim() || directBusy) return
+    if (!chart || (!directKey.trim() && !BUILTIN_AI_KEY) || directBusy) return
     setDirectBusy(true)
     setDirectError(null)
     setDirectResult(null)
@@ -313,7 +313,7 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
           <div className="mt-6 flex justify-center gap-4">
             <button
               onClick={runDirect}
-              disabled={!chart || !directKey.trim() || directBusy}
+              disabled={!chart || (!directKey.trim() && !BUILTIN_AI_KEY) || directBusy}
               className="rounded-xl border border-gold/60 bg-gold/10 px-8 py-3 text-[14px] font-medium tracking-[0.1em] text-goldbright transition-colors enabled:hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {directBusy ? 'AI 解读中…' : '开始 AI 直连参详'}

@@ -569,7 +569,14 @@ export default function Ziwei() {
             </AnimatePresence>
 
             {/* S5 · AI 参详（真实服务端契约：chartId → ai.reading） */}
-            <ZiweiAiReading chartId={chartId} />
+            <ZiweiAiReading
+              chartId={chartId}
+              chartSummary={
+                result?.data
+                  ? `紫微斗数命盘：命宫${result.data.mingGongGanzhi}，${result.data.ju.name}，命主${result.data.mingZhu}，身主${result.data.shenZhu}，生年四化${result.data.sihua.map((s) => `${s.star}${s.hua}`).join('、')}。请以先生口吻为访客参详此盘，总论先行，按主次分述，末了给希望。`
+                  : undefined
+              }
+            />
 
             {/* S6 · 典籍依据 */}
             <motion.div

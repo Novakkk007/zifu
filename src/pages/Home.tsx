@@ -24,24 +24,12 @@ const BOOKS = [
   "烟波钓叟歌",
 ];
 
-/** 信任锚点（为什么信紫府） */
-const TRUST_ANCHORS = [
-  {
-    title: '历法 · 精确到秒',
-    desc: '节气交节时刻采用天文历双源金标对拍，跨时区换算，经得起核验。',
-  },
-  {
-    title: '引文 · 句句可溯',
-    desc: '参详引文全部来自公版古籍原文，每条标注出处，不编造不私藏。',
-  },
-  {
-    title: '规则 · 权重公开',
-    desc: '旺衰量化、神煞取格等规则权重全部公开，可复核可版本化。',
-  },
-  {
-    title: '关怀 · 不吓不敛',
-    desc: '不做灾祸恐吓，不承诺转运。解读以建设性收尾，痛苦时引导专业求助。',
-  },
+/** 信任锚点（为什么信紫府）——四言诗版 */
+const TRUST_VERSE = [
+  { line: '星移有准', note: '历法 · 算得准' },
+  { line: '字字有根', note: '引文 · 讲得真' },
+  { line: '法度示人', note: '规则 · 不藏私' },
+  { line: '温言照心', note: '关怀 · 留余温' },
 ];
 
 type HomeEntry = {
@@ -535,11 +523,18 @@ export default function Home() {
       {/* ===== S2b · 为什么信紫府（信任锚点） ===== */}
       <section className="bg-silk py-20">
         <div className="zf-container">
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-4">
-            {TRUST_ANCHORS.map((a) => (
-              <div key={a.title} className="rounded-xl border border-golddim/20 bg-white/60 p-6 text-center">
-                <p className="font-serif text-[15.5px] font-bold tracking-[0.1em] text-inktext">{a.title}</p>
-                <p className="mt-2.5 text-[12.5px] leading-[1.85] text-inkmuted">{a.desc}</p>
+          <div className="mx-auto flex max-w-[860px] flex-wrap items-stretch justify-center gap-x-10 gap-y-6">
+            {TRUST_VERSE.map((v, i) => (
+              <div key={v.line} className="flex items-center gap-10">
+                <div className="text-center">
+                  <p className="font-serif text-[30px] font-black tracking-[0.18em] text-inktext sm:text-[34px]">
+                    {v.line}
+                  </p>
+                  <p className="mt-2 text-[11.5px] tracking-[0.14em] text-inkmuted">{v.note}</p>
+                </div>
+                {i < TRUST_VERSE.length - 1 && (
+                  <span className="hidden h-8 w-px bg-golddim/30 sm:block" aria-hidden />
+                )}
               </div>
             ))}
           </div>

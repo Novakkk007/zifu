@@ -7,15 +7,14 @@
  */
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Link } from 'react-router'
 import SectionHeading from '@/components/SectionHeading'
+import DirectAiCard from '@/components/DirectAiCard'
 import { SegmentedControl } from '@/components/FormControls'
 import { GoldButton } from '@/components/Buttons'
 import { trpc } from '@/providers/trpc'
 import { useAuth } from '@/hooks/useAuth'
 import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabled'
 import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
-import { LOGIN_PATH } from '@/const'
 import { cn } from '@/lib/utils'
 
 type Persona = 'scholar' | 'hermit'
@@ -72,7 +71,14 @@ function errorText(err: unknown, paymentEnabled: boolean): string {
   }
 }
 
-export default function ZiweiAiReading({ chartId }: { chartId: number | null }) {
+export default function ZiweiAiReading({
+  chartId,
+  chartSummary,
+}: {
+  chartId: number | null
+  /** 游客直连参详用的命盘摘要（引擎产出） */
+  chartSummary?: string
+}) {
   const { user, isLoading } = useAuth()
   const paymentEnabled = usePaymentEnabled()
   const [persona, setPersona] = useState<Persona>('scholar')
@@ -103,15 +109,13 @@ export default function ZiweiAiReading({ chartId }: { chartId: number | null }) 
       <div className="mt-10 rounded-xl border border-gold/20 bg-deep3/50 p-7">
         {isLoading ? null : !user ? (
           <div className="flex flex-col items-center gap-4 py-6 text-center">
-            <p className="text-[13.5px] leading-[1.9] text-silkmuted">
-              AI 参详仅向登录用户开放。登录后排盘自动落库，即可引经参详。
-            </p>
-            <Link
-              to={LOGIN_PATH}
-              className="rounded-full border border-gold/50 px-6 py-2 text-[13px] tracking-[0.14em] text-goldbright transition-colors hover:bg-gold/10"
-            >
-              前往登录
-            </Link>
+            {chartSummary ? (
+              <DirectAiCard chartSummary={chartSummary} title="AI 参详 · 自带密钥直连" />
+            ) : (
+              <p className="text-[13.5px] leading-[1.9] text-silkmuted">
+                完成「安星排盘」后，即可在本机直连 AI 参详（无需登录）。
+              </p>
+            )}
           </div>
         ) : chartId === null ? (
           <p className="py-6 text-center text-[13.5px] leading-[1.9] text-silkmuted">
