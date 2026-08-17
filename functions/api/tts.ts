@@ -6,6 +6,7 @@
  */
 interface Env {
   VOLC_TTS_KEY?: string
+  VOLC_TTS_APPID?: string
 }
 
 const VOLC_TTS_URL = 'https://openspeech.bytedance.com/api/v1/tts'
@@ -17,8 +18,9 @@ const VOLC_TTS_URL = 'https://openspeech.bytedance.com/api/v1/tts'
 const VOICE_TYPE = 'zh_male_M392_conversation_wvae_bigtts'
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const key = context.env.VOLC_TTS_KEY
-  if (!key) {
+  const rawKey = context.env.VOLC_TTS_KEY
+  const appid = context.env.VOLC_TTS_APPID
+  if (!rawKey) {
     return Response.json({ error: 'TTS not configured' }, { status: 503 })
   }
   let body: { text?: string }
@@ -32,9 +34,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return Response.json({ error: 'empty text' }, { status: 400 })
   }
 
+  // 鉴权双格式兼容：
+  // 1) 语音合成专属 APIKey（形式 "APIKey;xxx" 或存的就是带前缀完整串）→ Authorization 原文透传
+  // 2) 传统 access_token（appid 单独存 VOLC_TTS_APPID）→ Bearer;{token}
+  const authHeader = rawKey.startsWith('APIKey;') || rawKey.startsWith('APIKey ')
+    ? rawKey
+    : `Bearer;${rawKey}`
+
   const payload = {
     app: {
-      appid: 'zifu-palace',
+      appid: appid ?? 'zifu-palace',
       token: 'access_token',
       cluster: 'volcano_tts',
     },
@@ -57,7 +66,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const upstream = await fetch(VOLC_TTS_URL, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${key}`,
+      Authorization: authHeader,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
@@ -67,7 +76,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return Response.json({ error: `upstream ${upstream.status}` }, { status: 502 })
   }
   const ct = upstream.headers.get('content-type') ?? ''
-  // 成功时豆包返回 audio/mpeg 流；失败时返回 json（含 message）
   if (ct.includes('audio') || ct.includes('mpeg')) {
     const buf = new Uint8Array(await upstream.arrayBuffer())
     return new Response(buf, {
