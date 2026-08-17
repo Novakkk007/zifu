@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useLocation } from 'react-router'
 import { MessageSquarePlus, Loader2, CheckCircle2 } from 'lucide-react'
 import { trpc } from '@/providers/trpc'
@@ -13,6 +13,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
+import { useDeployInfo } from '@/hooks/useDeployInfo'
 
 const FEATURES = [
   { value: 'bug', label: '问题反馈' },
@@ -30,36 +31,6 @@ const SEVERITIES = [
   { value: 'P2', label: 'P2 · 一般（体验受损）' },
   { value: 'P3', label: 'P3 · 建议（锦上添花）' },
 ] as const
-
-interface HealthInfo {
-  env: string
-  preview: boolean
-  commitSha: string
-}
-
-/** 读取部署环境信息（/healthz 由后端注入，不打包进前端 bundle） */
-export function useDeployInfo(): HealthInfo | null {
-  const [info, setInfo] = useState<HealthInfo | null>(null)
-  useEffect(() => {
-    let cancelled = false
-    fetch('/healthz')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (!cancelled && d && typeof d === 'object') {
-          setInfo({
-            env: String(d.env ?? ''),
-            preview: Boolean(d.preview),
-            commitSha: String(d.commitSha ?? 'unknown'),
-          })
-        }
-      })
-      .catch(() => undefined)
-    return () => {
-      cancelled = true
-    }
-  }, [])
-  return info
-}
 
 /**
  * 反馈入口（浮动按钮 + 表单弹窗）。

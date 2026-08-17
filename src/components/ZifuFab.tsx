@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
 import { applyTheme, getTheme, THEMES } from '@/lib/theme'
 import type { ZifuTheme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
@@ -58,33 +57,18 @@ export default function ZifuFab() {
   return (
     <div ref={rootRef} className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-[70] flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       {/* 气泡提示 */}
-      <AnimatePresence>
-        {bubble && !menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.92 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.92 }}
-            transition={{ duration: 0.3 }}
-            className="rounded-xl border border-gold/30 bg-deep2 px-4 py-2.5 shadow-card"
-          >
+      {bubble && !menuOpen && (
+          <div className="animate-in rounded-xl border border-gold/30 bg-deep2 px-4 py-2.5 shadow-card fade-in slide-in-from-bottom-2 zoom-in-95 duration-300">
             <p className="whitespace-nowrap font-sans text-[12.5px] tracking-[0.08em] text-goldbright">
               紫府有四色 · 点此切换
             </p>
             <span className="absolute -bottom-1 right-7 h-2.5 w-2.5 rotate-45 border-b border-r border-gold/30 bg-deep2" />
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
 
       {/* 主题菜单 */}
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.94 }}
-            transition={{ duration: 0.2 }}
-            className="flex gap-3 rounded-2xl border border-gold/25 bg-deep2 px-4 py-3.5 shadow-card"
-          >
+      {menuOpen && (
+          <div className="flex animate-in gap-3 rounded-2xl border border-gold/25 bg-deep2 px-4 py-3.5 shadow-card fade-in slide-in-from-bottom-2 zoom-in-95 duration-200">
             {THEMES.map((t) => (
               <button
                 key={t.id}
@@ -111,9 +95,8 @@ export default function ZifuFab() {
                 </span>
               </button>
             ))}
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
 
       {/* FAB 本体 */}
       <button

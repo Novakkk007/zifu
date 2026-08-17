@@ -1,6 +1,5 @@
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
-import { MotionConfig } from 'framer-motion'
 import './index.css'
 import { TRPCProvider } from "@/providers/trpc"
 import ErrorBoundary from '@/components/ErrorBoundary'
@@ -20,12 +19,10 @@ try {
 
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
-    <MotionConfig reducedMotion="user">
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <TRPCProvider>
-          <App />
-        </TRPCProvider>
-      </BrowserRouter>
-    </MotionConfig>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <TRPCProvider>
+        <App />
+      </TRPCProvider>
+    </BrowserRouter>
   </ErrorBoundary>,
 )
