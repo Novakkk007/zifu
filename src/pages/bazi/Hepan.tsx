@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useReducedMotion } from 'framer-motion'
 import { AnimatePresence, animate, motion } from 'framer-motion'
 import PageHero from '@/components/bazi/PageHero'
 import BirthFields, { defaultPerson, type PersonFormState } from '@/components/bazi/BirthForm'
@@ -130,6 +131,7 @@ type HepanResponse = {
 }
 
 export default function Hepan() {
+  const reduce = useReducedMotion()
   const [a, setA] = useState<PersonFormState>(defaultPerson())
   const [b, setB] = useState<PersonFormState>({ ...defaultPerson(), gender: 'female', year: 1992, month: 10, day: 8, hour: 10 })
   const [result, setResult] = useState<HepanResponse | null>(null)
@@ -194,7 +196,7 @@ export default function Hepan() {
       <section className="zf-container relative z-10 -mt-24 pb-20">
         <div className="relative mx-auto grid max-w-[980px] gap-6 md:grid-cols-2">
           <motion.div
-            initial={{ x: -40, opacity: 0 }}
+            initial={reduce ? false : { x: -40, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="rounded-xl border border-golddim/25 bg-silk2 p-7 shadow-card md:p-8"
@@ -206,7 +208,7 @@ export default function Hepan() {
           </motion.div>
 
           <motion.div
-            initial={{ x: 40, opacity: 0 }}
+            initial={reduce ? false : { x: 40, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="rounded-xl border border-golddim/25 bg-silk2 p-7 shadow-card md:p-8"
@@ -219,7 +221,7 @@ export default function Hepan() {
 
           {/* 「合」字金环圆章 */}
           <motion.div
-            initial={{ scale: 0, opacity: 0 }}
+            initial={reduce ? false : { scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.4, type: 'spring', bounce: 0.5, duration: 0.7 }}
             className="absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 lg:block"
