@@ -23,7 +23,7 @@ type JiugongPlateProps = {
  */
 export default function JiugongPlate({ palaces, onSelect }: JiugongPlateProps) {
   return (
-    <div className="mx-auto grid w-full max-w-[720px] grid-cols-3 gap-2.5 md:gap-3">
+    <div className="mx-auto grid w-full max-w-[720px] grid-cols-3 gap-1.5 sm:gap-2.5 md:gap-3">
       {GRID_ORDER.map((num, idx) => {
         const p = palaces[num - 1]
         const kind = DOOR_KIND[p.door] ?? '平'
@@ -36,14 +36,14 @@ export default function JiugongPlate({ palaces, onSelect }: JiugongPlateProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: idx * 0.07, duration: 0.55, ease: 'easeOut' }}
             className={cn(
-              'relative flex min-h-[138px] flex-col rounded-lg border bg-silk2 p-3 text-left transition-colors hover:border-gold/50 md:min-h-[160px] md:p-4',
+              'relative flex min-h-[124px] min-w-0 flex-col rounded-lg border bg-silk2 p-2 text-left transition-colors hover:border-gold/50 sm:min-h-[138px] sm:p-3 md:min-h-[160px] md:p-4',
               p.isZhifu ? 'animate-gold-breathe border-gold/70' : 'border-gold/15',
               p.isKongWang && 'opacity-80',
             )}
           >
             {/* 值符角标 */}
             {p.isZhifu && (
-              <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full px-2.5 py-0.5 font-sans text-[10px] font-semibold tracking-[0.14em] text-[#0B3B39] [background:linear-gradient(135deg,rgb(var(--gold-bright)),rgb(var(--gold)))]">
+              <span className="absolute -top-2.5 left-1.5 rounded-full px-2 py-0.5 font-sans text-[10px] font-semibold tracking-[0.14em] text-[#0B3B39] [background:linear-gradient(135deg,rgb(var(--gold-bright)),rgb(var(--gold)))] sm:left-1/2 sm:-translate-x-1/2 sm:px-2.5">
                 值符
               </span>
             )}

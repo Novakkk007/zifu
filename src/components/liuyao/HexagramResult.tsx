@@ -99,7 +99,7 @@ function YaoDetailTable({ chart }: { chart: LiuyaoChart }) {
             <div key={y.index}>
               <div
                 className={cn(
-                  'flex items-center gap-2 rounded-md px-2 py-2 text-[13px] sm:gap-3 sm:px-4',
+                  'grid grid-cols-[2.5rem_minmax(0,1fr)_3.5rem_1.75rem] items-center gap-x-2 gap-y-1 rounded-md px-2 py-2 text-[13px] sm:flex sm:gap-3 sm:px-4',
                   y.index % 2 === 1 && 'bg-silk/60',
                 )}
               >
@@ -108,7 +108,7 @@ function YaoDetailTable({ chart }: { chart: LiuyaoChart }) {
                   {y.liushen}
                 </span>
                 {/* 六亲 + 干支 + 五行 */}
-                <span className="w-[7.5rem] shrink-0 font-serif tracking-[0.06em] text-inktext sm:w-36">
+                <span className="min-w-0 font-serif tracking-[0.06em] text-inktext sm:w-36 sm:shrink-0">
                   {y.liuqin}
                   <span className="mx-1 font-semibold">{y.ganzhi}</span>
                   <span className="text-[12px] text-inkmuted">{y.wuxing}</span>
@@ -133,7 +133,7 @@ function YaoDetailTable({ chart }: { chart: LiuyaoChart }) {
                   )}
                 </span>
                 {/* 动静 / 旬空 */}
-                <span className="w-14 shrink-0 text-right text-[11.5px] tracking-[0.06em] text-inkmuted">
+                <span className="col-span-3 col-start-2 w-auto text-left text-[11.5px] tracking-[0.06em] text-inkmuted sm:w-14 sm:shrink-0 sm:text-right">
                   {y.moving && <span className="mr-1 font-semibold text-golddim">动</span>}
                   {y.xunKong && <span className="text-[#B04A3A]">空亡</span>}
                 </span>
@@ -219,7 +219,7 @@ export default function HexagramResult({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.8 }}
-        className="mx-auto mt-10 max-w-3xl rounded-r-xl border-l-[3px] border-gold bg-silk2 px-8 py-8"
+        className="mx-auto mt-10 max-w-3xl rounded-r-xl border-l-[3px] border-gold bg-silk2 px-5 py-6 sm:px-8 sm:py-8"
       >
         <p className="font-serif text-[17px] leading-[2.1] text-inktext">
           <span className="mr-2 font-semibold text-golddim">卦辞</span>
