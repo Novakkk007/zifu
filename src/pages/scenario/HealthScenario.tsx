@@ -7,6 +7,8 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { motion } from 'framer-motion'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
+import { SafeStorage, STORAGE_KEYS } from '@/lib/storage'
+import type { BaziChartV2 } from '@contracts/bazi-core'
 
 const easeOut = [0.16, 1, 0.3, 1] as [number, number, number, number]
 
@@ -48,6 +50,19 @@ export default function HealthScenario() {
   const [dayMaster, setDayMaster] = useState<string | null>(null)
   const advice = useMemo(() => (dayMaster ? WUXING_CONSTITUTION[dayMaster] : null), [dayMaster])
 
+  // 从本地收藏的八字命盘自动读日主五行（游客排盘后直达）
+  const linkedChart = useMemo(() => {
+    try {
+      const favs = SafeStorage.get(STORAGE_KEYS.FAVORITES, []) as { type?: string; payload?: BaziChartV2 }[]
+      const bazi = favs.find((f) => f.type === 'bazi' && f.payload?.pillars?.day)
+      return bazi?.payload ?? null
+    } catch {
+      return null
+    }
+  }, [])
+
+  const linkedWuxing = linkedChart?.pillars?.day?.stemWuxing ?? null
+
   return (
     <div className="relative min-h-screen bg-deep pb-24 pt-14 md:pt-20">
       <FloatingGlyphs count={18} onDeep />
@@ -67,6 +82,26 @@ export default function HealthScenario() {
             ⚕ 本页内容不构成任何医疗建议 · 不替代医师诊断与治疗
           </p>
         </header>
+
+        {/* 命盘联动：排过八字的访客一键直达 */}
+        {linkedChart && linkedWuxing && (
+          <section className="mt-8 rounded-2xl border border-gold/40 bg-deep2 p-6 text-center">
+            <p className="text-[13px] tracking-[0.1em] text-silkmuted">
+              检测到你在本机排过的八字命盘
+            </p>
+            <p className="mt-2 font-serif text-[17px] font-bold text-goldbright">
+              {linkedChart.pillars.day.stem}
+              {linkedChart.pillars.day.branch} 日 · {linkedWuxing}日主
+            </p>
+            <button
+              type="button"
+              onClick={() => setDayMaster(linkedWuxing)}
+              className="mt-4 rounded-full bg-gold px-8 py-2.5 text-[13.5px] font-semibold tracking-[0.12em] text-deep transition-transform hover:scale-[1.03]"
+            >
+              按我的日主参看体质
+            </button>
+          </section>
+        )}
 
         {/* 五行自测 */}
         <section className="mt-10 rounded-2xl border border-gold/20 bg-silk2 p-6 sm:p-8">
