@@ -43,7 +43,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     },
   }
 
-  const upstream = await fetch(`${MINIMAX_TTS_URL}?GroupId=${key.split('::')[0] ?? 'zifu'}`, {
+  const upstream = await fetch(MINIMAX_TTS_URL, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${key}`,
