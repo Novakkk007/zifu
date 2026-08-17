@@ -222,14 +222,14 @@ export default function Hepan() {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.4, type: 'spring', bounce: 0.5, duration: 0.7 }}
-            className="absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 md:block"
+            className="absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 lg:block"
           >
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
-              className="flex h-16 w-16 items-center justify-center rounded-full border border-gold bg-deep shadow-card"
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-gold bg-deep shadow-card"
             >
-              <span className="font-serif text-[26px] font-black text-goldbright">合</span>
+              <span className="font-serif text-[20px] font-black text-goldbright">合</span>
             </motion.div>
           </motion.div>
         </div>

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useEffect, useRef } from 'react'
 import { useLocation } from 'react-router'
+import { useReducedMotion } from 'framer-motion'
 import Lenis from 'lenis'
 import { motion } from 'framer-motion'
 import { gsap, ScrollTrigger } from '@/lib/anim'
@@ -16,6 +17,7 @@ import PreviewBanner from '@/components/PreviewBanner'
  */
 export default function Layout({ children }: { children: ReactNode }) {
   const location = useLocation()
+  const reduce = useReducedMotion()
   const lenisRef = useRef<Lenis | null>(null)
 
   useEffect(() => {
@@ -44,10 +46,10 @@ export default function Layout({ children }: { children: ReactNode }) {
       <Navbar />
       <motion.main
         key={location.pathname}
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.26, ease: 'easeOut' }}
         className="flex-1"
+        initial={reduce ? false : { opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reduce ? 0 : 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
         {children}
       </motion.main>
