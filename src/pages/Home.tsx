@@ -1,13 +1,13 @@
-import { useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
-import { gsap, ScrollTrigger } from "@/lib/anim";
 import FloatingGlyphs from "@/components/FloatingGlyphs";
 import SectionHeading from "@/components/SectionHeading";
 import FeatureCard from "@/components/FeatureCard";
-import SiweiDemo from "@/components/SiweiDemo";
 import { GhostButton, GoldButton } from "@/components/Buttons";
 import BrandLogo from "@/components/BrandLogo";
 import { usePaymentEnabled } from "@/hooks/usePaymentEnabled";
+
+const SiweiDemo = lazy(() => import("@/components/SiweiDemo"));
 
 const BOOKS = [
   "周易",
@@ -256,181 +256,90 @@ function Chars({ text, className }: { text: string; className?: string }) {
   );
 }
 
+/** 交互演示位于长首页折叠线下，仅在接近视口时下载。 */
+function DeferredSiweiDemo() {
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    const anchor = anchorRef.current;
+    if (!anchor || typeof IntersectionObserver === "undefined") {
+      setShouldLoad(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setShouldLoad(true);
+        observer.disconnect();
+      },
+      { rootMargin: "600px 0px" },
+    );
+    observer.observe(anchor);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={anchorRef} className="min-h-[320px]">
+      {shouldLoad && (
+        <Suspense fallback={<div className="h-[320px]" aria-hidden />}>
+          <SiweiDemo />
+        </Suspense>
+      )}
+    </div>
+  );
+}
+
 export default function Home() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const heroRef = useRef<HTMLElement>(null);
-  const heroFieldRef = useRef<HTMLDivElement>(null);
   const paymentEnabled = usePaymentEnabled();
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      /* ---- 字级拆分（≤10 字标题） ---- */
-      gsap.utils.toArray<HTMLElement>(".gs-chars").forEach(el => {
-        if (el.dataset.split !== "done") {
-          splitChars(el);
-          el.dataset.split = "done";
-        }
-        const chars = el.querySelectorAll(".gs-char");
-        gsap.fromTo(
-          chars,
-          { y: 26, opacity: 0, filter: "blur(6px)" },
-          {
-            y: 0,
-            opacity: 1,
-            filter: "blur(0px)",
-            duration: 0.8,
-            stagger: 0.05,
-            ease: "power3.out",
-            scrollTrigger: { trigger: el, start: "top 82%", once: true },
-          }
-        );
+    const root = rootRef.current;
+    if (
+      !root ||
+      typeof IntersectionObserver === "undefined" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    root.querySelectorAll<HTMLElement>(".gs-chars").forEach(el => {
+      if (el.dataset.split !== "done") {
+        splitChars(el);
+        el.dataset.split = "done";
+      }
+      el.querySelectorAll<HTMLElement>(".gs-char").forEach((char, index) => {
+        char.style.setProperty("--zf-char-delay", `${index * 45}ms`);
       });
+    });
 
-      /* ---- 块级入场 ---- */
-      ScrollTrigger.batch(".gs-reveal", {
-        start: "top 85%",
-        once: true,
-        onEnter: batch =>
-          gsap.fromTo(
-            batch,
-            { y: 40, opacity: 0 },
-            {
-              y: 0,
-              opacity: 1,
-              duration: 0.9,
-              stagger: 0.08,
-              ease: "power3.out",
-            }
-          ),
-      });
+    const targets = Array.from(
+      root.querySelectorAll<HTMLElement>(
+        ".gs-chars, .gs-reveal, .gs-marquee, .gs-cta-btn, .gs-app-icon",
+      ),
+    );
+    targets.forEach(target => target.classList.add("zf-reveal-pending"));
 
-      /* ---- 跑马灯入场 ---- */
-      gsap.fromTo(
-        ".gs-marquee",
-        { opacity: 0 },
-        {
-          opacity: 1,
-          duration: 0.9,
-          scrollTrigger: {
-            trigger: ".gs-marquee",
-            start: "top 90%",
-            once: true,
-          },
-        }
-      );
-
-      /* ---- 注册 CTA 按钮 ---- */
-      gsap.fromTo(
-        ".gs-cta-btn",
-        { scale: 0.94, opacity: 0 },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 0.6,
-          ease: "back.out(1.6)",
-          scrollTrigger: {
-            trigger: ".gs-cta-btn",
-            start: "top 85%",
-            once: true,
-          },
-        }
-      );
-
-      /* ---- PWA 图标入场 ---- */
-      gsap.fromTo(
-        ".gs-app-icon",
-        { scale: 0.8, rotate: -6, opacity: 0 },
-        {
-          scale: 1,
-          rotate: 0,
-          opacity: 1,
-          duration: 0.7,
-          ease: "back.out(1.7)",
-          scrollTrigger: {
-            trigger: ".gs-app-icon",
-            start: "top 85%",
-            once: true,
-          },
-        }
-      );
-
-      /* ---- Hero 载入序列 ---- */
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-      tl.fromTo(
-        heroFieldRef.current,
-        { opacity: 0 },
-        { opacity: 1, duration: 1.2 },
-        0
-      )
-        .fromTo(
-          ".hero-mark",
-          { scale: 1.18, opacity: 0, filter: "blur(12px)" },
-          { scale: 1, opacity: 1, filter: "blur(0px)", duration: 1.0 },
-          0.05
-        )
-        .fromTo(
-          ".hero-zi",
-          { scale: 1.25, opacity: 0, filter: "blur(14px)" },
-          { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.9 },
-          0.1
-        )
-        .fromTo(
-          ".hero-fu",
-          { scale: 1.25, opacity: 0, filter: "blur(14px)" },
-          { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.9 },
-          0.35
-        )
-        .fromTo(
-          ".hero-latin",
-          { opacity: 0, letterSpacing: "1.2em" },
-          { opacity: 1, letterSpacing: "0.6em", duration: 0.8 },
-          0.6
-        )
-        .fromTo(
-          ".hero-line",
-          { y: 24, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.7, stagger: 0.12 },
-          0.7
-        )
-        .fromTo(
-          ".hero-cta",
-          { y: 16, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.6, stagger: 0.1 },
-          1.1
-        );
-
-      /* ---- Hero 滚动：字场视差 0.15 + 巨字上移淡出 ---- */
-      gsap.to(heroFieldRef.current, {
-        yPercent: 15,
-        ease: "none",
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      });
-      gsap.to(".hero-brand", {
-        y: -60,
-        opacity: 0,
-        ease: "none",
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: "top top",
-          end: "60% top",
-          scrub: true,
-        },
-      });
-    }, rootRef);
-
-    return () => ctx.revert();
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("zf-in-view");
+          observer.unobserve(entry.target);
+        });
+      },
+      { rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
+    );
+    targets.forEach(target => observer.observe(target));
+    return () => observer.disconnect();
   }, []);
 
   return (
     <div ref={rootRef}>
       {/* ===== S2 · Hero ===== */}
       <section
-        ref={heroRef}
         className="relative flex min-h-[100dvh] flex-col overflow-hidden"
         style={{
           background:
@@ -451,8 +360,8 @@ export default function Home() {
           }}
         />
 
-        {/* 漂浮字场（深区稍亮），外层做 0.15 视差 */}
-        <div ref={heroFieldRef} className="absolute inset-[-10%] opacity-0">
+        {/* 漂浮字场（深区稍亮，纯 CSS 动画） */}
+        <div className="absolute inset-[-10%]">
           <FloatingGlyphs count={20} onDeep className="bottom-[42%]" />
           <FloatingGlyphs count={28} onDeep className="top-[46%]" />
         </div>
@@ -470,8 +379,8 @@ export default function Home() {
         {/* 品牌区：文档流布局，顶部留导航余量（80px），向下自然排列。
             任何窗口高度都不裁剪、不遮挡（原 absolute+bottom 锚定在矮视口
             上沿越界压住导航——版面事故根因） */}
-        <div className="hero-brand relative z-10 mt-[80px] flex flex-col items-center px-4 pb-20 text-center sm:px-6">
-          <span className="hero-mark inline-block will-change-transform">
+        <div className="relative z-10 mt-[80px] flex flex-col items-center px-4 pb-20 text-center sm:px-6">
+          <span className="inline-block">
             <span className="inline-block sm:hidden">
               <BrandLogo variant="mark" size={64} />
             </span>
@@ -480,32 +389,32 @@ export default function Home() {
             </span>
           </span>
           <h1 className="mt-3 flex items-baseline font-serif text-[clamp(56px,17vw,148px)] font-black leading-[1.05] sm:mt-5">
-            <span className="hero-zi inline-block text-silktext will-change-transform">
+            <span className="inline-block text-silktext">
               紫
             </span>
-            <span className="hero-fu inline-block text-goldbright will-change-transform">
+            <span className="inline-block text-goldbright">
               府
             </span>
           </h1>
-          <p className="hero-latin mt-2 font-latin text-[13px] font-medium uppercase text-silkmuted">
+          <p className="mt-2 font-latin text-[13px] font-medium uppercase text-silkmuted">
             Zifu Palace
           </p>
-          <div className="hero-line mt-7 flex items-center gap-4">
+          <div className="mt-7 flex items-center gap-4">
             <span className="h-px w-10 bg-gold/40" />
             <span className="font-serif text-[16px] font-semibold tracking-[0.3em] text-goldbright">
               以古人之智 · 照今日之心
             </span>
             <span className="h-px w-10 bg-gold/40" />
           </div>
-          <p className="hero-line mt-5 max-w-full font-sans text-[14.5px] font-light leading-[1.95] text-silktext sm:text-[15.5px]">
+          <p className="mt-5 max-w-full font-sans text-[14.5px] font-light leading-[1.95] text-silktext sm:text-[15.5px]">
             <span className="block">以《周易》《滴天髓》《三命通会》等典籍原文为基</span>
             <span className="block">AI 逐句引经参详，让流传千年的智慧，成为关照自己的方式</span>
           </p>
           <div className="mt-9 flex flex-col items-center gap-4 sm:flex-row">
-            <span className="hero-cta inline-block">
+            <span className="inline-block">
               <GoldButton to="/bazi">开始排盘</GoldButton>
             </span>
-            <span className="hero-cta inline-block">
+            <span className="inline-block">
               <GhostButton to="/liuyao">六爻起卦</GhostButton>
             </span>
           </div>
@@ -764,7 +673,7 @@ export default function Home() {
             }
           />
           <div className="mt-14">
-            <SiweiDemo />
+            <DeferredSiweiDemo />
           </div>
           <div className="gs-reveal mt-10 text-center">
             <Link

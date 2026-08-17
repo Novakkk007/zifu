@@ -1,42 +1,21 @@
 import type { ReactNode } from 'react'
-import { useEffect, useRef } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useLocation } from 'react-router'
-import { useReducedMotion } from 'framer-motion'
-import Lenis from 'lenis'
-import { motion } from 'framer-motion'
-import { gsap, ScrollTrigger } from '@/lib/anim'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ZifuFab from '@/components/ZifuFab'
-import FeedbackWidget from '@/components/FeedbackWidget'
 import PreviewBanner from '@/components/PreviewBanner'
+
+const FeedbackWidget = lazy(() => import('@/components/FeedbackWidget'))
 
 /**
  * 全局布局（children 模式）：Navbar（sticky）+ 页面槽 + Footer + 紫宸 FAB。
- * 负责 Lenis 平滑滚动（与 ScrollTrigger 同步）与路由切换动效。
+ * 非关键反馈弹窗独立分包，避免首屏解析整套 Dialog/Form 代码。
  */
 export default function Layout({ children }: { children: ReactNode }) {
   const location = useLocation()
-  const reduce = useReducedMotion()
-  const lenisRef = useRef<Lenis | null>(null)
-
-  useEffect(() => {
-    const lenis = new Lenis({ lerp: 0.09 })
-    lenisRef.current = lenis
-    lenis.on('scroll', ScrollTrigger.update)
-    const raf = (time: number) => lenis.raf(time * 1000)
-    gsap.ticker.add(raf)
-    gsap.ticker.lagSmoothing(0)
-    return () => {
-      gsap.ticker.remove(raf)
-      lenis.destroy()
-      lenisRef.current = null
-    }
-  }, [])
-
   // 路由切换回到顶部
   useEffect(() => {
-    lenisRef.current?.scrollTo(0, { immediate: true })
     window.scrollTo(0, 0)
   }, [location.pathname])
 
@@ -44,18 +23,12 @@ export default function Layout({ children }: { children: ReactNode }) {
     <div className="flex min-h-[100dvh] flex-col bg-silk">
       <PreviewBanner />
       <Navbar />
-      <motion.main
-        key={location.pathname}
-        className="flex-1"
-        initial={reduce ? false : { opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: reduce ? 0 : 0.5, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {children}
-      </motion.main>
+      <main className="flex-1">{children}</main>
       <Footer />
       <ZifuFab />
-      <FeedbackWidget />
+      <Suspense fallback={null}>
+        <FeedbackWidget />
+      </Suspense>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { Eye } from 'lucide-react'
-import { useDeployInfo } from '@/components/FeedbackWidget'
+import { useDeployInfo } from '@/hooks/useDeployInfo'
 
 /**
  * 预览环境横幅：仅当后端 /healthz 报告 APP_ENV=preview 时显示。

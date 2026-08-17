@@ -1,6 +1,6 @@
 import BrandLogo from '@/components/BrandLogo'
 import { Link } from 'react-router'
-import { useDeployInfo } from '@/components/FeedbackWidget'
+import { useDeployInfo } from '@/hooks/useDeployInfo'
 
 const FOOT_LINKS = [
   { to: '/wiki', label: '藏经阁' },

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router'
-import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, LogOut, Menu, Sparkle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
@@ -82,10 +81,7 @@ export default function Navbar() {
   }, [drawerOpen])
 
   return (
-    <motion.header
-      initial={{ y: -16, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
+    <header
       className={cn(
         'sticky top-0 z-50 h-16 border-b bg-silk/90 backdrop-blur-md transition-[border-color] duration-300',
         scrolled ? 'border-[rgba(199,162,58,0.18)]' : 'border-transparent',
@@ -139,15 +135,8 @@ export default function Navbar() {
                 className={cn('h-3.5 w-3.5 transition-transform', dropOpen && 'rotate-180')}
               />
             </button>
-            <AnimatePresence>
-              {dropOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.16 }}
-                  className="absolute left-1/2 top-full w-40 -translate-x-1/2 pt-3"
-                >
+            {dropOpen && (
+                <div className="absolute left-1/2 top-full w-40 -translate-x-1/2 animate-in fade-in slide-in-from-top-2 pt-3 duration-150">
                   <div
                     role="menu"
                     aria-label="术数推演"
@@ -185,9 +174,8 @@ export default function Navbar() {
                       </div>
                     ))}
                   </div>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
           </div>
 
           <NavLink
@@ -251,15 +239,8 @@ export default function Navbar() {
       </div>
 
       {/* 移动端全屏抽屉 */}
-      <AnimatePresence>
-        {drawerOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.24 }}
-            className="fixed inset-0 z-[60] flex flex-col bg-deep3 pb-[env(safe-area-inset-bottom)] lg:hidden"
-          >
+      {drawerOpen && (
+          <div className="fixed inset-0 z-[60] flex animate-in flex-col bg-deep3 pb-[env(safe-area-inset-bottom)] fade-in duration-200 lg:hidden">
             <div className="flex h-16 items-center justify-between px-6">
               <span className="font-serif text-[20px] font-black tracking-[0.12em] text-goldbright">
                 紫府
@@ -287,11 +268,10 @@ export default function Navbar() {
                     ]
                   : [{ to: '/profile', label: '我的' }]),
               ].map((item, i) => (
-                <motion.div
+                <div
                   key={item.to + item.label}
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05 + i * 0.05, duration: 0.3 }}
+                  className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                  style={{ animationDelay: `${50 + i * 50}ms` }}
                 >
                   {'action' in item && item.action === 'logout' ? (
                     <button
@@ -311,13 +291,12 @@ export default function Navbar() {
                       {item.label}
                     </NavLink>
                   )}
-                </motion.div>
+                </div>
               ))}
               </div>
             </nav>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
-    </motion.header>
+    </header>
   )
 }

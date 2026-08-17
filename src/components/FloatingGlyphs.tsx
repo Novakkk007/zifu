@@ -44,7 +44,7 @@ type FloatingGlyphsProps = {
 
 /**
  * 漂浮字场：干支 / 卦名 / 星曜缓慢漂移（transform-only，≤48 个）。
- * 视差由外层容器负责（首页 Hero 用 GSAP scrub 包一层）。
+ * 仅使用 transform 的 CSS 动画，不占用首屏脚本执行时间。
  */
 const FloatingGlyphs = memo(function FloatingGlyphs({
   count = 40,
