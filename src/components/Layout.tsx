@@ -4,6 +4,7 @@ import { useLocation } from 'react-router'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ZifuFab from '@/components/ZifuFab'
+import BgmPlayer from '@/components/BgmPlayer'
 import PreviewBanner from '@/components/PreviewBanner'
 
 const FeedbackWidget = lazy(() => import('@/components/FeedbackWidget'))
@@ -26,6 +27,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <main className="flex-1">{children}</main>
       <Footer />
       <ZifuFab />
+      <BgmPlayer />
       <Suspense fallback={null}>
         <FeedbackWidget />
       </Suspense>

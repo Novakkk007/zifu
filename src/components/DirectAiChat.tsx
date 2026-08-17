@@ -52,10 +52,17 @@ function useXianshengVoice() {
       if (!synth) return null
       const voices = synth.getVoices()
       if (voices.length === 0) return null
-      // 温润男声优先级：云希（Yunxi）> 云健（Yunjian）> 任意 zh-CN
+      // 齐静春式沉稳儒雅男声优先级：云野 Yunye（低沉）> 云健 Yunjian > 云扬 Yunyang > 云希 Yunxi > 任意 zh-CN
       const byName = (kw: string) =>
         voices.find((v) => v.name.toLowerCase().includes(kw) && v.lang.toLowerCase().startsWith('zh'))
-      return byName('yunxi') ?? byName('yunjian') ?? byName('yunyang') ?? voices.find((v) => v.lang.toLowerCase().startsWith('zh')) ?? null
+      return (
+        byName('yunye') ??
+        byName('yunjian') ??
+        byName('yunyang') ??
+        byName('yunxi') ??
+        voices.find((v) => v.lang.toLowerCase().startsWith('zh')) ??
+        null
+      )
     } catch {
       return null
     }
@@ -69,8 +76,8 @@ function useXianshengVoice() {
       const cleaned = text.replace(/\*\*|#{1,6}|\*/g, '')
       const utter = new SpeechSynthesisUtterance(cleaned)
       utter.lang = 'zh-CN'
-      utter.rate = 0.9
-      utter.pitch = 0.95
+      utter.rate = 0.85
+      utter.pitch = 0.8
       const voice = pickVoice()
       if (voice) utter.voice = voice
       utter.onend = () => setSpeaking(false)
