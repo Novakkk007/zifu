@@ -168,6 +168,30 @@ export function yijiOf(dayStem: DayStem): { yi: string[]; ji: string[] } {
   return YIJI_BY_DAY_STEM[dayStem] ?? { yi: ['祭祀'], ji: ['动土'] }
 }
 
+/* ===================== 生肖相冲（CBL-03 择日个人化降级） =====================
+ * 蔡伯励择日蒸馏的可落地部分（docs/masters/caiBoli.md）：
+ * 用户自愿提供生肖 + 日支与生肖支六冲 → 标记「传统相冲」。
+ * 只做文化参详，不扩大为事件预测。
+ */
+
+export type Zodiac = (typeof ZODIAC)[number]
+
+/** 六冲对（子午/丑未/寅申/卯酉/辰戌/巳亥）——支序相减 6 */
+const CLASH_OFFSET = 6
+
+/**
+ * 生肖相冲参详（CBL-03）：
+ * @returns 相冲生肖（如日支午、用户生肖子 → '鼠'）；不相冲 → null
+ */
+export function zodiacClashOf(dayBranchIdx: number, zodiac: Zodiac): Zodiac | null {
+  const zIdx = ZODIAC.indexOf(zodiac)
+  if (zIdx < 0) return null
+  if (Math.abs(dayBranchIdx - zIdx) === CLASH_OFFSET) {
+    return ZODIAC[zIdx]
+  }
+  return null
+}
+
 /* ===================== 安寝时令（睡眠方向第一枪） =====================
  * 五行干支 → 传统养生文化提示。依据：中医五行与子午流注为公版通识
  * （《黄帝内经》等公版典籍的思想），干支→五行的映射为历法常识。
@@ -246,6 +270,7 @@ export interface DailySummary {
   solarTerm: string
   dayStem: DayStem
   dayBranch: string
+  dayBranchIdx: number
   yi: string[]
   ji: string[]
   hourLuck: HourLuck[]
@@ -331,6 +356,7 @@ export function getDailySummary(date?: Date, opts?: DailySummaryOptions): DailyS
     solarTerm: prevJieQi.getName(),
     dayStem,
     dayBranch,
+    dayBranchIdx: BRANCHES.indexOf(dayGanzhiStr[1] as (typeof BRANCHES)[number]),
     yi: yj.yi,
     ji: yj.ji,
     hourLuck: Array.from({ length: 24 }, (_, h) => hourLuck(h, dayStemIdx)),
