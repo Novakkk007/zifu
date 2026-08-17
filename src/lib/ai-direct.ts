@@ -63,6 +63,7 @@ export function buildChartSummary(chart: unknown): string {
     input?: { calendar?: string; year?: number; month?: number; day?: number; hour?: number | null }
     pillars?: Record<string, { stem: string; branch: string } | null | undefined>
     tenGods?: Record<string, string>
+    shensha?: { name: string; pillar: string; char: string }[]
   }
   const inp = c.input ?? { year: 0, month: 0, day: 0 }
   const p = c.pillars ?? {}
@@ -74,6 +75,9 @@ export function buildChartSummary(chart: unknown): string {
   lines.push(`四柱：年柱 ${fmt(p.year)}，月柱 ${fmt(p.month)}，日柱 ${fmt(p.day)}，时柱 ${fmt(p.hour)}`)
   if (c.tenGods && Object.keys(c.tenGods).length > 0) {
     lines.push(`十神：${Object.entries(c.tenGods).map(([k, v]) => `${k}=${v}`).join('，')}`)
+  }
+  if (c.shensha && c.shensha.length > 0) {
+    lines.push(`神煞：${c.shensha.map((s) => `${s.name}（${s.pillar}${s.char}）`).join('、')}`)
   }
   // 名家主题化上下文（LJM 十神角色映射——文化解释层，不映射现实身份）
   try {
@@ -108,8 +112,9 @@ export function buildReadingPrompt(input: { chartSummary: string; persona: strin
     `1. ${guide}` +
     '2. 总论先行：一句话定性这个人（格局气质），再按主次分述，不平均用力。\\n' +
     '3. 点穴：命局最关键的一两处，点透；若访客未问具体事，讲述后温和一问（如"你最近更挂心哪一处？"），待他开口再深入指点。\\n' +
-    '4. 只做文化层面的参详，不做医疗、投资、法律等具体决策建议。\\n' +
-    '5. 不给出确定性生死病灾断言；不得编造古籍原文引文，只能做通识概述。\\n\\n' +
+    '4. 神煞参详指引：神煞为传统象法，讲到即可、点到为止——柱位传统对应（年柱主早年与祖上、月柱主父母与事业、日柱主自身与婚姻、时柱主子女与晚年）；只作文化象征，不作事件断言。\\n' +
+    '5. 只做文化层面的参详，不做医疗、投资、法律等具体决策建议。\\n' +
+    '6. 不给出确定性生死病灾断言；不得编造古籍原文引文，只能做通识概述。\\n\\n' +
     '希望法则（无论如何，给希望——不可违背）：\\n' +
     '- 每一处警示之后，必给一条出路或转机；再"凶"的象，也要找到"路"。\\n' +
     '- 结尾永远亮色，把话头交还给访客的生活（哪怕只是"先把今天的觉睡好"）。\\n' +
