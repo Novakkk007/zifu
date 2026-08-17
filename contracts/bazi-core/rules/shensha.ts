@@ -1,5 +1,5 @@
 /**
- * 规则数据 · 神煞注册表 v2（12 种）
+ * 规则数据 · 神煞注册表 v4（24 种）
  *
  * v2 变更（RULESET 1.1.0）：
  * - 每条神煞为结构化条目：ruleId / 流派变体 / 起例依据 / 命中柱位类型 /
@@ -12,7 +12,7 @@
 import { BRANCHES, STEMS, kongWangBranches } from './stems-branches'
 
 export const RULE_META = {
-  name: '神煞规则集 v3（含红鸾/天喜/劫煞/灾煞）',
+  name: '神煞规则集 v4（24 种）',
   source: '《三命通会》《渊海子平》神煞诸章（口诀为传统公共文献，解释为原创）',
 } as const
 
@@ -20,10 +20,11 @@ export const RULE_META = {
  * 本注册表条目的 rulesetVersion 字段值。
  * 与 rules/index.ts 的 RULESET_VERSION 保持一致（有测试断言同步）。
  */
-export const SHENSHA_RULESET_VERSION = '1.2.0'
+export const SHENSHA_RULESET_VERSION = '1.3.0'
 
 /** 神煞计算上下文（时柱可能缺失） */
 export interface ShenshaContext {
+  gender: 'male' | 'female'
   dayStemIdx: number
   dayBranchIdx: number
   yearBranchIdx: number
@@ -58,6 +59,8 @@ export type ShenshaTargetPosition =
 export interface ShenshaFixtureInput {
   /** [年柱, 月柱, 日柱, 时柱|null]，干支须为合法甲子组合 */
   pillars: [string, string, string, string | null]
+  /** 元辰等区分男女的规则使用；省略时按男命构造夹具 */
+  gender?: 'male' | 'female'
 }
 
 /** 测试夹具：expectHits 为命中柱位列表（如 ['年支','日支']），空数组 = 不命中 */
@@ -488,6 +491,155 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     testFixtures: [
       // 壬子日（申子辰→午），月支午命中
       { input: { pillars: ['甲寅', '戊午', '壬子', '庚子'] }, expectHits: ['月支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.yuanchen.v1',
+    name: '元辰（大耗）',
+    variant: '年支起例；男命用通行表，女命取男命落支的对冲位',
+    inputBasis: 'yearBranch',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => {
+      const maleTarget = [7, 6, 9, 4, 3, 2, 1, 0, 11, 10, 9, 8][ctx.yearBranchIdx]
+      const target = ctx.gender === 'female' ? (maleTarget + 6) % 12 : maleTarget
+      return branchHits(ctx, [target])
+    },
+    verse: '子年见未，丑年见午，寅年见酉，卯年见辰，辰年见卯，巳年见寅，午年见丑，未年见子，申年见亥，酉年见戌，戌年见酉，亥年见申；女命取对冲位。',
+    basis: '以年支起例，男命按表取支，女命取该支对冲位，四柱地支见之为命中',
+    source: '《三命通会》论元辰',
+    modernExplanation:
+      '传统命理把元辰作为观察耗散与阻滞主题的辅助符号；本规则仅记录其位置，不能据此推断具体处境或事件。',
+    testFixtures: [
+      { input: { pillars: ['甲子', '丙寅', '甲辰', '丁未'], gender: 'male' }, expectHits: ['时支'] },
+      { input: { pillars: ['甲子', '丙寅', '甲辰', '丁丑'], gender: 'female' }, expectHits: ['时支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.jinyu.v1',
+    name: '金舆',
+    variant: '日干起例通行版',
+    inputBasis: 'dayStem',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => branchHits(ctx, [[4, 5, 7, 8, 7, 8, 10, 11, 1, 2][ctx.dayStemIdx]]),
+    verse: '甲龙乙蛇，丙戊羊，丁己猴，庚犬辛猪，壬牛癸虎。',
+    basis: '以日干起例，四柱地支见对应支为命中',
+    source: '《三命通会》论金舆',
+    modernExplanation:
+      '传统命理以金舆象征安定资源与生活条件；本规则只提供文化语境中的辅助标记，不作财富或生活结果断言。',
+    testFixtures: [
+      { input: { pillars: ['丙子', '庚寅', '甲午', '戊辰'] }, expectHits: ['时支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.guchen.v1',
+    name: '孤辰',
+    variant: '年支三合前位通行版',
+    inputBasis: 'yearBranch',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => branchHits(ctx, [[2, 2, 5, 5, 5, 8, 8, 8, 11, 11, 11, 2][ctx.yearBranchIdx]]),
+    verse: '亥子丑人见寅，寅卯辰人见巳，巳午未人见申，申酉戌人见亥。',
+    basis: '以年支所属亥子丑、寅卯辰、巳午未、申酉戌分组起例，四柱地支见前位为命中',
+    source: '《三命通会》论孤辰',
+    modernExplanation:
+      '传统命理用孤辰讨论独处与人际距离等主题；其含义依整体命局而异，不能单独用于判断关系或性格。',
+    testFixtures: [
+      { input: { pillars: ['乙亥', '戊子', '甲辰', '丙寅'] }, expectHits: ['时支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.guasu.v1',
+    name: '寡宿',
+    variant: '年支三合后位通行版',
+    inputBasis: 'yearBranch',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => branchHits(ctx, [[10, 10, 1, 1, 1, 4, 4, 4, 7, 7, 7, 10][ctx.yearBranchIdx]]),
+    verse: '亥子丑人见戌，寅卯辰人见丑，巳午未人见辰，申酉戌人见未。',
+    basis: '以年支所属亥子丑、寅卯辰、巳午未、申酉戌分组起例，四柱地支见后位为命中',
+    source: '《三命通会》论寡宿',
+    modernExplanation:
+      '传统命理用寡宿讨论独处与陪伴等主题；本规则仅作辅助标记，不据单一神煞推断婚恋、人际或生活事件。',
+    testFixtures: [
+      { input: { pillars: ['乙亥', '戊子', '甲辰', '甲戌'] }, expectHits: ['时支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.hongyan.v1',
+    name: '红艳煞',
+    variant: '日干起例通行版',
+    inputBasis: 'dayStem',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => branchHits(ctx, [[6, 8, 2, 7, 4, 4, 10, 9, 0, 8][ctx.dayStemIdx]]),
+    verse: '甲午乙申丙见寅，丁未戊己辰上寻，庚戌辛酉壬见子，癸临申上是红艳。',
+    basis: '以日干起例，四柱地支见对应支为命中',
+    source: '《三命通会》论红艳煞',
+    modernExplanation:
+      '传统命理以红艳煞讨论人际吸引与情感表达；本规则只保留其文化象征，不作感情经历或行为判断。',
+    testFixtures: [
+      { input: { pillars: ['甲子', '丙寅', '乙丑', '戊申'] }, expectHits: ['时支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.xuetang.v1',
+    name: '学堂',
+    variant: '日干长生位通行版',
+    inputBasis: 'dayStem',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => branchHits(ctx, [[11, 6, 2, 9, 2, 9, 5, 0, 8, 3][ctx.dayStemIdx]]),
+    verse: '甲学堂在亥，乙在午，丙戊在寅，丁己在酉，庚在巳，辛在子，壬在申，癸在卯。',
+    basis: '以日干的长生位起例，四柱地支见之为命中',
+    source: '《三命通会》论学堂',
+    modernExplanation:
+      '传统命理以学堂象征学习与知识积累主题；实际学习表现受多种因素影响，不由这一标记单独决定。',
+    testFixtures: [
+      { input: { pillars: ['丙子', '庚寅', '甲辰', '乙亥'] }, expectHits: ['时支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.ciguan.v1',
+    name: '词馆',
+    variant: '学堂对冲位通行版',
+    inputBasis: 'dayStem',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => branchHits(ctx, [[5, 0, 8, 3, 8, 3, 11, 6, 2, 9][ctx.dayStemIdx]]),
+    verse: '词馆取学堂之对冲位：甲巳、乙子、丙戊申、丁己卯、庚亥、辛午、壬寅、癸酉。',
+    basis: '以日干学堂所在支的对冲位起例，四柱地支见之为命中',
+    source: '《三命通会》论词馆',
+    modernExplanation:
+      '传统命理以词馆象征文字、表达与知识运用主题；本规则仅作文化层面的辅助说明，不断言能力或成就。',
+    testFixtures: [
+      { input: { pillars: ['丙子', '庚寅', '甲辰', '己巳'] }, expectHits: ['时支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.tianchu.v1',
+    name: '天厨',
+    variant: '日干食神临官位通行版',
+    inputBasis: 'dayStem',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => branchHits(ctx, [[5, 6, 7, 8, 7, 8, 9, 10, 11, 0][ctx.dayStemIdx]]),
+    verse: '甲在巳，乙在午，丙戊在未，丁己在申，庚在酉，辛在戌，壬在亥，癸在子。',
+    basis: '以日干食神的临官位起例，四柱地支见之为命中',
+    source: '《三命通会》论天厨',
+    modernExplanation:
+      '传统命理以天厨讨论饮食、供养与生活资源主题；本规则仅标示传统对应关系，不作健康、财富或福祸断言。',
+    testFixtures: [
+      { input: { pillars: ['丙子', '庚寅', '甲辰', '己巳'] }, expectHits: ['时支'] },
     ],
   },
 ]

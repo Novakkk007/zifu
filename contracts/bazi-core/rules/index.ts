@@ -8,11 +8,13 @@
  *          BirthInput 新增 ianaTimezone（Intl 历史偏移/夏令时换算）；
  *          TimeAudit 新增 ianaTimezone/timezoneSource。
  *          旧版 1.0.0 排盘结果仍为有效历史数据（不迁移、不作废）。
+ * - 1.2.0：神煞注册表 v3，新增红鸾、天喜、劫煞、灾煞（共 16 种）。
+ * - 1.3.0：神煞注册表 v4，新增元辰、金舆、孤辰、寡宿、红艳煞、学堂、词馆、天厨（共 24 种）。
  */
-export const RULESET_VERSION = '1.2.0'
+export const RULESET_VERSION = '1.3.0'
 
 /** 算法版本（与 RULESET_VERSION 同步发布） */
-export const ALGORITHM_VERSION = '1.2.0'
+export const ALGORITHM_VERSION = '1.3.0'
 
 export * as stemsBranches from './stems-branches'
 export * as tengods from './tengods'

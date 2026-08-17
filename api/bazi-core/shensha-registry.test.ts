@@ -1,5 +1,5 @@
 /**
- * 神煞注册表 v2 夹具测试：12 煞各一个 describe，
+ * 神煞注册表 v4 夹具测试：24 煞各一个 describe，
  * 逐条执行注册表内 testFixtures，断言命中柱位（list-all）。
  */
 import { describe, expect, it } from 'vitest'
@@ -30,6 +30,7 @@ function ctxFromFixture(input: ShenshaFixtureInput): ShenshaContext {
   const day = pillars[2]!
   const present = pillars.filter((p): p is NonNullable<typeof p> => p !== null)
   return {
+    gender: input.gender ?? 'male',
     dayStemIdx: day.stemIdx,
     dayBranchIdx: day.branchIdx,
     yearBranchIdx: pillars[0]!.branchIdx,
@@ -40,10 +41,10 @@ function ctxFromFixture(input: ShenshaFixtureInput): ShenshaContext {
 }
 
 describe('神煞注册表元数据', () => {
-  it('注册表恰好 16 条，ruleId 唯一且格式规范', () => {
-    expect(SHENSHA_REGISTRY).toHaveLength(16)
+  it('注册表恰好 24 条，ruleId 唯一且格式规范', () => {
+    expect(SHENSHA_REGISTRY).toHaveLength(24)
     const ids = SHENSHA_REGISTRY.map((d) => d.ruleId)
-    expect(new Set(ids).size).toBe(16)
+    expect(new Set(ids).size).toBe(24)
     for (const id of ids) expect(id).toMatch(/^shensha\.[a-z]+\.v1$/)
   })
 
@@ -60,9 +61,9 @@ describe('神煞注册表元数据', () => {
     }
   })
 
-  it('条目 rulesetVersion 与库 RULESET_VERSION 同步（1.1.0）', () => {
+  it('条目 rulesetVersion 与库 RULESET_VERSION 同步（1.3.0）', () => {
     expect(SHENSHA_RULESET_VERSION).toBe(RULESET_VERSION)
-    expect(RULESET_VERSION).toBe('1.2.0')
+    expect(RULESET_VERSION).toBe('1.3.0')
   })
 })
 
