@@ -121,7 +121,7 @@ export default function PageHero({
   return (
     <section
       className={cn(
-        'relative flex flex-col items-center justify-center overflow-hidden bg-deep px-4 py-16 text-center sm:px-6 sm:py-20',
+        'relative flex flex-col items-center justify-center overflow-hidden bg-deep px-4 py-8 text-center sm:px-6 sm:py-20',
         minH,
       )}
     >
