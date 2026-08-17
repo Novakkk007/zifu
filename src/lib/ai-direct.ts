@@ -27,6 +27,30 @@ export interface DirectReadingResult {
   content: string
 }
 
+export type DirectChatRole = 'user' | 'assistant'
+
+export interface DirectChatHistoryMessage {
+  role: DirectChatRole
+  content: string
+}
+
+export interface DirectChatInput {
+  /** 命盘结构化摘要；每轮都会随先生约束一同带入，避免对话漂移 */
+  chartSummary: string
+  history: DirectChatHistoryMessage[]
+  persona?: string
+  depth?: string
+  provider?: AIProvider
+  model?: string
+  baseUrl?: string
+  apiKey?: string
+}
+
+export interface DirectChatApiMessage {
+  role: 'system' | DirectChatRole
+  content: string
+}
+
 // 名家主题化上下文（LJM 十神角色映射——AI 参详增强，静态引入保持同步函数签名）
 import { ljmContextText } from '@contracts/engines/masters-rules/ljm'
 
@@ -107,6 +131,72 @@ export const AI_PROVIDERS: Record<AIProvider, { label: string; baseUrl: string; 
 export const BUILTIN_AI_KEY = (import.meta.env.VITE_DEEPSEEK_API_KEY as string | undefined) ?? ''
 export const BUILTIN_AI_PROVIDER: AIProvider = BUILTIN_AI_KEY ? 'deepseek' : 'kimi'
 
+/** 多轮上下文保护：保留首次讲述和最近对话，同时限制浏览器直连请求体。 */
+export const DIRECT_CHAT_MAX_HISTORY_MESSAGES = 12
+export const DIRECT_CHAT_MAX_MESSAGE_CHARS = 4_000
+export const DIRECT_CHAT_MAX_HISTORY_CHARS = 16_000
+
+const DIRECT_CHAT_SYSTEM_PROMPT =
+  '你是紫府的先生：通晓命理典籍，温和如春风，有分寸，像坐在访客旁边喝茶讲古。' +
+  '这是一次连续对话，请结合此前讲述回答访客眼下的问题，不重复整篇命盘。' +
+  '希望法则每一轮都不可违背：每一处警示之后都给一条出路或转机，无论如何给访客希望，结尾把话头温和交还给访客。' +
+  '只做传统文化层面的参详，不替访客作医疗、投资或法律决定，不作确定性生死病灾断言，不编造古籍原文。'
+
+/**
+ * 为多轮请求裁剪历史。首条 assistant 是首次完整讲述，始终优先保留；
+ * 其余消息从最新往前取，既防超长，也让最近追问不丢失。
+ */
+export function truncateDirectChatHistory(history: DirectChatHistoryMessage[]): DirectChatHistoryMessage[] {
+  const normalized = history
+    .filter((message) => message && (message.role === 'user' || message.role === 'assistant'))
+    .map((message) => ({
+      role: message.role,
+      content: String(message.content ?? '').trim().slice(0, DIRECT_CHAT_MAX_MESSAGE_CHARS),
+    }))
+    .filter((message) => message.content.length > 0)
+
+  if (normalized.length === 0) return []
+
+  const firstReading = normalized[0]?.role === 'assistant' ? normalized[0] : null
+  const recentPool = normalized.slice(firstReading ? 1 : 0)
+  const recentLimit = DIRECT_CHAT_MAX_HISTORY_MESSAGES - (firstReading ? 1 : 0)
+  const recent: DirectChatHistoryMessage[] = []
+  let remainingChars = DIRECT_CHAT_MAX_HISTORY_CHARS - (firstReading?.content.length ?? 0)
+
+  for (let i = recentPool.length - 1; i >= 0 && recent.length < recentLimit && remainingChars > 0; i -= 1) {
+    const message = recentPool[i]
+    const content = message.content.slice(0, remainingChars)
+    if (content) {
+      recent.push({ ...message, content })
+      remainingChars -= content.length
+    }
+  }
+
+  recent.reverse()
+  return firstReading ? [firstReading, ...recent] : recent
+}
+
+/** 纯函数消息组装，供直连调用与单测共用。 */
+export function buildDirectChatMessages(input: {
+  chartSummary: string
+  history: DirectChatHistoryMessage[]
+  persona?: string
+  depth?: string
+}): DirectChatApiMessage[] {
+  return [
+    { role: 'system', content: DIRECT_CHAT_SYSTEM_PROMPT },
+    {
+      role: 'user',
+      content: buildReadingPrompt({
+        chartSummary: input.chartSummary,
+        persona: input.persona ?? 'scholar',
+        depth: input.depth ?? 'pro',
+      }),
+    },
+    ...truncateDirectChatHistory(input.history),
+  ]
+}
+
 /** 解析最终使用的密钥与后端：访客自带 key 优先，否则回退内置 */
 export function resolveAiAccess(inputKey: string, inputProvider?: AIProvider): { apiKey: string; provider: AIProvider } {
   if (inputKey.trim()) {
@@ -141,6 +231,37 @@ export async function aiDirectReading(input: DirectReadingInput): Promise<Direct
         },
       ],
       max_tokens: 1200,
+      temperature: 0.7,
+    }),
+  })
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`AI 服务返回 ${res.status}${body ? `：${body.slice(0, 160)}` : ''}`)
+  }
+  const data = (await res.json()) as {
+    choices?: Array<{ message?: { content?: string } }>
+  }
+  const content = data.choices?.[0]?.message?.content
+  if (!content) throw new Error('AI 服务返回为空')
+  return { source: 'live-direct', model, content }
+}
+
+/** 直连多轮追问：每轮重申先生人格与希望法则，并携带受限的前文 context。 */
+export async function aiDirectChat(input: DirectChatInput): Promise<DirectReadingResult> {
+  const { apiKey, provider } = resolveAiAccess(input.apiKey ?? '', input.provider)
+  const cfg = AI_PROVIDERS[provider] ?? AI_PROVIDERS.kimi
+  const model = input.model || cfg.defaultModel
+  const baseUrl = (input.baseUrl || cfg.baseUrl).replace(/\/$/, '')
+  const res = await fetch(`${baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: buildDirectChatMessages(input),
+      max_tokens: 900,
       temperature: 0.7,
     }),
   })

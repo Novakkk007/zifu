@@ -14,11 +14,11 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import SectionHeading from '@/components/SectionHeading'
 import { SegmentedControl } from '@/components/FormControls'
 import { DeepButton, GoldButton } from '@/components/Buttons'
+import DirectAiChat from '@/components/DirectAiChat'
 import { trpc } from '@/providers/trpc'
 import { useAuth } from '@/hooks/useAuth'
-import { aiDirectReading, buildChartSummary, getStoredAiKey, setStoredAiKey, BUILTIN_AI_KEY } from '@/lib/ai-direct'
+import { buildChartSummary } from '@/lib/ai-direct'
 import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
-import type { DirectReadingResult } from '@/lib/ai-direct'
 import { LOGIN_PATH } from '@/const'
 import { cn } from '@/lib/utils'
 import type { BaziChartV2 } from '@contracts/bazi-core'
@@ -203,51 +203,7 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage])
 
-  /* ---------- 游客直连卡（静态托管自带密钥模式） ---------- */
-  const [directKey, setDirectKey] = useState<string>(() => getStoredAiKey())
-  const [directKeyDraft, setDirectKeyDraft] = useState<string>(() => getStoredAiKey())
-  const [directBusy, setDirectBusy] = useState(false)
-  const [directResult, setDirectResult] = useState<DirectReadingResult | null>(null)
-  const [directError, setDirectError] = useState<string | null>(null)
-  const [provider, setProvider] = useState<'kimi' | 'deepseek'>(() => {
-    try {
-      return (localStorage.getItem('zifu:ai-provider') as 'kimi' | 'deepseek') || 'kimi'
-    } catch {
-      return 'kimi'
-    }
-  })
-
-  const runDirect = async () => {
-    if (!chart || (!directKey.trim() && !BUILTIN_AI_KEY) || directBusy) return
-    setDirectBusy(true)
-    setDirectError(null)
-    setDirectResult(null)
-    try {
-      const summary = buildChartSummary(chart)
-      const r = await aiDirectReading({
-        chartSummary: summary,
-        persona,
-        depth,
-        provider,
-        apiKey: directKey.trim(),
-      })
-      setDirectResult(r)
-    } catch (e) {
-      setDirectError(e instanceof Error ? e.message : String(e))
-    } finally {
-      setDirectBusy(false)
-    }
-  }
-
-  const saveDirectKey = () => {
-    const k = directKeyDraft.trim()
-    setStoredAiKey(k)
-    setDirectKey(k)
-  }
-
-  const directParagraphs = directResult
-    ? directResult.content.split(/\n{2,}|\n/).filter((p) => p.trim().length > 0)
-    : []
+  const directChartSummary = chart ? buildChartSummary(chart) : ''
 
   if (!authLoading && !user) {
     return (
@@ -259,87 +215,17 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
           dark
           className="mb-12"
         />
-        <div className="rounded-xl border border-gold/40 bg-deep p-8 text-center">
-          <p className="font-serif text-[18px] font-bold tracking-[0.1em] text-silktext">
-            自带密钥 · AI 直连参详
+        {stageLabel && (
+          <p className="mb-4 text-center text-[12.5px] text-goldbright">
+            已收到「{stageLabel}」的解读请求。
           </p>
-          <p className="mx-auto mt-3 max-w-[520px] text-[13px] leading-[1.9] text-silkmuted">
-            在下方填入你的 Kimi 或 DeepSeek（OpenAI 兼容）API 密钥，即可在本机浏览器直接调用
-            AI 参详——密钥只保存在你自己的浏览器（localStorage），不上传任何服务器。
-            未填密钥时仍可使用免费的模板参详（非 AI 生成）。
-          </p>
-          <div className="mx-auto mt-5 flex max-w-[460px] items-center gap-2">
-            <select
-              value={provider}
-              onChange={(e) => {
-                const p = e.target.value as 'kimi' | 'deepseek'
-                setProvider(p)
-                try {
-                  localStorage.setItem('zifu:ai-provider', p)
-                } catch {
-                  /* 隐私模式忽略 */
-                }
-              }}
-              className="shrink-0 rounded-lg border border-golddim/40 bg-black/30 px-3 py-2.5 text-[13px] text-silktext focus:border-goldbright focus:outline-none"
-              aria-label="选择 AI 后端"
-            >
-              <option value="kimi">Kimi</option>
-              <option value="deepseek">DeepSeek</option>
-            </select>
-            <input
-              type="password"
-              value={directKeyDraft}
-              onChange={(e) => setDirectKeyDraft(e.target.value)}
-              placeholder={provider === 'deepseek' ? 'sk-...（DeepSeek 平台 API Key）' : 'sk-...（Kimi 平台 API Key）'}
-              className="w-full rounded-lg border border-golddim/40 bg-black/30 px-4 py-2.5 text-[13px] text-silktext placeholder:text-silkmuted/50 focus:border-goldbright focus:outline-none"
-            />
-            <button
-              onClick={saveDirectKey}
-              className="shrink-0 rounded-lg border border-golddim/50 px-4 py-2.5 text-[13px] text-goldbright hover:bg-golddim/10"
-            >
-              保存
-            </button>
-          </div>
-          {directKey && (
-            <p className="mt-2 text-[11.5px] text-golddim">
-              已保存密钥（仅本机）· 直连端点 {provider === 'deepseek' ? 'api.deepseek.com' : 'api.moonshot.cn'} · 模型 {provider === 'deepseek' ? 'deepseek-chat' : 'kimi-k3'}
-            </p>
-          )}
-          {stageLabel && (
-            <p className="mt-3 text-[12.5px] text-goldbright">
-              已收到「{stageLabel}」的解读请求。
-            </p>
-          )}
-          <div className="mt-6 flex justify-center gap-4">
-            <button
-              onClick={runDirect}
-              disabled={!chart || (!directKey.trim() && !BUILTIN_AI_KEY) || directBusy}
-              className="rounded-xl border border-gold/60 bg-gold/10 px-8 py-3 text-[14px] font-medium tracking-[0.1em] text-goldbright transition-colors enabled:hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {directBusy ? 'AI 解读中…' : '开始 AI 直连参详'}
-            </button>
-          </div>
-          {!chart && (
-            <p className="mt-3 text-[12px] text-silkmuted">先完成上方排盘，即可直连参详。</p>
-          )}
-          {directError && (
-            <p className="mt-4 text-[12.5px] leading-relaxed text-red-400">参详失败：{directError}</p>
-          )}
-          {directResult && (
-            <div className="mx-auto mt-6 max-w-[720px] rounded-xl border border-goldbright/30 bg-black/20 p-6 text-left">
-              <p className="mb-3 text-[12px] font-semibold tracking-[0.15em] text-goldbright">
-                live · 模型 {directResult.model} · 自带密钥直连
-              </p>
-              <div className="space-y-3">
-                {directParagraphs.map((p, i) => (
-                  <p key={i} className="font-serif text-[14.5px] leading-[2] text-silktext">
-                    {p}
-                  </p>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        )}
+        <DirectAiChat
+          key={directChartSummary || 'empty-chart'}
+          chartSummary={directChartSummary}
+          persona={persona}
+          depth={depth}
+        />
       </div>
     )
   }
