@@ -45,15 +45,15 @@ describe('buildReadingPrompt（红线：无确定性断言、无假引文）', (
   })
 
   it('persona/depth 映射生效', () => {
-    expect(p).toContain('严谨学术风格')
-    expect(p).toContain('完整解读')
+    expect(p).toContain('格局框架')
+    expect(p).toContain('篇幅舒展')
     const q = buildReadingPrompt({ chartSummary: 'x', persona: 'master', depth: 'quick' })
-    expect(q).toContain('传统命师口吻')
-    expect(q).toContain('简明扼要')
+    expect(q).toContain('整体判断与关键提示')
+    expect(q).toContain('篇幅精简')
   })
 
   it('未知 persona/depth 有默认兜底', () => {
     const r = buildReadingPrompt({ chartSummary: 'x', persona: 'unknown', depth: 'unknown' })
-    expect(r).toContain('严谨学术风格') // scholar 兜底
+    expect(r).toContain('格局框架') // scholar 兜底
   })
 })
