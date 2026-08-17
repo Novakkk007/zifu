@@ -39,46 +39,27 @@ function MessageContent({ content }: { content: string }) {
   )
 }
 
-/** 先生之声：浏览器语音合成朗读（本地，零成本，不上传音频）。
- * 齐静春式音色方向：优先温润中文男声（云希 Yunxi / 云健 Yunjian），
- * 语速稍缓（0.9），像一位从容的先生。 */
+/** 先生之声：优先 /api/tts（Minimax 沉稳男声），未配置/失败回退浏览器语音合成。 */
 function useXianshengVoice() {
   const [speaking, setSpeaking] = useState(false)
   const utterRef = useRef<SpeechSynthesisUtterance | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  const pickVoice = (): SpeechSynthesisVoice | null => {
-    try {
-      const synth = window.speechSynthesis
-      if (!synth) return null
-      const voices = synth.getVoices()
-      if (voices.length === 0) return null
-      // 齐静春式沉稳儒雅男声优先级：云野 Yunye（低沉）> 云健 Yunjian > 云扬 Yunyang > 云希 Yunxi > 任意 zh-CN
-      const byName = (kw: string) =>
-        voices.find((v) => v.name.toLowerCase().includes(kw) && v.lang.toLowerCase().startsWith('zh'))
-      return (
-        byName('yunye') ??
-        byName('yunjian') ??
-        byName('yunyang') ??
-        byName('yunxi') ??
-        voices.find((v) => v.lang.toLowerCase().startsWith('zh')) ??
-        null
-      )
-    } catch {
-      return null
-    }
-  }
-
-  const speak = (text: string) => {
+  const speakFallback = (text: string) => {
     try {
       const synth = window.speechSynthesis
       if (!synth) return
       synth.cancel()
-      const cleaned = text.replace(/\*\*|#{1,6}|\*/g, '')
-      const utter = new SpeechSynthesisUtterance(cleaned)
+      const utter = new SpeechSynthesisUtterance(text)
       utter.lang = 'zh-CN'
       utter.rate = 0.85
       utter.pitch = 0.8
-      const voice = pickVoice()
+      const voices = synth.getVoices()
+      const byName = (kw: string) =>
+        voices.find((v) => v.name.toLowerCase().includes(kw) && v.lang.toLowerCase().startsWith('zh'))
+      const voice =
+        byName('yunye') ?? byName('yunjian') ?? byName('yunyang') ?? byName('yunxi') ??
+        voices.find((v) => v.lang.toLowerCase().startsWith('zh')) ?? null
       if (voice) utter.voice = voice
       utter.onend = () => setSpeaking(false)
       utter.onerror = () => setSpeaking(false)
@@ -86,11 +67,35 @@ function useXianshengVoice() {
       setSpeaking(true)
       synth.speak(utter)
     } catch {
-      /* 浏览器不支持语音时静默 */
+      /* ignore */
+    }
+  }
+
+  const speak = async (text: string) => {
+    const cleaned = text.replace(/\*\*|#{1,6}|\*/g, '')
+    setSpeaking(true)
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: cleaned }),
+      })
+      if (!res.ok) throw new Error(`tts ${res.status}`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = audioRef.current ?? new Audio()
+      audioRef.current = a
+      a.src = url
+      a.onended = () => setSpeaking(false)
+      a.onerror = () => setSpeaking(false)
+      await a.play()
+    } catch {
+      speakFallback(cleaned)
     }
   }
   const stop = () => {
     try {
+      audioRef.current?.pause()
       window.speechSynthesis.cancel()
     } catch {
       /* ignore */
