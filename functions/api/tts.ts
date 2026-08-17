@@ -53,6 +53,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       'X-Api-Resource-Id': RESOURCE_ID,
       'X-Api-Connect-Id': crypto.randomUUID(),
       'Content-Type': 'application/json',
+      'Accept-Encoding': 'identity',
     },
     body: JSON.stringify(payload),
   })
