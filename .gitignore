@@ -14,6 +14,9 @@ dist
 *.tsbuildinfo
 # Build outputs
 dist/
+dist-local/
+.perf-baseline/
+.perf-optimized/
 build/
 # Test coverage
 coverage/

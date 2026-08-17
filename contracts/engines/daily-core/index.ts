@@ -168,6 +168,115 @@ export function yijiOf(dayStem: DayStem): { yi: string[]; ji: string[] } {
   return YIJI_BY_DAY_STEM[dayStem] ?? { yi: ['祭祀'], ji: ['动土'] }
 }
 
+/* ===================== 宜忌来源与事项级参详（T-20260817-49 蔡伯励蒸馏落地） =====================
+ * 依据：docs/masters/caiBoli.md（T-25 蔡伯励择日堪舆方法论蒸馏）。
+ * 红线约束（文档「不可应用部分」）：
+ *   - 公开材料不足以还原真步堂综合评分公式 → 禁止以自造算法冒名蔡氏规则；
+ *   - 未取得合法年度通胜规则表时，不得声明宜忌为「蔡伯励/真步堂综合规则」；
+ *   - 固定的建除/二十八宿/交节月建吉凶表均「无来源」，不进入事项级宜忌。
+ * 因此本层只落地 CBL 规则中可工程化的「流程」部分：
+ *   CBL-01 候选门槛   —— 无年度真步堂数据时不生成「蔡氏吉日」类推荐；
+ *   CBL-02 事项忌项否决 —— 目标事项命中当日「忌」→ 标记否决，未命中仅保留资格，不输出「必宜/必成」；
+ *   CBL-04 冲突抑制    —— 同日既有「宜」又有「忌」的事项按冲突处理，禁止净加总后输出「吉」。
+ * 既有 yi/ji 仍为「公版黄历基础规则」静态映射，来源标注见 YIJI_PROVENANCE。
+ */
+
+/** 宜忌来源标注：公版黄历基础规则（非蔡氏/真步堂综合规则）。 */
+export interface YiJiProvenance {
+  /** 数据提供方口径：公版黄历基础规则 */
+  provider: string
+  /** 规则版本/版次（暂无真步堂年度数据时为空） */
+  sourceEdition: string
+  /** 生效年份（无年度通胜数据时为 null） */
+  sourceYear: number | null
+  /** 公开依据 URL（公版黄历通识，无单一权威链接） */
+  sourceUrl: string | null
+  /** 采纳口径——只做文化参详，非蔡氏综合规则、非科学预测 */
+  note: string
+}
+
+export const YIJI_PROVENANCE: YiJiProvenance = {
+  provider: '公版黄历基础规则（按日干静态映射）',
+  sourceEdition: '',
+  sourceYear: null,
+  sourceUrl: null,
+  note: '传统文化参详；未取得真步堂年度通胜数据前，不标注为蔡伯励/真步堂综合规则。',
+}
+
+/** 常见传统事项名（用于事项级参详匹配；仅收录公版宜忌词表内出现项） */
+export const TRADITIONAL_ACTIVITIES = [
+  '祭祀', '出行', '嫁娶', '开仓', '动土',
+  '入学', '纳采', '交易', '穿井', '开渠',
+  '会友', '修造', '上册', '渡水', '行船',
+  '祈福', '理发', '整手足甲', '移徙', '栽种',
+  '开生坟', '合寿木', '伐木', '开市', '词讼',
+] as const
+export type TraditionalActivity = (typeof TRADITIONAL_ACTIVITIES)[number]
+
+export type ActivityVetoState = 'clear' | 'veto' | 'conflict'
+
+export interface ActivityAdvice {
+  /** 归属宜还是忌：'yi' | 'ji' | 'none' | 'both' */
+  listed: 'yi' | 'ji' | 'none' | 'both'
+  /** 否决状态：clear=不否决(仅候选资格)；veto=命中忌项否决；conflict=既有宜又忌，冲突待复核 */
+  state: ActivityVetoState
+  /** 给出明确理由，供前端展示 */
+  reason: string
+}
+
+/**
+ * CBL-02/CBL-04 事项级参详：
+ * 给定当日日干的公版宜忌，判断某传统事项的推荐资格。
+ * - 命中「忌」→ veto（CBL-02 忌项否决优先）。
+ * - 同既入「宜」又入「忌」→ conflict（CBL-04 冲突抑制，不净加总，不判「吉」）。
+ * - 仅入「宜」或无 → clear（仅候选资格；「不忌」不升级为「必宜/必成」）。
+ */
+export function yijiVetoOf(dayStem: DayStem, activity: TraditionalActivity): ActivityAdvice {
+  const { yi, ji } = yijiOf(dayStem)
+  const inYi = yi.includes(activity)
+  const inJi = ji.includes(activity)
+  if (inYi && inJi) {
+    return { listed: 'both', state: 'conflict', reason: `「${activity}」当日既列宜又列忌，冲突待复核，不作推荐。` }
+  }
+  if (inJi) {
+    return { listed: 'ji', state: 'veto', reason: `当日「忌」含「${activity}」，按事项忌项否决，不推荐该事项。` }
+  }
+  if (inYi) {
+    return { listed: 'yi', state: 'clear', reason: `当日「宜」含「${activity}」，可作为候选（仅传统文化参详）。` }
+  }
+  return { listed: 'none', state: 'clear', reason: `该事项未列入当日宜忌，仅保留候选资格，不表示现实安全或必成。` }
+}
+
+/** 组合生肖相冲否决：预留 CBL-03 与事项参详联动的入口（生肖可选，缺省跳过）。 */
+export interface ActivityAdviceWithZodiac extends ActivityAdvice {
+  /** 命中相冲的生肖；未提供或不相冲为 null */
+  clashZodiac: Zodiac | null
+}
+
+export function dailyActivityAdvice(
+  dayStem: DayStem,
+  activity: TraditionalActivity,
+  dayBranchIdx: number,
+  zodiac?: Zodiac,
+): ActivityAdviceWithZodiac {
+  const base = yijiVetoOf(dayStem, activity)
+  const clashZodiac = zodiac ? zodiacClashOf(dayBranchIdx, zodiac) : null
+  // CBL-03：生肖相冲为个人化降级信号；与忌项否决叠加，不覆盖「clear」基础状态之外的语义。
+  const state: ActivityVetoState = base.state === 'veto' || (base.state === 'clear' && clashZodiac !== null)
+    ? 'veto'
+    : base.state === 'conflict'
+      ? 'conflict'
+      : base.state
+  return {
+    ...base,
+    state,
+    clashZodiac,
+    reason: clashZodiac
+      ? `${base.reason}；您的生肖「${clashZodiac}」与当日日支相冲，传统参详建议另择日。`
+      : base.reason,
+  }
+}
+
 /* ===================== 生肖相冲（CBL-03 择日个人化降级） =====================
  * 蔡伯励择日蒸馏的可落地部分（docs/masters/caiBoli.md）：
  * 用户自愿提供生肖 + 日支与生肖支六冲 → 标记「传统相冲」。
