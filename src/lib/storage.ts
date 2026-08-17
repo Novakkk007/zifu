@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
 
 /**
  * 安全的 localStorage 封装，带 try/catch 保护（隐私模式不崩）
@@ -82,7 +82,7 @@ export class SafeStorage {
  * @param initialValue 初始值
  * @returns [value, setValue]
  */
-export function useSafeStorage<T>(key: string, initialValue: T): [T, (value: T) => void] {
+export function useSafeStorage<T>(key: string, initialValue: T): [T, Dispatch<SetStateAction<T>>] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
       const item = window.localStorage.getItem(key)
@@ -121,6 +121,7 @@ export const STORAGE_KEYS = {
   HISTORY: 'zifu:history',
   PREFS: 'zifu:prefs',
   RESTORE: 'zifu:restore',
+  FENGSHUI_FORM: 'zifu:fengshui-form',
 } as const
 
 export const RESTORE_ROUTES = {
