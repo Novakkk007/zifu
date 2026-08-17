@@ -1,18 +1,23 @@
 /**
- * 紫府 TTS 服务（Cloudflare Pages Function）
- * 前端 POST { text } → 调 Minimax TTS 合成先生之声 → 返回音频。
- * Key 存于 Cloudflare 环境变量 MINIMAX_TTS_KEY（不暴露前端）。
+ * 紫府 TTS 服务（Cloudflare Pages Function）——火山引擎豆包语音合成。
+ * 前端 POST { text } → 豆包 TTS 合成先生之声 → 返回 mp3。
+ * Key 存于 Cloudflare 环境变量 VOLC_TTS_KEY（ark-xxx，不暴露前端）。
  * 未配置 key 时返回 503，前端回退浏览器语音合成。
  */
 interface Env {
-  MINIMAX_TTS_KEY?: string
+  VOLC_TTS_KEY?: string
 }
 
-/** Minimax 官方 endpoint（tts-v1，group_id 兼容） */
-const MINIMAX_TTS_URL = 'https://api.minimax.chat/v1/t2a_v2'
+const VOLC_TTS_URL = 'https://openspeech.bytedance.com/api/v1/tts'
+
+/** 齐静春式沉稳男声候选（豆包 voice_type）：
+ * zh_male_M392_conversation_wvae_bigtts —— 通用对话男声（自然沉稳）
+ * 备选：zh_male_qingrun_jingying_sunne（精英男声）、zh_male_wennuan_sunne（温暖男声）
+ */
+const VOICE_TYPE = 'zh_male_M392_conversation_wvae_bigtts'
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const key = context.env.MINIMAX_TTS_KEY
+  const key = context.env.VOLC_TTS_KEY
   if (!key) {
     return Response.json({ error: 'TTS not configured' }, { status: 503 })
   }
@@ -28,55 +33,47 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   const payload = {
-    model: 'speech-02-hd',
-    text,
-    stream: false,
-    voice_setting: {
-      voice_id: 'male-qn-qingse', // 青涩男声→可换：male-qn-jingying 等
-      speed: 0.92,
-      vol: 1.0,
-      pitch: -3, // 略低沉：齐静春式沉稳
+    app: {
+      appid: 'zifu-palace',
+      token: 'access_token',
+      cluster: 'volcano_tts',
     },
-    audio_setting: {
-      format: 'mp3',
-      sample_rate: 32000,
+    user: { uid: 'zifu-visitor' },
+    audio: {
+      voice_type: VOICE_TYPE,
+      encoding: 'mp3',
+      speed_ratio: 0.92,
+      volume_ratio: 1.0,
+      pitch_ratio: 0.96,
+    },
+    request: {
+      reqid: crypto.randomUUID(),
+      text,
+      text_type: 'plain',
+      operation: 'query',
     },
   }
 
-  const upstream = await fetch(MINIMAX_TTS_URL, {
+  const upstream = await fetch(VOLC_TTS_URL, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${key}`,
+      Authorization: `Bearer;${key}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
   })
 
   if (!upstream.ok) {
-    return Response.json(
-      { error: `upstream ${upstream.status}` },
-      { status: 502 },
-    )
+    return Response.json({ error: `upstream ${upstream.status}` }, { status: 502 })
   }
-  const data = (await upstream.json()) as {
-    data?: { audio?: string }
-    base_resp?: { status_code?: number; status_msg?: string }
+  const ct = upstream.headers.get('content-type') ?? ''
+  // 成功时豆包返回 audio/mpeg 流；失败时返回 json（含 message）
+  if (ct.includes('audio') || ct.includes('mpeg')) {
+    const buf = new Uint8Array(await upstream.arrayBuffer())
+    return new Response(buf, {
+      headers: { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-store' },
+    })
   }
-  if (data.base_resp?.status_code && data.base_resp.status_code !== 0) {
-    return Response.json(
-      { error: data.base_resp.status_msg ?? 'tts failed' },
-      { status: 502 },
-    )
-  }
-  const b64 = data.data?.audio
-  if (!b64) {
-    return Response.json({ error: 'no audio' }, { status: 502 })
-  }
-  const buf = Uint8Array.from(atob(b64), (ch) => ch.charCodeAt(0))
-  return new Response(buf, {
-    headers: {
-      'Content-Type': 'audio/mpeg',
-      'Cache-Control': 'no-store',
-    },
-  })
+  const errText = await upstream.text()
+  return Response.json({ error: errText.slice(0, 300) }, { status: 502 })
 }
