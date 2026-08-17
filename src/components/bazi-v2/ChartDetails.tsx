@@ -131,6 +131,14 @@ export function RelationsTable({ chart }: { chart: BaziChartV2 }) {
 
 /* ---------- 神煞 ---------- */
 
+/** 神煞柱位传统对应（年柱早年祖上/月柱父母事业/日柱自身婚姻/时柱子女晚年） */
+const PILLAR_MEANING: Record<string, string> = {
+  年: '早年 · 祖上',
+  月: '父母 · 事业',
+  日: '自身 · 婚姻',
+  时: '子女 · 晚年',
+}
+
 export function ShenshaTable({ chart }: { chart: BaziChartV2 }) {
   if (chart.shensha.length === 0) {
     return (
@@ -161,6 +169,7 @@ export function ShenshaTable({ chart }: { chart: BaziChartV2 }) {
         <tr>
           <th className={thCls}>名称</th>
           <th className={thCls}>命中柱位</th>
+          <th className={thCls}>柱位传统对应</th>
           <th className={thCls}>命中状态</th>
           <th className={thCls}>现代化说明</th>
         </tr>
@@ -177,16 +186,12 @@ export function ShenshaTable({ chart }: { chart: BaziChartV2 }) {
                   </span>
                 )}
               </td>
-              <td className={`${tdCls} whitespace-nowrap`}>
-                {s.pillar}
-                <span className="ml-1 text-inkmuted">（{s.char}）</span>
+              <td className={tdCls}>{s.pillar}</td>
+              <td className={tdCls}>
+                {PILLAR_MEANING[s.pillar[0]] ?? '—'}
               </td>
-              <td className={`${tdCls} whitespace-nowrap`}>
-                <span className="inline-block rounded-full border border-golddim/40 bg-golddim/10 px-2.5 py-0.5 text-[11.5px] tracking-[0.08em] text-golddim">
-                  命中 · {s.name}·{s.pillar}
-                </span>
-              </td>
-              <td className={tdCls}>{s.modernExplanation}</td>
+              <td className={tdCls}>{s.char}</td>
+              <td className={`${tdCls} leading-[1.8]`}>{s.modernExplanation}</td>
             </tr>
           )),
         )}
