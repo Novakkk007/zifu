@@ -60,21 +60,27 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   if (!upstream.ok) {
     return Response.json({ error: `upstream ${upstream.status}` }, { status: 502 })
   }
-  // 上游返回 text/plain 包裹的 JSON（可能分块）：读全文再解析
+  // 上游分块返回多个 JSON（每块含一段 base64 data）：逐块解析并拼接
   const rawText = await upstream.text()
-  let raw: { code?: number; message?: string; data?: string }
-  try {
-    raw = JSON.parse(rawText) as typeof raw
-  } catch {
-    // 分块/换行容错：取第一个 JSON 对象
-    const m = rawText.match(/\{[\s\S]*?\}/)
-    raw = m ? (JSON.parse(m[0]) as typeof raw) : { code: -1, message: 'parse failed' }
+  const chunks = rawText.split('\n').filter((line) => line.trim().startsWith('{'))
+  let merged = ''
+  let lastError = ''
+  for (const line of chunks) {
+    try {
+      const part = JSON.parse(line.trim()) as { code?: number; message?: string; data?: string }
+      if (part.code !== 0) {
+        lastError = part.message ?? 'tts failed'
+        continue
+      }
+      if (part.data) merged += part.data
+    } catch {
+      // 跳过坏块
+    }
   }
-  if (raw.code !== 0 || !raw.data) {
-    return Response.json({ error: raw.message ?? 'tts failed' }, { status: 502 })
+  if (!merged) {
+    return Response.json({ error: lastError || 'no audio' }, { status: 502 })
   }
-  // data 为 mp3 base64
-  const buf = Uint8Array.from(atob(raw.data), (ch) => ch.charCodeAt(0))
+  const buf = Uint8Array.from(atob(merged), (ch) => ch.charCodeAt(0))
   return new Response(buf, {
     headers: { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-store' },
   })
