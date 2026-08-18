@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { AnimatePresence, animate, motion } from 'framer-motion'
 import PageHero from '@/components/bazi/PageHero'
@@ -16,6 +16,8 @@ import type { EngineResult } from '@contracts/engines/engine-result'
 import { WUXING_COLORS } from '@/lib/wuxing-style'
 import { useEngine } from '@/hooks/useEngine'
 import { analyzeHepan } from '@/engines/client/hepan'
+import DirectAiCard from '@/components/DirectAiCard'
+import { buildHepanReadingPrompt, buildHepanSummary } from '@/lib/hepan-ai'
 
 /** 合盘表单（公历、不校正）→ BirthInput */
 function toBirthInput(p: PersonFormState): BirthInput {
@@ -162,6 +164,11 @@ export default function Hepan() {
 
   const report = result?.compatibility.data ?? null
   const overall = report?.totalScore ?? 0
+  const { hepanSummary, hepanPrompt } = useMemo(() => {
+    if (!result) return { hepanSummary: '', hepanPrompt: '' }
+    const summary = buildHepanSummary(result.chartA, result.chartB)
+    return { hepanSummary: summary, hepanPrompt: buildHepanReadingPrompt(summary) }
+  }, [result])
 
   /* 总评数字 count-up */
   useEffect(() => {
@@ -390,6 +397,26 @@ export default function Hepan() {
                   </motion.div>
                 ))}
               </div>
+
+              {/* 先生讲合盘：双盘事实摘要 + 合盘专用合规提示词 */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.95, duration: 0.55 }}
+                className="mx-auto mt-8 max-w-[980px]"
+              >
+                <DirectAiCard
+                  chartSummary={hepanSummary}
+                  readingPrompt={hepanPrompt}
+                  title="先生讲合盘"
+                  actionLabel="请先生讲合盘"
+                  persona="scholar"
+                  depth="pro"
+                />
+                <p className="mt-3 text-center text-[12px] leading-[1.8] text-inkmuted">
+                  只参看气质互动与互补线索，不评婚姻吉凶，不劝分劝合。合盘看气质互补，相处看经营。
+                </p>
+              </motion.div>
 
               {/* disclaimer */}
               <motion.p

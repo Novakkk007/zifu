@@ -19,6 +19,8 @@ export interface DirectReadingInput {
   model?: string
   baseUrl?: string
   apiKey: string
+  /** 场景专用提示词；未提供时使用通用命盘参详提示词 */
+  readingPrompt?: string
 }
 
 export interface DirectReadingResult {
@@ -258,11 +260,13 @@ export async function aiDirectReading(input: DirectReadingInput): Promise<Direct
         { role: 'system', content: '你是紫府的先生：通晓命理典籍，温和如春风，有分寸，无论如何给访客希望。' },
         {
           role: 'user',
-          content: buildReadingPrompt({
-            chartSummary: input.chartSummary,
-            persona: input.persona,
-            depth: input.depth,
-          }),
+          content:
+            input.readingPrompt ??
+            buildReadingPrompt({
+              chartSummary: input.chartSummary,
+              persona: input.persona,
+              depth: input.depth,
+            }),
         },
       ],
       max_tokens: 1200,
