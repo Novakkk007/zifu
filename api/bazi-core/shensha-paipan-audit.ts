@@ -26,6 +26,8 @@ for (const c of CASES) {
     day: Number(c.date.slice(8, 10)),
     hour: c.hour,
     minute: 0,
+    useTrueSolarTime: false,
+    dayRollover: 'zichu',
     gender: c.gender as 'male' | 'female',
   })
   const p = chart.pillars
