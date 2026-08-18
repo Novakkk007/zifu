@@ -28,6 +28,7 @@ import {
 } from './najia'
 
 export * from './hexagram-data'
+export * from './guaci'
 export * from './najia'
 
 /** 规则集版本（装卦规则变更时 bump） */
