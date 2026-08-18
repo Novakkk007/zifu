@@ -2,7 +2,10 @@
  * 游客 AI 直连多轮参详：先生先完整讲述，再围绕前文接续问答。
  * 密钥仅存 localStorage，所有请求从浏览器直达所选兼容端点。
  */
-import { type FormEvent, useRef, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
+
+/** 对话历史本地存储键 */
+const CHAT_STORE_KEY = 'zifu:xiansheng-chat'
 import {
   aiDirectChat,
   aiDirectReading,
@@ -130,11 +133,30 @@ export default function DirectAiChat({
   const [provider, setProvider] = useState<AIProvider>(getStoredProvider)
   const [keyDraft, setKeyDraft] = useState(getStoredAiKey)
   const [savedKey, setSavedKey] = useState(getStoredAiKey)
-  const [messages, setMessages] = useState<DirectChatHistoryMessage[]>([])
+  const [messages, setMessages] = useState<DirectChatHistoryMessage[]>(() => {
+    try {
+      const raw = localStorage.getItem(CHAT_STORE_KEY)
+      if (!raw) return []
+      const parsed = JSON.parse(raw) as DirectChatHistoryMessage[]
+      return Array.isArray(parsed) ? parsed.slice(-30) : []
+    } catch {
+      return []
+    }
+  })
   const [question, setQuestion] = useState('')
   const [model, setModel] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // 对话持久化：刷新/重进不丢（最多 30 条）
+  useEffect(() => {
+    try {
+      if (messages.length > 0) {
+        localStorage.setItem(CHAT_STORE_KEY, JSON.stringify(messages.slice(-30)))
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [messages])
   const { speaking: voiceSpeaking, speak: voiceSpeak, stop: voiceStop } = useXianshengVoice()
 
   const hasAccess = savedKey.trim().length > 0 || BUILTIN_AI_KEY.length > 0
@@ -264,9 +286,27 @@ export default function DirectAiChat({
 
       {hasReading && (
         <div className="mx-auto mt-7 max-w-[760px] border-t border-golddim/25 pt-6 text-left">
-          <p className="mb-5 text-center text-[11.5px] tracking-[0.14em] text-golddim">
-            先生与访客 · {model ? `live · ${model}` : 'live'}
-          </p>
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-center text-[11.5px] tracking-[0.14em] text-golddim">
+              先生与访客 · {model ? `live · ${model}` : 'live'}
+            </p>
+            {messages.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMessages([])
+                  try {
+                    localStorage.removeItem(CHAT_STORE_KEY)
+                  } catch {
+                    /* ignore */
+                  }
+                }}
+                className="text-[11.5px] tracking-[0.1em] text-inkmuted underline-offset-2 transition-colors hover:text-goldbright hover:underline"
+              >
+                清空对话
+              </button>
+            )}
+          </div>
           <div className="space-y-5" aria-live="polite">
             {messages.map((message, index) => {
               const isVisitor = message.role === 'user'
