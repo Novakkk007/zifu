@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://novakkk007.github.io/zifu/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://novakkk007.github.io/zifu/bazi</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://novakkk007.github.io/zifu/liuyao</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://novakkk007.github.io/zifu/ziwei</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://novakkk007.github.io/zifu/hecan</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://novakkk007.github.io/zifu/qizheng</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://novakkk007.github.io/zifu/qimen</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://novakkk007.github.io/zifu/daliuren</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://novakkk007.github.io/zifu/daily</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://novakkk007.github.io/zifu/toolkit</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://novakkk007.github.io/zifu/wiki</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://novakkk007.github.io/zifu/talks</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://novakkk007.github.io/zifu/terms</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://zifu.pages.dev/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://zifu.pages.dev/bazi</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://zifu.pages.dev/liuyao</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://zifu.pages.dev/ziwei</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://zifu.pages.dev/qimen</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://zifu.pages.dev/daliuren</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://zifu.pages.dev/qizheng</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://zifu.pages.dev/hepan</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://zifu.pages.dev/daily</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://zifu.pages.dev/library</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://zifu.pages.dev/talks</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://zifu.pages.dev/scenario/wealth</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://zifu.pages.dev/scenario/love</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://zifu.pages.dev/scenario/health</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://zifu.pages.dev/scenario/fengshui</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
 </urlset>
