@@ -90,7 +90,7 @@ function YaoDetailTable({ chart }: { chart: LiuyaoChart }) {
       className="mx-auto mt-10 max-w-3xl rounded-xl border border-golddim/20 bg-silk2/60 px-4 py-6 sm:px-8"
     >
       <p className="text-center text-[12px] tracking-[0.3em] text-inkmuted">
-        纳甲装卦 · 六亲世应六神旬空
+        纳甲装卦 · 六亲世应六神旬空 · 变卦六亲亦以本卦宫论
       </p>
       <div className="mt-5 space-y-1.5">
         {rows.map((y) => {

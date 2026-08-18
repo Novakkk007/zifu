@@ -113,6 +113,25 @@ describe("卦推导 fixtures（本卦/变卦/互卦）", () => {
     expect(r.data.bianGua?.name).toBe("坤为地");
     expect(r.data.movingIdx).toEqual([0, 1, 2, 3, 4, 5]);
   });
+
+  // P1#42 复现案（反馈「六爻变卦六亲疑似有误」核查结论）：
+  // 变卦六亲一律「以本卦卦宫五行为我」配（野鹤老人《增删卜易》通行装卦法），
+  // 与变卦自身卦宫无关。此处取 风泽中孚（艮宫土，游魂）动 0/2/5 爻 → 水风井，
+  // 变卦纳支为 辛丑/辛酉/戊子（土/金/水），按艮宫土配 → 兄弟/子孙/妻财。
+  // 若改用变卦自身卦宫（水风井=井宫属木）会得到不同六亲——此断言锁死通行法，防被大改。
+  it("变卦六亲以本卦卦宫论：风泽中孚（艮宫土）动 0/2/5 → 水风井", () => {
+    const r = castWithCoins(coinsFor([9, 7, 6, 8, 7, 9]), { castAt: T_GENGXU });
+    expect(r.data.benGua.name).toBe("风泽中孚");
+    expect(r.data.gong).toBe("艮");
+    expect(r.data.gongWuxing).toBe("土");
+    expect(r.data.gongKind).toBe("游魂");
+    expect(r.data.movingIdx).toEqual([0, 2, 5]);
+    expect(r.data.bianGua?.name).toBe("水风井");
+    // 变卦同位爻纳甲 + 六亲（均按艮宫土）
+    expect(r.data.yaos[0].bian).toEqual({ ganzhi: "辛丑", wuxing: "土", liuqin: "兄弟" });
+    expect(r.data.yaos[2].bian).toEqual({ ganzhi: "辛酉", wuxing: "金", liuqin: "子孙" });
+    expect(r.data.yaos[5].bian).toEqual({ ganzhi: "戊子", wuxing: "水", liuqin: "妻财" });
+  });
 });
 
 /* ---------------- 纳甲 / 六亲 / 世应 spot-checks ---------------- */
