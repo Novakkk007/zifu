@@ -5,7 +5,7 @@
  */
 import raw from '@/data/books.json?raw'
 
-export type BookCategory = '易占' | '子平' | '星命' | '三式'
+export type BookCategory = '易占' | '子平' | '星命' | '三式' | '择日'
 
 export type BookExcerpt = {
   text: string
@@ -25,4 +25,4 @@ export type Book = {
 
 export const BOOKS: Book[] = JSON.parse(raw) as Book[]
 
-export const BOOK_CATEGORIES: ('全部' | BookCategory)[] = ['全部', '易占', '子平', '星命', '三式']
+export const BOOK_CATEGORIES: ('全部' | BookCategory)[] = ['全部', '易占', '子平', '星命', '三式', '择日']
