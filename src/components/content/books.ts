@@ -3,26 +3,39 @@
  * tsconfig 未开 resolveJsonModule，经 Vite `?raw` 内联 JSON 字符串后解析，
  * 数据源仍是规范的 src/data/books.json。
  */
-import raw from '@/data/books.json?raw'
+import raw from "@/data/books.json?raw";
 
-export type BookCategory = '易占' | '子平' | '星命' | '三式' | '择日'
+export type BookCategory = "易占" | "子平" | "星命" | "三式" | "择日";
 
 export type BookExcerpt = {
-  text: string
-  source: string
-}
+  text: string;
+  source: string;
+};
+
+export type BookChapter = {
+  title: string;
+  paragraphs: string[];
+};
 
 export type Book = {
-  id: string
-  title: string
-  dynasty: string
-  author: string
-  category: BookCategory
-  intro: string
-  route: string
-  excerpts: BookExcerpt[]
-}
+  id: string;
+  title: string;
+  dynasty: string;
+  author: string;
+  category: BookCategory;
+  intro: string;
+  route: string;
+  excerpts: BookExcerpt[];
+  chapters?: BookChapter[];
+};
 
-export const BOOKS: Book[] = JSON.parse(raw) as Book[]
+export const BOOKS: Book[] = JSON.parse(raw) as Book[];
 
-export const BOOK_CATEGORIES: ('全部' | BookCategory)[] = ['全部', '易占', '子平', '星命', '三式', '择日']
+export const BOOK_CATEGORIES: ("全部" | BookCategory)[] = [
+  "全部",
+  "易占",
+  "子平",
+  "星命",
+  "三式",
+  "择日",
+];
