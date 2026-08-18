@@ -64,6 +64,8 @@ export function buildChartSummary(chart: unknown): string {
     pillars?: Record<string, { stem: string; branch: string } | null | undefined>
     tenGods?: Record<string, string>
     shensha?: { name: string; pillar: string; char: string; verse?: string }[]
+    dayun?: { startAge?: number; steps?: { ganzhi?: string; startAge?: number; endAge?: number; startYear?: number; stemTenGod?: string }[] }
+    liunian?: { current?: { ganzhi?: string; year?: number }; upcoming?: { ganzhi?: string; year?: number } }
   }
   const inp = c.input ?? { year: 0, month: 0, day: 0 }
   const p = c.pillars ?? {}
@@ -85,6 +87,25 @@ export function buildChartSummary(chart: unknown): string {
     if (verseHit?.verse) {
       lines.push(`神煞口诀参考（讲到时可引一句，不逐字背诵）：${verseHit.verse}`)
     }
+  }
+  // 岁运维度（大运当前步 + 流年）——只作节律参详素材，不作事件预测
+  try {
+    const steps = c.dayun?.steps ?? []
+    const birthYear = inp.year ?? 0
+    const nowYear = new Date().getFullYear()
+    const age = nowYear - birthYear
+    const cur = steps.filter((s) => (s.startAge ?? 0) <= age).pop()
+    if (cur) {
+      lines.push(
+        `大运：${cur.ganzhi}（${cur.stemTenGod}），约${cur.startYear}年起（${cur.startAge}-${cur.endAge}岁）`,
+      )
+    }
+    const ln = c.liunian?.current
+    if (ln) {
+      lines.push(`流年：${ln.year}年 ${ln.ganzhi}`)
+    }
+  } catch {
+    /* 岁运缺失时静默 */
   }
   // 名家主题化上下文（LJM 十神角色映射——文化解释层，不映射现实身份）
   try {
@@ -120,6 +141,7 @@ export function buildReadingPrompt(input: { chartSummary: string; persona: strin
     '2. 总论先行：一句话定性这个人（格局气质），再按主次分述，不平均用力。\\n' +
     '3. 点穴：命局最关键的一两处，点透；若访客未问具体事，讲述后温和一问（如"你最近更挂心哪一处？"），待他开口再深入指点。\\n' +
     '4. 神煞参详指引：神煞为传统象法，讲到即可、点到为止——柱位传统对应（年柱主早年与祖上、月柱主父母与事业、日柱主自身与婚姻、时柱主子女与晚年）；只作文化象征，不作事件断言。\\n' +
+    '4b. 岁运参详指引：若访客关心当下与将来，可点一句当前大运与流年的主气（如"这十年行甲子运，木气渐旺，宜顺势而学"）——只作节律性文化提示，点到为止，不预测具体事件。\\n' +
     '5. 只做文化层面的参详，不做医疗、投资、法律等具体决策建议。\\n' +
     '6. 不给出确定性生死病灾断言；不得编造古籍原文引文，只能做通识概述。\\n\\n' +
     '希望法则（无论如何，给希望——不可违背）：\\n' +
