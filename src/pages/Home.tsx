@@ -9,6 +9,7 @@ import { usePaymentEnabled } from "@/hooks/usePaymentEnabled";
 import { setPageMeta } from "@/lib/pageMeta";
 
 const SiweiDemo = lazy(() => import("@/components/SiweiDemo"));
+const HomeInstallPrompt = lazy(() => import("@/components/HomeInstallPrompt"));
 
 const BOOKS = [
   "周易",
@@ -286,6 +287,41 @@ function DeferredSiweiDemo() {
       {shouldLoad && (
         <Suspense fallback={<div className="h-[320px]" aria-hidden />}>
           <SiweiDemo />
+        </Suspense>
+      )}
+    </div>
+  );
+}
+
+/** PWA 引导位于页底，接近视口时再下载其 JSX 与图标。 */
+function DeferredHomeInstallPrompt() {
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    const anchor = anchorRef.current;
+    if (!anchor || typeof IntersectionObserver === "undefined") {
+      setShouldLoad(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setShouldLoad(true);
+        observer.disconnect();
+      },
+      { rootMargin: "600px 0px" },
+    );
+    observer.observe(anchor);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={anchorRef} className="min-h-[500px] bg-deep">
+      {shouldLoad && (
+        <Suspense fallback={null}>
+          <HomeInstallPrompt />
         </Suspense>
       )}
     </div>
@@ -725,48 +761,8 @@ export default function Home() {
       {/* 浅 → 深 过渡带 */}
       <div className="zf-fade-to-deep h-[200px]" />
 
-      {/* ===== S8 · PWA 引导（仅移动端展示；桌面端显示简化提示） ===== */}
-      <section className="relative overflow-hidden bg-deep py-28">
-        <FloatingGlyphs count={24} onDeep />
-        {/* 移动端：添加到桌面引导 */}
-        <div className="relative mx-auto flex w-full max-w-[640px] flex-col items-center px-6 text-center md:hidden">
-          <div className="gs-app-icon">
-            <img
-              src="/assets/app-icon-512.png"
-              alt="紫府 App 图标"
-              className="animate-icon-sway h-24 w-24 rounded-[22%] border border-gold/50 shadow-[0_0_40px_-6px_rgba(199,162,58,0.45)]"
-            />
-          </div>
-          <h2
-            data-split="done"
-            className="gs-chars mt-8 font-serif text-[clamp(26px,3.6vw,42px)] font-bold leading-snug tracking-[0.12em] text-silktext"
-          >
-            <Chars text="随身携带你的" />
-            <Chars text="紫府" className="text-goldbright" />
-          </h2>
-          <p className="gs-reveal mt-5 text-[14.5px] leading-[1.95] text-silktext/85">
-            添加到手机桌面，像原生 App 一样随时打开
-            <br />
-            无需下载，无需应用商店，一键直达
-          </p>
-          <p className="gs-reveal mt-6 text-[12.5px] tracking-[0.1em] text-silkmuted">
-            使用手机浏览器访问本页，即可添加到桌面
-          </p>
-        </div>
-        {/* 桌面端：简化提示 */}
-        <div className="relative mx-auto hidden w-full max-w-[640px] flex-col items-center px-6 text-center md:flex">
-          <h2
-            data-split="done"
-            className="gs-chars mt-2 font-serif text-[clamp(24px,3vw,38px)] font-bold leading-snug tracking-[0.12em] text-silktext"
-          >
-            <Chars text="手机访问" />
-            <Chars text="体验更佳" className="text-goldbright" />
-          </h2>
-          <p className="gs-reveal mt-5 text-[14.5px] leading-[1.95] text-silktext/85">
-            每日时令、安寝参详、排盘解读，在手机上随手可得。
-          </p>
-        </div>
-      </section>
+      {/* ===== S8 · PWA 引导（接近视口时按需加载） ===== */}
+      <DeferredHomeInstallPrompt />
     </div>
   );
 }
