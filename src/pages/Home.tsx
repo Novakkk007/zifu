@@ -407,16 +407,17 @@ export default function Home() {
           <p className="mt-2 font-latin text-[13px] font-medium uppercase text-silkmuted">
             Zifu Palace
           </p>
-          <div className="mt-7 flex items-center gap-4">
-            <span className="h-px w-10 bg-gold/40" />
-            <span className="font-serif text-[16px] font-semibold tracking-[0.3em] text-goldbright">
+          <div className="mt-7 flex max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <span className="h-px w-10 shrink-0 bg-gold/40" />
+            <span className="break-keep font-serif text-[16px] font-semibold tracking-[0.22em] text-goldbright">
               以古人之智 · 照今日之心
             </span>
-            <span className="h-px w-10 bg-gold/40" />
+            <span className="h-px w-10 shrink-0 bg-gold/40" />
           </div>
-          <p className="mt-5 max-w-full font-sans text-[14.5px] font-light leading-[1.95] text-silktext sm:text-[15.5px]">
+          <p className="mt-5 w-full break-words px-1 font-sans text-[13px] font-light leading-[1.95] text-silktext sm:text-[15.5px]">
             <span className="block">以《周易》《滴天髓》《三命通会》等典籍原文为基</span>
-            <span className="block">AI 逐句引经参详，让流传千年的智慧，成为关照自己的方式</span>
+            <span className="block">AI 逐句引经参详，让流传千年的智慧</span>
+            <span className="block">成为关照自己的方式</span>
           </p>
           <div className="mt-9 flex flex-col items-center gap-4 sm:flex-row">
             <span className="inline-block">
