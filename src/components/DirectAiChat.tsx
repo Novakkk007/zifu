@@ -161,6 +161,15 @@ export default function DirectAiChat({
 
   const hasAccess = savedKey.trim().length > 0 || BUILTIN_AI_KEY.length > 0
   const hasReading = messages.some((message) => message.role === 'assistant')
+  // 追问引导：先生首轮讲完（assistant 恰 1 条）且未追问过时显示快捷问题
+  const assistantCount = messages.filter((m) => m.role === 'assistant').length
+  const userCount = messages.filter((m) => m.role === 'user').length
+  const showFollowups = !busy && assistantCount === 1 && userCount === 0
+  const FOLLOWUPS = [
+    '我的旺衰和用神，具体怎么理解？',
+    '事业方向上，这个命局适合做什么？',
+    '感情方面，这个盘有什么说法？',
+  ]
 
   const saveKey = () => {
     const key = keyDraft.trim()
@@ -345,6 +354,23 @@ export default function DirectAiChat({
               </div>
             )}
           </div>
+
+          {showFollowups && (
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+              {FOLLOWUPS.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => {
+                    setQuestion(q)
+                  }}
+                  className="rounded-full border border-gold/45 bg-gold/5 px-4 py-1.5 text-[12.5px] text-silktext transition-colors hover:border-goldbright hover:text-goldbright"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
 
           <form onSubmit={sendQuestion} className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end">
             <label className="min-w-0 flex-1">
