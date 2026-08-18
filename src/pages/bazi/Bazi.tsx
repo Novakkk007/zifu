@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import type { BaziChartV2 } from '@contracts/bazi-core'
-import { setPageMeta } from '@/lib/pageMeta'
+import { usePageMeta } from '@/lib/page-meta'
 import PageHero from '@/components/bazi/PageHero'
 import SectionHeading from '@/components/SectionHeading'
 import QuoteStrip from '@/components/QuoteStrip'
@@ -45,12 +45,10 @@ export default function Bazi() {
   const detailRef = useRef<HTMLElement>(null)
   const utils = trpc.useUtils()
 
-  useEffect(() => {
-    setPageMeta(
-      '八字排盘 · 紫府 — 服务端排盘，真太阳时校正，全量可解释',
-      '紫府八字排盘——依古法起四柱、排大运流年，真太阳时校正，全量可解释，AI 逐句引经参详。',
-    );
-  }, [])
+  usePageMeta(
+    '八字排盘 · 紫府',
+    '紫府八字排盘——依古法起四柱、排大运流年，真太阳时校正，全量可解释，AI 逐句引经参详。',
+  )
 
   // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.bazi.paipan 一致
   const paipan = useEngine(paipanBazi, {

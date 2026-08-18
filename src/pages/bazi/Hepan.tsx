@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { AnimatePresence, animate, motion } from 'framer-motion'
 import PageHero from '@/components/bazi/PageHero'
-import { setPageMeta } from '@/lib/pageMeta'
+import { usePageMeta } from '@/lib/page-meta'
 import BirthFields, { defaultPerson, type PersonFormState } from '@/components/bazi/BirthForm'
 import WuxingDonut from '@/components/bazi/WuxingDonut'
 import DemoDialog from '@/components/bazi/DemoDialog'
@@ -147,12 +147,10 @@ export default function Hepan() {
     onSuccess: (data) => setResult(data as unknown as HepanResponse),
   })
 
-  useEffect(() => {
-    setPageMeta(
-      '八字合盘 · 紫府 — 两盘对照，参看缘分',
-      '紫府八字合盘——双盘并置对照生辰五行，参看相处模式与互补之处，以公版典籍为据。',
-    );
-  }, [])
+  usePageMeta(
+    '八字合盘 · 紫府',
+    '紫府八字合盘——双盘并置对照生辰五行，参看相处模式与互补之处，以公版典籍为据。',
+  )
 
   useEffect(() => {
     if (result) {

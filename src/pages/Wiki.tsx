@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import PageHero from '@/components/content/PageHero'
-import { setPageMeta } from '@/lib/pageMeta'
+import { usePageMeta } from '@/lib/page-meta'
 import SectionHeading from '@/components/SectionHeading'
 import { GoldButton } from '@/components/Buttons'
 import { BOOKS, BOOK_CATEGORIES } from '@/components/content/books'
@@ -147,12 +147,10 @@ export default function Wiki() {
   const [cat, setCat] = useState<CatFilter>('全部')
   const [opened, setOpened] = useState<Book | null>(null)
 
-  useEffect(() => {
-    setPageMeta(
-      '藏经阁 · 紫府 — 十二部公版术数典籍',
-      '紫府藏经阁——汇聚《周易》《滴天髓》《三命通会》等十二部公版术数典籍原文节选，句有出处、可溯源查阅。',
-    )
-  }, [])
+  usePageMeta(
+    '藏经阁 · 紫府',
+    '紫府藏经阁——汇聚《周易》《滴天髓》《三命通会》等十二部公版术数典籍原文节选，句有出处、可溯源查阅。',
+  )
 
   const list = useMemo(() => (cat === '全部' ? BOOKS : BOOKS.filter((b) => b.category === cat)), [cat])
 

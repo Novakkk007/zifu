@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import Layout from '@/components/Layout';
-import { setPageMeta } from '@/lib/pageMeta';
+import { usePageMeta } from '@/lib/page-meta';
 import { computeChartV2, type BaziChartV2 } from '@contracts/bazi-core';
 import MasterHintsSection from '@/components/bazi-v2/MasterHintsSection';
 import { TenGodsTable } from '@/components/bazi-v2/ChartDetails';
@@ -108,13 +108,10 @@ export default function WealthScenario() {
   
   const caiguanOverview = getCaiguanOverview();
   
-  // 页面标题设置
-  useEffect(() => {
-    setPageMeta(
-      '事业财富运程 · 紫府',
-      '紫府事业财富运程——以八字财官结构与阶段节律为基础，参看事业方向与财富趋势。',
-    );
-  }, []);
+  usePageMeta(
+    '财富运程 · 紫府',
+    '紫府事业财富运程——以八字财官结构与阶段节律为基础，参看事业方向与财富趋势。',
+  );
   
   return (
     <Layout>
