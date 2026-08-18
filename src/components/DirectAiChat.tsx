@@ -74,24 +74,34 @@ function useXianshengVoice() {
   const speak = async (text: string) => {
     const cleaned = text.replace(/\*\*|#{1,6}|\*/g, '')
     setSpeaking(true)
-    try {
-      const res = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: cleaned }),
-      })
-      if (!res.ok) throw new Error(`tts ${res.status}`)
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = audioRef.current ?? new Audio()
-      audioRef.current = a
-      a.src = url
-      a.onended = () => setSpeaking(false)
-      a.onerror = () => setSpeaking(false)
-      await a.play()
-    } catch {
-      speakFallback(cleaned)
+    // 优先级：本地 TTS 代理（开发机秒连）→ CF /api/tts → 浏览器语音
+    for (const endpoint of ['http://127.0.0.1:8770/tts', '/api/tts']) {
+      try {
+        const controller = new AbortController()
+        const timer = window.setTimeout(() => controller.abort(), 20000)
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: cleaned }),
+          signal: controller.signal,
+        })
+        window.clearTimeout(timer)
+        if (!res.ok) throw new Error(`tts ${res.status}`)
+        const blob = await res.blob()
+        if (blob.size < 200) throw new Error('empty audio')
+        const url = URL.createObjectURL(blob)
+        const a = audioRef.current ?? new Audio()
+        audioRef.current = a
+        a.src = url
+        a.onended = () => setSpeaking(false)
+        a.onerror = () => setSpeaking(false)
+        await a.play()
+        return
+      } catch {
+        // 下一个端点
+      }
     }
+    speakFallback(cleaned)
   }
   const stop = () => {
     try {
