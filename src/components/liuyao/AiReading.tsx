@@ -18,6 +18,7 @@ import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabl
 import { aiBackendUnavailableText } from '@/lib/ai-reading-error'
 import { LOGIN_PATH } from '@/const'
 import { trpcCode, type ReadingResponse } from '@/components/liuyao/api'
+import { daXiangByName } from '@contracts/engines/liuyao-core'
 
 type Persona = 'scholar' | 'hermit'
 type Depth = 'pro' | 'plain'
@@ -162,7 +163,18 @@ export default function AiReading({ chartId, benName, bianName }: AiReadingProps
 
   /* ---------- 游客 / 未落库：直连参详卡（自带密钥） ---------- */
   if (!authLoading && !user) {
-    const summary = `六爻卦例：本卦《${benName}》${bianName ? `，变卦《${bianName}》` : '，六爻安静'}。请以先生口吻为访客参详此卦所问之事，结合卦名卦象的文化寓意。`
+    const benXiang = daXiangByName(benName)
+    const bianXiang = bianName ? daXiangByName(bianName) : undefined
+    let summary = `六爻卦例：本卦《${benName}》`
+    if (benXiang) summary += `，其象曰「${benXiang}」`
+    if (bianName) {
+      summary += `，变卦《${bianName}》`
+      if (bianXiang) summary += `，其象曰「${bianXiang}」`
+    } else {
+      summary += '，六爻安静无变爻'
+    }
+    summary +=
+      '。请以先生口吻为访客参详此卦所问之事，结合本卦与变卦的卦名、卦象与大象辞的文化寓意，点出本卦所主之神与世应之位，不作吉凶断言，仅供传统文化参详。'
     return (
       <div>
         {heading}
