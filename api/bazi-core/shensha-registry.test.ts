@@ -1,5 +1,5 @@
 /**
- * 神煞注册表 v4 夹具测试：24 煞各一个 describe，
+ * 神煞注册表 v5 夹具测试：40 煞各一个 describe，
  * 逐条执行注册表内 testFixtures，断言命中柱位（list-all）。
  */
 import { describe, expect, it } from 'vitest'
@@ -41,10 +41,10 @@ function ctxFromFixture(input: ShenshaFixtureInput): ShenshaContext {
 }
 
 describe('神煞注册表元数据', () => {
-  it('注册表恰好 24 条，ruleId 唯一且格式规范', () => {
-    expect(SHENSHA_REGISTRY).toHaveLength(24)
+  it('注册表恰好 40 条，ruleId 唯一且格式规范', () => {
+    expect(SHENSHA_REGISTRY).toHaveLength(40)
     const ids = SHENSHA_REGISTRY.map((d) => d.ruleId)
-    expect(new Set(ids).size).toBe(24)
+    expect(new Set(ids).size).toBe(40)
     for (const id of ids) expect(id).toMatch(/^shensha\.[a-z]+\.v1$/)
   })
 
@@ -61,19 +61,32 @@ describe('神煞注册表元数据', () => {
     }
   })
 
-  it('条目 rulesetVersion 与库 RULESET_VERSION 同步（1.3.0）', () => {
+  it('条目 rulesetVersion 与库 RULESET_VERSION 同步（1.4.0）', () => {
     expect(SHENSHA_RULESET_VERSION).toBe(RULESET_VERSION)
-    expect(RULESET_VERSION).toBe('1.3.0')
+    expect(RULESET_VERSION).toBe('1.4.0')
   })
 })
 
 for (const def of SHENSHA_REGISTRY) {
   describe(`神煞夹具：${def.name}（${def.ruleId}）`, () => {
     it('起例依据与命中柱位类型标注有效', () => {
-      expect(['yearStem', 'dayStem', 'yearBranch', 'dayBranch', 'monthBranch', 'dayJiazi']).toContain(
-        def.inputBasis,
-      )
-      expect(['anyBranch', 'anyStem', 'anyStemOrBranch', 'nonDayBranch']).toContain(def.targetPosition)
+      expect([
+        'yearStem',
+        'dayStem',
+        'yearBranch',
+        'dayBranch',
+        'monthBranch',
+        'dayJiazi',
+        'pillarStems',
+      ]).toContain(def.inputBasis)
+      expect([
+        'anyBranch',
+        'anyStem',
+        'anyStemOrBranch',
+        'nonDayBranch',
+        'dayPillar',
+        'hourBranch',
+      ]).toContain(def.targetPosition)
     })
     def.testFixtures.forEach((fx, i) => {
       it(`夹具 #${i + 1}：${fx.input.pillars.join(' / ')} → [${fx.expectHits.join(', ')}]`, () => {
@@ -84,7 +97,7 @@ for (const def of SHENSHA_REGISTRY) {
         for (const h of hits) {
           const pillarIdx = LABELS.findIndex((l) => l.startsWith(h.position[0]))
           const gz = fx.input.pillars[pillarIdx]!
-          const expectedChar = h.position.endsWith('干') ? gz[0] : gz[1]
+          const expectedChar = h.position === '日柱' ? gz : h.position.endsWith('干') ? gz[0] : gz[1]
           expect(h.char).toBe(expectedChar)
         }
       })

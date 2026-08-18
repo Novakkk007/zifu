@@ -11,7 +11,7 @@ import { createRouter, publicQuery, authedQuery } from "./middleware";
 export const ALGORITHM_VERSION = "computeChartV2@1";
 
 /**
- * 新版出生输入（与 @contracts/bazi-core 的 BirthInput 对齐，RULESET_VERSION 1.3.0）。
+ * 新版出生输入（与 @contracts/bazi-core 的 BirthInput 对齐，RULESET_VERSION 1.4.0）。
  * 额外允许 title 用于落库标题。
  */
 export const birthInput = z
