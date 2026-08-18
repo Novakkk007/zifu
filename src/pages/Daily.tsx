@@ -43,6 +43,7 @@ import {
   hourBranchOf,
   hourLuck as coreHourLuck,
   jiaziStem,
+  type Jianchu,
   yijiOf,
   sleepAdviceOf,
 } from '@contracts/engines/daily-core'
@@ -106,6 +107,30 @@ function Reveal({
 }
 
 /* ================= S2 · 今日宜忌 ================= */
+
+/** 今日建除值：仅展示传统字义，不作吉凶断言。 */
+function JianchuCard({ value }: { value: Jianchu }) {
+  return (
+    <Reveal className="mx-auto mb-6 w-full max-w-[960px]">
+      <div className="flex flex-col gap-5 rounded-xl border border-golddim/30 bg-silk2 px-7 py-6 sm:flex-row sm:items-center">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-gold/45 bg-deep font-serif text-[30px] font-black text-goldbright shadow-[0_8px_24px_rgba(8,39,38,0.16)]">
+          {value.name}
+        </div>
+        <div>
+          <p className="font-latin text-[11px] font-medium uppercase tracking-[0.28em] text-golddim">
+            Twelve Day Officers
+          </p>
+          <h3 className="mt-1 font-serif text-[21px] font-bold tracking-[0.06em] text-inktext">
+            今日值『{value.name}』
+          </h3>
+          <p className="mt-2 text-[14px] leading-[1.8] tracking-[0.03em] text-inkmuted">
+            {value.meaning} 仅作传统历法文化参详，不作吉凶断言。
+          </p>
+        </div>
+      </div>
+    </Reveal>
+  )
+}
 
 /** 今晚安寝卡（五行养生 · 文化参考，非医疗建议） */
 function SleepCard({ dayStem }: { dayStem: DayStem }) {
@@ -830,10 +855,10 @@ export default function Daily() {
       {/* 深 → 浅 过渡 */}
       <div className="zf-fade-to-silk h-[160px]" />
 
-      {/* 真实度标注：干支/宜忌/时柱/节气已接 daily-core 精密历法；农历近似；「今日与你·逐日详参」仍为演示 */}
+      {/* 真实度标注：干支/建除/宜忌/时柱/节气已接 daily-core；农历近似；「今日与你·逐日详参」仍为演示 */}
       <FeatureStatusBadge
         kind="approx"
-        text="今日干支、宜忌、时柱、节气由共享引擎 daily-core 精密历法真实计算（年以立春界、月以节气界、交节时刻精确）；农历为公历近似；「今日与你 · 逐日详参」仍为演示入口"
+        text="今日干支、建除、宜忌、时柱、节气由共享引擎 daily-core 真实计算（建除按农历月建起值；年以立春界、月以节气界）；农历标题为公历近似；「今日与你 · 逐日详参」仍为演示入口"
       />
 
       {/* S2 · 今日详卡 */}
@@ -846,6 +871,7 @@ export default function Daily() {
             sub={`${summary.dayGanzhi}日 · 依日柱轮换择日类目 · 共享引擎真实推算`}
           />
           <div className="mt-14">
+            <JianchuCard value={summary.jianchu} />
             <YijiCards dayStem={summary.dayStem} />
             <WuxingStrip stem={summary.dayStem} branch={summary.dayBranch} />
           </div>
