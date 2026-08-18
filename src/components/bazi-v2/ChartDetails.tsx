@@ -185,6 +185,11 @@ export function ShenshaTable({ chart }: { chart: BaziChartV2 }) {
                     {g.hits.length} 柱命中
                   </span>
                 )}
+                {s.variant ? (
+                  <p className="mt-1 font-sans text-[11px] font-normal leading-[1.6] text-inkmuted">
+                    {s.variant.length > 26 ? `${s.variant.slice(0, 26)}…` : s.variant}
+                  </p>
+                ) : null}
               </td>
               <td className={tdCls}>{s.pillar}</td>
               <td className={tdCls}>
