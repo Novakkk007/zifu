@@ -26,12 +26,17 @@ export default function DirectAiCard({
   title = '自带密钥 · AI 直连参详',
   persona = 'scholar',
   depth = 'pro',
+  readingPrompt,
+  actionLabel = '开始 AI 参详',
 }: {
   /** 命盘结构化摘要（引擎产出） */
   chartSummary: string
   title?: string
   persona?: string
   depth?: string
+  /** 场景专用提示词（合盘等）；不传则沿用通用命盘提示词 */
+  readingPrompt?: string
+  actionLabel?: string
 }) {
   const [provider, setProvider] = useState<'kimi' | 'deepseek'>(getStoredProvider)
   const [keyDraft, setKeyDraft] = useState(getStoredKey)
@@ -63,6 +68,7 @@ export default function DirectAiCard({
         depth,
         provider: savedKey.trim() ? provider : 'deepseek',
         apiKey: savedKey.trim(),
+        readingPrompt,
       })
       setResult(r)
     } catch (e) {
@@ -136,7 +142,7 @@ export default function DirectAiCard({
           disabled={!hasAccess || busy || !chartSummary}
           className="rounded-xl border border-gold/60 bg-gold/10 px-8 py-3 text-[14px] font-medium tracking-[0.1em] text-goldbright transition-colors enabled:hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {busy ? 'AI 解读中…' : '开始 AI 参详'}
+          {busy ? 'AI 解读中…' : actionLabel}
         </button>
       </div>
       {!chartSummary && (
