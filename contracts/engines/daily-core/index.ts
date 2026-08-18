@@ -17,7 +17,7 @@
  * 迁移自：src/components/content/ganzhi.ts + almanac.ts
  */
 
-import { Solar } from 'lunar-typescript'
+import { Solar, type Lunar } from 'lunar-typescript'
 
 // ===================== 常量 =====================
 
@@ -145,6 +145,69 @@ export function preciseNextSolarTerm(date: Date): { name: string; daysTo: number
 export function solarTermStartsOn(date: Date): string | null {
   const jieQi = Solar.fromDate(date).getLunar().getJieQi() // string：当天节气名或空串
   return jieQi || null
+}
+
+// ===================== 建除十二神 =====================
+
+/** 建除十二值固定顺序：从当月月建所在的日支起「建」，逐支顺行。 */
+export const JIANCHU_NAMES = [
+  '建', '除', '满', '平', '定', '执', '破', '危', '成', '收', '开', '闭',
+] as const
+
+export type JianchuName = (typeof JIANCHU_NAMES)[number]
+
+export interface Jianchu {
+  /** 当日所值的建除名。 */
+  readonly name: JianchuName
+  /** 《协纪辨方书》所述字义的文化释义，不含吉凶断言。 */
+  readonly meaning: string
+}
+
+/**
+ * 十二值义理取自 docs/classics/xie_ji_bian_fang_shu.md。
+ * 这里只解释字义与循环关系，不采用历书的吉凶归类。
+ */
+const JIANCHU_VALUES: readonly Jianchu[] = [
+  { name: '建', meaning: '万物初始，象征一月之主与创始。' },
+  { name: '除', meaning: '传统称“除旧布新”，象征清除与吐故纳新。' },
+  { name: '满', meaning: '满则必溢，象征圆满与充盈。' },
+  { name: '平', meaning: '满后归平，象征平衡与平顺。' },
+  { name: '定', meaning: '平而后定，象征安定与有序。' },
+  { name: '执', meaning: '定则可执，象征持守既成。' },
+  { name: '破', meaning: '物成亦会有毁，象征破旧与转折。' },
+  { name: '危', meaning: '破后知危，象征谨慎与持重。' },
+  { name: '成', meaning: '危后继成，象征事物有所成就。' },
+  { name: '收', meaning: '既成必收，象征收敛与归藏。' },
+  { name: '开', meaning: '开为生气，象征萌发与开通。' },
+  { name: '闭', meaning: '气萌而后闭藏，象征收束并孕育下一轮循环。' },
+]
+
+/** jianchuOf 可直接接收 lunar-typescript 的 Lunar，测试替身亦只需这两个方法。 */
+export type JianchuLunarDate = Pick<Lunar, 'getMonth' | 'getDayZhiIndex'>
+
+/** 六十甲子索引 + 农历月（正月为 1，闰月可传负数）→ 当日建除值。 */
+export function jianchuOf(dayJiaziIdx: number, lunarMonth: number): Jianchu
+/** 农历日期 → 当日建除值。 */
+export function jianchuOf(lunarDate: JianchuLunarDate): Jianchu
+export function jianchuOf(input: number | JianchuLunarDate, lunarMonth?: number): Jianchu {
+  const dayBranchIdx = typeof input === 'number' ? input % 12 : input.getDayZhiIndex()
+  const rawMonth = typeof input === 'number' ? lunarMonth : input.getMonth()
+
+  if (typeof input === 'number' && (!Number.isInteger(input) || input < 0 || input > 59)) {
+    throw new RangeError('dayJiaziIdx must be an integer from 0 to 59')
+  }
+  if (rawMonth === undefined || !Number.isInteger(rawMonth) || Math.abs(rawMonth) < 1 || Math.abs(rawMonth) > 12) {
+    throw new RangeError('lunarMonth must be an integer from 1 to 12 (negative for leap month)')
+  }
+  if (!Number.isInteger(dayBranchIdx) || dayBranchIdx < 0 || dayBranchIdx > 11) {
+    throw new RangeError('lunarDate day branch index must be an integer from 0 to 11')
+  }
+
+  // 正月建寅：月序 1→寅(2)，……，十一月→子(0)，十二月→丑(1)。
+  // 闰月沿用同名月的月建。
+  const monthBuildBranchIdx = (Math.abs(rawMonth) + 1) % 12
+  const valueIdx = (dayBranchIdx - monthBuildBranchIdx + 12) % 12
+  return JIANCHU_VALUES[valueIdx]
 }
 
 // ===================== 宜忌 =====================
@@ -380,6 +443,7 @@ export interface DailySummary {
   dayStem: DayStem
   dayBranch: string
   dayBranchIdx: number
+  jianchu: Jianchu
   yi: string[]
   ji: string[]
   hourLuck: HourLuck[]
@@ -456,6 +520,7 @@ export function getDailySummary(date?: Date, opts?: DailySummaryOptions): DailyS
   const dayBranch = dayGanzhiStr[1]
   const dayStemIdx = STEMS.indexOf(dayStem)
   const yj = yijiOf(dayStem)
+  const jianchuLunar = tz ? Solar.fromYmd(y, m, day).getLunar() : lunar
 
   return {
     date: `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
@@ -466,6 +531,7 @@ export function getDailySummary(date?: Date, opts?: DailySummaryOptions): DailyS
     dayStem,
     dayBranch,
     dayBranchIdx: BRANCHES.indexOf(dayGanzhiStr[1] as (typeof BRANCHES)[number]),
+    jianchu: jianchuOf(jianchuLunar),
     yi: yj.yi,
     ji: yj.ji,
     hourLuck: Array.from({ length: 24 }, (_, h) => hourLuck(h, dayStemIdx)),
