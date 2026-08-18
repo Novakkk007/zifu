@@ -3,13 +3,13 @@
  * 五行旺衰 → 体质倾向（文化视角）+ 四时养护提示。
  * 红线最严场景：全页医疗免责，任何表述不构成医疗建议。
  */
-import { useMemo, useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { motion } from 'framer-motion'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
 import { SafeStorage, STORAGE_KEYS } from '@/lib/storage'
 import type { BaziChartV2 } from '@contracts/bazi-core'
-import { setPageMeta } from '@/lib/pageMeta'
+import { usePageMeta } from '@/lib/page-meta'
 
 const easeOut = [0.16, 1, 0.3, 1] as [number, number, number, number]
 
@@ -48,12 +48,10 @@ const WUXING_CONSTITUTION: Record<string, { theme: string; traits: string; seaso
 }
 
 export default function HealthScenario() {
-  useEffect(() => {
-    setPageMeta(
-      '健康体质养生 · 紫府',
-      '紫府健康体质养生——从五行旺衰参看体质倾向与四时养护提示，仅作传统文化研究参考，不构成医疗建议。',
-    );
-  }, [])
+  usePageMeta(
+    '健康养生 · 紫府',
+    '紫府健康体质养生——从五行旺衰参看体质倾向与四时养护提示，仅作传统文化研究参考，不构成医疗建议。',
+  )
   const [dayMaster, setDayMaster] = useState<string | null>(null)
   const advice = useMemo(() => (dayMaster ? WUXING_CONSTITUTION[dayMaster] : null), [dayMaster])
 

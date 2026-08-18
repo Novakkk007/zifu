@@ -2,13 +2,13 @@
  * 阳宅风水参详——真实功能页（YZ-01~09 环境检查引擎 + 《宅经》公版依据）。
  * 边界：只输出可验证的环境与工程检查建议，不输出吉凶或方位断言。
  */
-import { useMemo, useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
 import LoupanDial from '@/components/fengshui/LoupanDial'
 import FloorPlanEditor, { type FloorPlanMark } from '@/components/fengshui/FloorPlanEditor'
 import { analyzeFloorPlan } from '@/components/fengshui/floor-plan-logic'
-import { setPageMeta } from '@/lib/pageMeta'
+import { usePageMeta } from '@/lib/page-meta'
 import {
   evaluateYangzhai,
   type TraditionalSystem,
@@ -155,12 +155,10 @@ function toInput(
 }
 
 export default function FengshuiScenario() {
-  useEffect(() => {
-    setPageMeta(
-      '阳宅风水参详 · 紫府',
-      '紫府阳宅风水参详——以《黄帝宅经》等公版典籍为据，参详宅向、门主灶布局，输出可验证的环境检查提示。',
-    );
-  }, [])
+  usePageMeta(
+    '阳宅风水 · 紫府',
+    '紫府阳宅风水参详——以《黄帝宅经》等公版典籍为据，参详宅向、门主灶布局，输出可验证的环境检查提示。',
+  )
   const [answers, setAnswers] = useSafeStorage<FormAnswers>(STORAGE_KEYS.FENGSHUI_FORM, {})
   const [evaluated, setEvaluated] = useState(false)
   const [floorMarks, setFloorMarks] = useState<FloorPlanMark[]>([])

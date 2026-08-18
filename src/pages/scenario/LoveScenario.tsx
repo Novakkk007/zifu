@@ -3,11 +3,10 @@
  * 情感是四大焦虑之一：本页以关怀口吻承接情绪，引导到合盘功能，
  * 并说明分享裂变路径（合盘天然是两个人一起看的东西）。
  */
-import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
 import { GoldButton, GhostButton } from '@/components/Buttons'
-import { setPageMeta } from '@/lib/pageMeta'
+import { usePageMeta } from '@/lib/page-meta'
 
 const easeOut = [0.16, 1, 0.3, 1] as [number, number, number, number]
 
@@ -30,12 +29,10 @@ const FEATURES = [
 ]
 
 export default function LoveScenario() {
-  useEffect(() => {
-    setPageMeta(
-      '感情婚姻合参 · 紫府',
-      '紫府感情婚姻合参——并看双方命盘，从传统术数视角参详情感倾向、相处模式与互补方向。',
-    );
-  }, [])
+  usePageMeta(
+    '感情姻缘 · 紫府',
+    '紫府感情婚姻合参——并看双方命盘，从传统术数视角参详情感倾向、相处模式与互补方向。',
+  )
   return (
     <div className="relative min-h-screen bg-deep pb-24 pt-14 md:pt-20">
       <FloatingGlyphs count={18} onDeep />
