@@ -63,7 +63,7 @@ export function buildChartSummary(chart: unknown): string {
     input?: { calendar?: string; year?: number; month?: number; day?: number; hour?: number | null }
     pillars?: Record<string, { stem: string; branch: string } | null | undefined>
     tenGods?: Record<string, string>
-    shensha?: { name: string; pillar: string; char: string }[]
+    shensha?: { name: string; pillar: string; char: string; verse?: string }[]
   }
   const inp = c.input ?? { year: 0, month: 0, day: 0 }
   const p = c.pillars ?? {}
@@ -78,11 +78,13 @@ export function buildChartSummary(chart: unknown): string {
   }
   if (c.shensha && c.shensha.length > 0) {
     const seen = new Set<string>()
-    const items = c.shensha
-      .filter((s) => (seen.has(s.name) ? false : (seen.add(s.name), true)))
-      .slice(0, 6)
-      .map((s) => `${s.name}（${s.pillar}${s.char}）`)
+    const hits = c.shensha.filter((s) => (seen.has(s.name) ? false : (seen.add(s.name), true))).slice(0, 6)
+    const items = hits.map((s) => `${s.name}（${s.pillar}${s.char}）`)
     lines.push(`神煞：${items.join('、')}`)
+    const verseHit = hits.find((s) => s.verse && s.verse.length > 0 && s.verse.length < 40)
+    if (verseHit?.verse) {
+      lines.push(`神煞口诀参考（讲到时可引一句，不逐字背诵）：${verseHit.verse}`)
+    }
   }
   // 名家主题化上下文（LJM 十神角色映射——文化解释层，不映射现实身份）
   try {
