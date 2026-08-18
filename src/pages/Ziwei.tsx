@@ -17,6 +17,7 @@ import { paipanZiwei } from '@/engines/client/ziwei'
 import { cn } from '@/lib/utils'
 import { SafeStorage, STORAGE_KEYS, consumeRestoreItem } from '@/lib/storage'
 import type { FavoriteItem, HistoryItem } from '@/lib/storage'
+import { mingPalaceAnalogy } from '@/lib/ziwei-analogy'
 
 type Tab = 'daxian' | 'liunian'
 
@@ -64,6 +65,11 @@ export default function Ziwei() {
   const [yearError, setYearError] = useState<string | null>(null)
 
   const [result, setResult] = useState<EngineResult<ZiweiChartData> | null>(restored?.result ?? null)
+  const mingAnalogy = useMemo(() => {
+    const palace = result?.data?.palaces?.find((p) => p.isMing)
+    const majors = palace?.majors?.map((s) => s.name) ?? []
+    return mingPalaceAnalogy(majors) ?? ''
+  }, [result])
   const [successfulSnapshot, setSuccessfulSnapshot] = useState<ZiweiSubmission | null>(restored?.snapshot ?? null)
   const [chartId, setChartId] = useState<number | null>(null)
   const [selCell, setSelCell] = useState<ZiweiPalace | null>(null)
@@ -577,7 +583,7 @@ export default function Ziwei() {
               chartId={chartId}
               chartSummary={
                 result?.data
-                  ? `紫微斗数命盘：命宫${result.data.mingGongGanzhi}，${result.data.ju.name}，命主${result.data.mingZhu}，身主${result.data.shenZhu}，生年四化${result.data.sihua.map((s) => `${s.star}${s.hua}`).join('、')}。请以先生口吻为访客参详此盘，总论先行，按主次分述，末了给希望。`
+                  ? `紫微斗数命盘：命宫${result.data.mingGongGanzhi}，${result.data.ju.name}，命主${result.data.mingZhu}，身主${result.data.shenZhu}，生年四化${result.data.sihua.map((s) => `${s.star}${s.hua}`).join('、')}。${mingAnalogy}请以先生口吻为访客参详此盘，总论先行，按主次分述，末了给希望。`
                   : undefined
               }
             />
