@@ -77,7 +77,12 @@ export function buildChartSummary(chart: unknown): string {
     lines.push(`十神：${Object.entries(c.tenGods).map(([k, v]) => `${k}=${v}`).join('，')}`)
   }
   if (c.shensha && c.shensha.length > 0) {
-    lines.push(`神煞：${c.shensha.map((s) => `${s.name}（${s.pillar}${s.char}）`).join('、')}`)
+    const seen = new Set<string>()
+    const items = c.shensha
+      .filter((s) => (seen.has(s.name) ? false : (seen.add(s.name), true)))
+      .slice(0, 6)
+      .map((s) => `${s.name}（${s.pillar}${s.char}）`)
+    lines.push(`神煞：${items.join('、')}`)
   }
   // 名家主题化上下文（LJM 十神角色映射——文化解释层，不映射现实身份）
   try {
