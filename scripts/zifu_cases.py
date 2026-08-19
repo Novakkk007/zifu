@@ -41,8 +41,12 @@ def fetch_bing(keyword: str, page: int = 0) -> str:
 
 
 def baidu_search_urls(keyword: str) -> list:
-    """百度搜索 → 结果 URL 列表（跟随跳转）"""
-    from baidu_search import baidu_search
+    """百度搜索 → 结果 URL 列表（跟随跳转）。
+    若 baidu_search 第三方模块未安装，回退到 Bing 路径，不崩溃。"""
+    try:
+        from baidu_search import baidu_search
+    except Exception:
+        return []  # 未安装该包 → 走 Bing 兜底（见 main 中 bing 分支）
     out = []
     for r in baidu_search(keyword, 8):
         link = r['url']
@@ -83,6 +87,13 @@ def fetch_page(url: str) -> str:
     return re.sub(r'\s+', ' ', text)[:20000]
 
 
+# 生辰附近必须出现的命理语境关键词（过滤非命理页码片段）
+CONTEXT_KW = ('八字', '生辰', '排盘', '命理', '时辰', '五行', '大运', '流年', '喜用神', '日主', '天干', '地支',
+              '批命', '算命', '劫财', '伤官', '正官', '偏财', '身强', '身弱')
+# 明显非命理内容的页内排除词
+EXCLUDE_KW = ('免费排盘', '在线排盘', '起名网', '测吉凶', '快速注册', '登录',
+              'ChatGPT', 'OpenAI', 'Wikipedia', '软件更新', 'Release')
+
 def extract_cases(text: str) -> list:
     cases = []
     for m in PATTERNS[0].finditer(text):
@@ -91,6 +102,17 @@ def extract_cases(text: str) -> list:
             continue
         # 上下文窗口（匹配前后 120 字）
         ctx = text[max(0, m.start() - 120):m.end() + 120]
+        # 明显非命理/评论时间戳排除：日期附近可见论坛评论头（Reply/says/at/回复/发布于/记录编号）则非生辰
+        if re.search(r'(Reply|says|回复|评论|发布于|at \d{1,2}:\d{2}|记录编号|点击数|浏览)', ctx):
+            continue
+        # 命理语境过滤：上下文必须含命理关键词，且不含明显非命理词
+        if any(kw in ctx for kw in EXCLUDE_KW):
+            continue
+        if not any(kw in ctx for kw in CONTEXT_KW):
+            continue
+        # 必须有生辰语义：上下文含出生/生于/年月/生成/八字/生辰 + 时辰，才算真实案例
+        if not any(kw in ctx for kw in ('生于', '出生', '生辰', '其八字', '男命', '女命')):
+            continue
         hour = None
         for hm in HOUR_PATTERNS:
             hm_ = hm.search(ctx)
@@ -125,14 +147,26 @@ def main():
     kw = sys.argv[1] if len(sys.argv) > 1 else '求看八字 1990年 时辰 男'
     all_cases = []
     seen = set()
-    urls = baidu_search_urls(kw)
-    print(f'百度结果 {len(urls)} 个')
+
+    # 多源降级：baidu → bing（baidu 依赖第三方包，缺包时回退）
+    urls = []
+    try:
+        urls = baidu_search_urls(kw)
+        print(f'百度结果 {len(urls)} 个')
+    except Exception as e:
+        print(f'百度搜索异常: {e}')
+    if not urls:
+        try:
+            html = fetch_bing(kw)
+            urls = [(u, '') for u in bing_result_urls(html)]
+            print(f'Bing 结果 {len(urls)} 个')
+        except Exception as e:
+            print(f'Bing 搜索异常: {e}')
+
     for u, title in urls:
         try:
             text = fetch_page(u)
         except Exception:
-            continue
-        if any(k in text[:300] for k in ('免费排盘', '在线排盘', '起名网', '测吉凶', '快速注册', '登录')):
             continue
         cases = extract_cases(text)
         for c in cases:
