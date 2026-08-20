@@ -10,6 +10,7 @@ import { usePageMeta } from "@/lib/page-meta";
 
 const SiweiDemo = lazy(() => import("@/components/SiweiDemo"));
 const HomeInstallPrompt = lazy(() => import("@/components/HomeInstallPrompt"));
+import CaseInviteCard from '@/components/CaseInviteCard'
 
 const BOOKS = [
   "周易",
@@ -593,6 +594,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ===== S3c · 命例对拍征集（社区生态 D） ===== */}
+      <CaseInviteCard />
 
       {/* ===== S4 · 古籍跑马灯 ===== */}
       <section className="gs-marquee border-y border-[rgba(199,162,58,0.18)] bg-deep py-8">
