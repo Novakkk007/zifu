@@ -9,6 +9,7 @@ import { FormInput } from '@/components/FormControls'
 import { usePageMeta } from '@/lib/page-meta'
 import AiReading from '@/components/liuyao/AiReading'
 import CoinToss from '@/components/liuyao/CoinToss'
+import GuaciPanel from '@/components/liuyao/GuaciPanel'
 import HexagramResult from '@/components/liuyao/HexagramResult'
 import type { Toss } from '@/components/liuyao/logic'
 import {
@@ -305,6 +306,7 @@ export default function Liuyao() {
             {castData ? (
               <>
                 <HexagramResult result={castData.result} question={chart?.question ?? ''} />
+                {chart && <GuaciPanel chart={chart} />}
                 <div className="flex flex-wrap items-center justify-center gap-5 pt-2">
                   <button
                     type="button"
