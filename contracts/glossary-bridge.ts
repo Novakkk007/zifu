@@ -33,7 +33,7 @@ export const BAZI_LINKS: EngineGlossaryLink[] = [
   },
   {
     engineField: "pillars[].shensha[]",
-    glossaryTerms: ["空亡", "桃花", "驿马", "华盖", "将星", "天乙贵人", "文昌", "羊刃", "禄神", "合化", "刑冲克害", "旺相休囚死", "红鸾", "天喜", "劫煞", "灾煞"],
+    glossaryTerms: ["空亡", "桃花", "驿马", "华盖", "将星", "天乙贵人", "天德贵人", "文昌", "羊刃", "禄神", "合化", "刑冲克害", "旺相休囚死", "红鸾", "天喜", "孤辰", "劫煞", "灾煞"],
     books: ["sanming", "yuanhai"],
   },
   {
