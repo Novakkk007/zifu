@@ -16,6 +16,7 @@ const YAN_MENU: { group: '天 · 时运' | '地 · 空间' | '人 · 命理'; it
       { to: '/ziwei', label: '紫微斗数' },
       { to: '/qizheng', label: '七政四余' },
       { to: '/daliuren', label: '大六壬' },
+      { to: '/column', label: '先生专栏' },
     ],
   },
   {

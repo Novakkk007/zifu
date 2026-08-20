@@ -19,6 +19,7 @@ const Wiki = lazy(() => import("@/pages/Wiki"));
 const BookDetail = lazy(() => import("@/pages/BookDetail"));
 const Talks = lazy(() => import("@/pages/Talks"));
 const Terms = lazy(() => import("@/pages/Terms"));
+const Column = lazy(() => import("@/pages/Column"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Account = lazy(() => import("@/pages/Account"));
 const Profile = lazy(() => import("@/pages/Profile"));
@@ -64,6 +65,8 @@ export default function App() {
           <Route path="/wiki/:bookId" element={<BookDetail />} />
           <Route path="/talks" element={<Talks />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/column" element={<Column />} />
+          <Route path="/column/:id" element={<Column />} />
           {/* 旧 mock 登录页路由 → 统一进入真实 OAuth 登录 */}
           <Route path="/auth" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
