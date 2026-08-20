@@ -124,18 +124,24 @@ export default function DirectAiChat({
   title = 'AI 直连参详 · 先生问答',
   persona = 'scholar',
   depth = 'pro',
+  autoStart = false,
+  storageKey = CHAT_STORE_KEY,
 }: {
   chartSummary: string
   title?: string
   persona?: string
   depth?: string
+  /** 用户从阶段入口进入时，若已有 AI 通道则直接开始首次参详。 */
+  autoStart?: boolean
+  /** 为不同命盘场景隔离本地多轮对话。 */
+  storageKey?: string
 }) {
   const [provider, setProvider] = useState<AIProvider>(getStoredProvider)
   const [keyDraft, setKeyDraft] = useState(getStoredAiKey)
   const [savedKey, setSavedKey] = useState(getStoredAiKey)
   const [messages, setMessages] = useState<DirectChatHistoryMessage[]>(() => {
     try {
-      const raw = localStorage.getItem(CHAT_STORE_KEY)
+      const raw = localStorage.getItem(storageKey)
       if (!raw) return []
       const parsed = JSON.parse(raw) as DirectChatHistoryMessage[]
       return Array.isArray(parsed) ? parsed.slice(-30) : []
@@ -151,12 +157,12 @@ export default function DirectAiChat({
   useEffect(() => {
     try {
       if (messages.length > 0) {
-        localStorage.setItem(CHAT_STORE_KEY, JSON.stringify(messages.slice(-30)))
+        localStorage.setItem(storageKey, JSON.stringify(messages.slice(-30)))
       }
     } catch {
       /* ignore */
     }
-  }, [messages])
+  }, [messages, storageKey])
   const { speaking: voiceSpeaking, speak: voiceSpeak, stop: voiceStop } = useXianshengVoice()
 
   const hasAccess = savedKey.trim().length > 0 || BUILTIN_AI_KEY.length > 0
@@ -202,6 +208,15 @@ export default function DirectAiChat({
       setBusy(false)
     }
   }
+
+  const autoStarted = useRef(false)
+  useEffect(() => {
+    if (!autoStart || autoStarted.current || !hasAccess || !chartSummary) return
+    autoStarted.current = true
+    void startReading()
+    // 仅响应入口语境与通道是否就绪；startReading 的其余状态不应触发重复请求。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart, chartSummary, hasAccess])
 
   const sendQuestion = async (event: FormEvent) => {
     event.preventDefault()
@@ -305,7 +320,7 @@ export default function DirectAiChat({
                 onClick={() => {
                   setMessages([])
                   try {
-                    localStorage.removeItem(CHAT_STORE_KEY)
+                    localStorage.removeItem(storageKey)
                   } catch {
                     /* ignore */
                   }
