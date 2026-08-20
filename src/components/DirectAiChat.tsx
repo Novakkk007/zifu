@@ -126,6 +126,11 @@ export default function DirectAiChat({
   depth = 'pro',
   autoStart = false,
   storageKey = CHAT_STORE_KEY,
+  followups = [
+    '我的旺衰和用神，具体怎么理解？',
+    '事业方向上，这个命局适合做什么？',
+    '感情方面，这个盘有什么说法？',
+  ],
 }: {
   chartSummary: string
   title?: string
@@ -135,6 +140,8 @@ export default function DirectAiChat({
   autoStart?: boolean
   /** 为不同命盘场景隔离本地多轮对话。 */
   storageKey?: string
+  /** 首次讲述后的场景化快捷追问；默认沿用八字问答。 */
+  followups?: string[]
 }) {
   const [provider, setProvider] = useState<AIProvider>(getStoredProvider)
   const [keyDraft, setKeyDraft] = useState(getStoredAiKey)
@@ -171,12 +178,6 @@ export default function DirectAiChat({
   const assistantCount = messages.filter((m) => m.role === 'assistant').length
   const userCount = messages.filter((m) => m.role === 'user').length
   const showFollowups = !busy && assistantCount === 1 && userCount === 0
-  const FOLLOWUPS = [
-    '我的旺衰和用神，具体怎么理解？',
-    '事业方向上，这个命局适合做什么？',
-    '感情方面，这个盘有什么说法？',
-  ]
-
   const saveKey = () => {
     const key = keyDraft.trim()
     setStoredAiKey(key)
@@ -372,7 +373,7 @@ export default function DirectAiChat({
 
           {showFollowups && (
             <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
-              {FOLLOWUPS.map((q) => (
+              {followups.map((q) => (
                 <button
                   key={q}
                   type="button"
