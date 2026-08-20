@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
 
@@ -67,22 +67,15 @@ const loadArticles = (): ColumnArticle[] => {
 export default function ColumnPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [articles, setArticles] = useState<ColumnArticle[]>([]);
-  const [selectedArticle, setSelectedArticle] = useState<ColumnArticle | null>(null);
-
-  useEffect(() => {
-    const loadedArticles = loadArticles();
-    setArticles(loadedArticles);
-    
-    if (id) {
-      const article = loadedArticles.find(a => a.id === id);
-      if (article) {
-        setSelectedArticle(article);
-      } else {
-        navigate('/column', { replace: true });
-      }
-    }
-  }, [id, navigate]);
+  const [articles] = useState<ColumnArticle[]>(() => loadArticles());
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // 渲染期派生（React 官方模式：避免 effect 内同步 setState 级联渲染）
+  if (selectedId !== (id ?? null)) {
+    setSelectedId(id ?? null)
+  }
+  const selectedArticle = selectedId
+    ? (articles.find((a) => a.id === selectedId) ?? null)
+    : null
 
   if (id && !selectedArticle) {
     return (
