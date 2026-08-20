@@ -24,8 +24,8 @@ const realBookIds = new Set((BOOKS as { id: string }[]).map((b) => b.id))
 const baziTerms = [...new Set(BAZI_LINKS.flatMap((l) => l.glossaryTerms))]
 
 describe("glossary.json 数据完整性", () => {
-  it("覆盖 BAZI_LINKS 全部术语（天干10+地支12+格局4+岁运5+神煞16+用神3=59）", () => {
-    expect(baziTerms).toHaveLength(59)
+  it("覆盖 BAZI_LINKS 全部术语（天干10+地支12+格局4+岁运5+神煞18+用神3=61）", () => {
+    expect(baziTerms).toHaveLength(61)
     for (const term of baziTerms) {
       const entry = GLOSSARY_MAP[term]
       expect(entry, `缺词条「${term}」`).toBeDefined()
