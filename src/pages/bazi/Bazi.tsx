@@ -18,6 +18,7 @@ import DetailTabs from '@/components/bazi-v2/DetailTabs'
 import LifeChart from '@/components/bazi-v2/LifeChart'
 import AiReadingSection from '@/components/bazi-v2/AiReadingSection'
 import MasterHintsSection from '@/components/bazi-v2/MasterHintsSection'
+import DaYunPanel from '@/components/bazi-v2/DaYunPanel'
 import CoreSummary from '@/components/bazi-v2/CoreSummary'
 import HistorySection from '@/components/bazi-v2/HistorySection'
 import { ChengguCard, RelationsTable, ShenshaTable, TenGodsTable } from '@/components/bazi-v2/ChartDetails'
@@ -190,6 +191,10 @@ export default function Bazi() {
 
               {/* 十神明细 / 合冲刑害破 / 神煞 / 称骨 */}
               <TenGodsTable chart={chart} />
+              <DaYunPanel
+                key={`${chart.pillars.year.ganzhi}-${chart.pillars.month.ganzhi}-${chart.pillars.day.ganzhi}-${chart.pillars.hour?.ganzhi ?? '空'}`}
+                chart={chart}
+              />
               <div className="grid gap-6 lg:grid-cols-2">
                 <RelationsTable chart={chart} />
                 <ShenshaTable chart={chart} />
