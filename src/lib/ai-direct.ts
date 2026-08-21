@@ -246,7 +246,38 @@ export function resolveAiAccess(inputKey: string, inputProvider?: AIProvider): {
 }
 
 /** 直连调用（OpenAI 兼容 chat/completions） */
+/** 每日内置 key 调用限额（防访客消耗失控） */
+const DAILY_LIMIT = 30
+const USAGE_KEY = 'zifu:ai-daily-usage'
+
+function consumeUsage(): boolean {
+  try {
+    const today = new Date().toDateString()
+    const raw = localStorage.getItem(USAGE_KEY)
+    const d = raw ? JSON.parse(raw) : { day: today, n: 0 }
+    const day = d.day === today ? d : { day: today, n: 0 }
+    if (day.n >= DAILY_LIMIT) return false
+    day.n += 1
+    localStorage.setItem(USAGE_KEY, JSON.stringify(day))
+    return true
+  } catch {
+    return true
+  }
+}
+
 export async function aiDirectReading(input: DirectReadingInput): Promise<DirectReadingResult> {
+  if (!input.apiKey) {
+    // 内置 key（无用户自带）→ 每日限额 30 次
+    const ok = consumeUsage()
+    if (!ok) {
+      return {
+        source: 'live-direct',
+        model: '内置额度已用完',
+        content:
+          '今日内置参详额度已用完（每日 30 次），明日再来；或填入你自己的 API key 继续。',
+      }
+    }
+  }
   const { apiKey, provider } = resolveAiAccess(input.apiKey, input.provider)
   const cfg = AI_PROVIDERS[provider] ?? AI_PROVIDERS.kimi
   const model = input.model || cfg.defaultModel
