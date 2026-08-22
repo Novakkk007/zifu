@@ -8,6 +8,7 @@ import SectionHeading from '@/components/SectionHeading'
 import { GoldButton } from '@/components/Buttons'
 import { BOOKS, BOOK_CATEGORIES } from '@/components/content/books'
 import type { Book, BookCategory } from '@/components/content/books'
+import { getClassicText } from '@/components/content/classic-texts'
 
 const HERO_POOL = ['易', '髓', '通', '诠', '鉴', '渊', '微', '宗', '卜', '壬', '烟', '波', '藏', '书']
 
@@ -18,6 +19,8 @@ type CatFilter = '全部' | BookCategory
 /* ---------------- 典籍节选 Drawer ---------------- */
 
 function BookDrawer({ book, onClose }: { book: Book | null; onClose: () => void }) {
+  const classicText = book ? getClassicText(book.id) : undefined
+
   useEffect(() => {
     if (!book) return
     const prev = document.body.style.overflow
@@ -88,6 +91,11 @@ function BookDrawer({ book, onClose }: { book: Book | null; onClose: () => void 
               <p className="text-[12px] leading-[1.9] tracking-[0.06em] text-silkmuted">
                 以上皆公版原文 · 紫府 AI 参详时逐句锚定此类出处
               </p>
+              {classicText && (
+                <GoldButton to={`/wiki/${book.id}`} className="mt-5 w-full">
+                  阅读全文 · 共 {classicText.chapters.length} 篇
+                </GoldButton>
+              )}
               <GoldButton to={book.route} className="mt-5 w-full">
                 以此书为据 · 开始推演
               </GoldButton>
