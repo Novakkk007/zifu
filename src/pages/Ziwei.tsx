@@ -8,6 +8,7 @@ import { FormInput, FormSelect, SegmentedControl } from '@/components/FormContro
 import { GoldButton } from '@/components/Buttons'
 import { usePageMeta } from '@/lib/page-meta'
 import PalaceDrawer from '@/components/ziwei/PalaceDrawer'
+import PalacePanel from '@/components/ziwei/PalacePanel'
 import ZiweiChart from '@/components/ziwei/ZiweiChart'
 import ZiweiAiReading from '@/components/ziwei/ZiweiAiReading'
 import type { EngineResult, ZiweiChartData, ZiweiPalace } from '@contracts/engines/ziwei-core'
@@ -403,6 +404,10 @@ export default function Ziwei() {
                     : '收藏'}
               </button>
             </div>
+            <PalacePanel
+              key={`${chart.rulesetVersion}:${chart.solar.year}-${chart.solar.month}-${chart.solar.day}:${chart.input.hourBranch}:${chart.input.gender}`}
+              chart={chart}
+            />
           </div>
         </section>
       )}
