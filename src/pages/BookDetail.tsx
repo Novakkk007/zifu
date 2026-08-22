@@ -4,20 +4,26 @@
  */
 import { useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router";
+import ClassicReader from "@/components/ClassicReader";
 import { BOOKS } from "@/components/content/books";
+import { getClassicText } from "@/components/content/classic-texts";
 import FloatingGlyphs from "@/components/FloatingGlyphs";
 import { setPageMeta } from "@/lib/pageMeta";
 
 export default function BookDetail() {
   const { bookId } = useParams<{ bookId: string }>();
   const book = useMemo(() => BOOKS.find(b => b.id === bookId), [bookId]);
+  const classicText = useMemo(
+    () => (bookId ? getClassicText(bookId) : undefined),
+    [bookId]
+  );
   const hasChapters = Boolean(book?.chapters?.length);
 
   useEffect(() => {
     if (book) {
       setPageMeta(
         `${book.title} · 紫府藏经阁`,
-        `紫府藏经阁《${book.title}》——${book.dynasty ?? "公版"}典籍详情与原文摘录，出处可溯。`
+        `紫府藏经阁《${book.title}》——${book.dynasty ?? "公版"}典籍详情与${classicText ? "公版全文" : "原文摘录"}，出处可溯。`
       );
     } else {
       setPageMeta(
@@ -25,7 +31,7 @@ export default function BookDetail() {
         "紫府藏经阁——书目可能有变，请回藏经阁重新浏览。"
       );
     }
-  }, [book]);
+  }, [book, classicText]);
 
   if (!book) {
     return (
@@ -51,7 +57,9 @@ export default function BookDetail() {
   return (
     <div className="relative min-h-screen bg-silk pb-24 pt-14 md:pt-20">
       <FloatingGlyphs count={14} />
-      <div className="relative zf-container max-w-[780px]">
+      <div
+        className={`relative zf-container ${classicText ? "max-w-[1180px]" : "max-w-[780px]"}`}
+      >
         <Link
           to="/wiki"
           className="text-[12.5px] tracking-[0.1em] text-inkmuted hover:text-golddim"
@@ -79,9 +87,19 @@ export default function BookDetail() {
           <p className="mt-5 text-[14px] leading-[2] text-inktext">
             {book.intro}
           </p>
+          {classicText && (
+            <a
+              href="#full-text"
+              className="mt-6 inline-flex rounded-full bg-deep px-7 py-2.5 text-[13px] font-medium tracking-[0.12em] text-silk transition-colors hover:bg-deep2"
+            >
+              阅读全文 · 共 {classicText.chapters.length} 篇
+            </a>
+          )}
         </header>
 
-        {hasChapters ? (
+        {classicText ? (
+          <ClassicReader bookId={book.id} chapters={classicText.chapters} />
+        ) : hasChapters ? (
           <section className="mt-10" aria-labelledby="chapter-reading-title">
             <h2
               id="chapter-reading-title"
@@ -163,7 +181,16 @@ export default function BookDetail() {
         )}
 
         <p className="mt-10 text-center text-[11.5px] leading-[1.8] text-inkmuted">
-          本馆引文均为公版古籍原文，摘录仅供传统文化研究参考。
+          {classicText ? (
+            <>
+              《子平真诠》为清代沈孝瞻所著，原著已进入公版。
+              <br />
+              本页正文据 docs/classics/absorbed-bazi-repo/zipingzhenquan.md
+              结构化整理，仅供传统文化研究参考。
+            </>
+          ) : (
+            <>本馆引文均为公版古籍原文，摘录仅供传统文化研究参考。</>
+          )}
           <br />
           更多术语可查阅{" "}
           <Link to="/wiki" className="text-golddim hover:text-goldbright">
