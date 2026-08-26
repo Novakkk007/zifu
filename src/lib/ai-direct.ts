@@ -246,8 +246,8 @@ export function resolveAiAccess(inputKey: string, inputProvider?: AIProvider): {
 }
 
 /** 直连调用（OpenAI 兼容 chat/completions） */
-/** 每日内置 key 调用限额（防访客消耗失控） */
-const DAILY_LIMIT = 30
+/** 每日内置 key（先生栏目专用）调用限额——防访客消耗失控（先生 key 成本锁死） */
+const DAILY_LIMIT = 15
 const USAGE_KEY = 'zifu:ai-daily-usage'
 
 function consumeUsage(): boolean {
