@@ -231,6 +231,9 @@ export function ChengguCard({ chart }: { chart: BaziChartV2 }) {
       <p className="text-center font-serif text-[15px] font-bold tracking-[0.12em] text-inktext">
         称骨（袁天罡称骨歌）
       </p>
+      <p className="mt-1 text-center text-[11.5px] tracking-[0.16em] text-inkmuted">
+        {c.gender === 'female' ? '· 女命歌诀 ·' : '· 男命歌诀 ·'}
+      </p>
       <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
         {parts.map((p) => (
           <div key={p.label} className="rounded-lg border border-golddim/20 bg-silk px-3 py-3 text-center">
