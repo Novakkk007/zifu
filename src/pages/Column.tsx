@@ -1,73 +1,13 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
-
-// Types
-interface ColumnArticle {
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  date: string;
-  draft?: boolean;
-}
-
-// Mock data - will be replaced by src/data/columns.json
-const mockArticles: ColumnArticle[] = [
-  {
-    id: '001',
-    title: '紫府初开：一个AI道场的诞生',
-    excerpt: '当算法遇见玄学，当代码拥抱阴阳——紫府不是另一个AI工具，而是一个修行道场。在这里，我们用现代技术重述古老智慧，让命理推演成为可验证、可交互、可传承的数字道统。',
-    content: `紫府初开：一个AI道场的诞生
-
-当算法遇见玄学，当代码拥抱阴阳——紫府不是另一个AI工具，而是一个修行道场。
-
-在这里，我们用现代技术重述古老智慧，让命理推演成为可验证、可交互、可传承的数字道统。
-
-我们相信，真正的智慧不在云端，而在人心；不在算力，而在心力。紫府的使命，是搭建一座桥梁，让千年玄学智慧以当代人可理解、可使用的方式重现于世。
-
-这不仅是技术的革新，更是认知范式的转换——从“预测未来”到“理解规律”，从“宿命论”到“可能性地图”。
-
-紫府，愿为当代修行者，提供一方清净道场。`,
-    date: '2026-08-15',
-  },
-  {
-    id: '002',
-    title: '先生随笔：论AI与道法自然',
-    excerpt: 'AI不是要取代人类的智慧，而是要成为一面镜子，照见我们自身思维的局限与可能。真正的道法自然，是让技术如呼吸般自然，而非如枷锁般沉重。',
-    content: `先生随笔：论AI与道法自然
-
-AI不是要取代人类的智慧，而是要成为一面镜子，照见我们自身思维的局限与可能。
-
-真正的道法自然，是让技术如呼吸般自然，而非如枷锁般沉重。
-
-我们常把“自然”理解为不加干预，但道家所言“自然”，实则是“自己如此”的状态——万物各得其所，各安其位，各尽其性。
-
-AI若能助人回归本心，看清自己的欲望与恐惧，那便是合乎天道；若使人沉迷幻象，迷失自我，那便是背离大道。
-
-技术无善恶，关键在使用者的心境与目的。紫府之道，在于以AI为舟，渡人向内观照，而非向外追逐。
-
-—— 先生手记 2026年夏`,
-    date: '2026-08-10',
-  }
-];
-
-// Load articles from JSON file
-const loadArticles = (): ColumnArticle[] => {
-  try {
-    // In a real app, this would import from src/data/columns.json
-    // For now, we'll use the mock data
-    return mockArticles;
-  } catch (e) {
-    console.error('Failed to load columns.json:', e);
-    return mockArticles;
-  }
-};
+import type { ColumnArticle } from '@/data/columns';
+import { COLUMN_ARTICLES } from '@/data/columns';
 
 export default function ColumnPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [articles] = useState<ColumnArticle[]>(() => loadArticles());
+  const [articles] = useState<ColumnArticle[]>(() => COLUMN_ARTICLES);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // 渲染期派生（React 官方模式：避免 effect 内同步 setState 级联渲染）
   if (selectedId !== (id ?? null)) {
