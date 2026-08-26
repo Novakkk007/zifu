@@ -490,7 +490,7 @@ function computeChenggu(
   if (yearQian === null || monthQian === null || dayQian === null || hourQian === null) return null
 
   const totalQian = yearQian + monthQian + dayQian + hourQian
-  const verse = lookupVerse(totalQian)
+  const verse = lookupVerse(totalQian, input.gender)
   if (verse === null) return null
 
   return {
@@ -505,6 +505,7 @@ function computeChenggu(
     lunarDay: day,
     hourBranch: BRANCHES[hourBranchIdx],
     verse,
+    gender: input.gender,
     source: CHENGGU_META.source,
   }
 }
