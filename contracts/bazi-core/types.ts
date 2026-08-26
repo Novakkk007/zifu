@@ -227,8 +227,10 @@ export interface BoneWeight {
   lunarMonth: number
   lunarDay: number
   hourBranch: string
-  /** 称骨歌批语 */
+  /** 称骨歌批语（按男命/女命分版） */
   verse: string
+  /** 批语版本：male 男命歌诀 / female 女命歌诀 */
+  gender: 'male' | 'female'
   source: string
 }
 

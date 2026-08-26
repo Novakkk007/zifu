@@ -81,3 +81,24 @@ describe('称骨查表失败返回 null（不伪造）', () => {
     }
   })
 })
+
+describe('称骨男女命分版（2026-08-27 新增）', () => {
+  it('女命 39 钱用女命歌诀（与男命不同套）', () => {
+    const c = computeChartV2(lunar({ gender: 'female' }))
+    expect(c.chenggu!.gender).toBe('female')
+    // 男命 39 钱：此命终身运不通；女命 39 钱应不同
+    expect(c.chenggu!.verse).not.toContain('此命终身运不通')
+    expect(c.chenggu!.verse.length).toBeGreaterThan(10)
+  })
+
+  it('男命默认走男命歌诀', () => {
+    const c = computeChartV2(lunar({ gender: 'male' }))
+    expect(c.chenggu!.gender).toBe('male')
+    expect(c.chenggu!.verse).toContain('此命终身运不通')
+  })
+
+  it('女命 21 钱特征句：生身此命不如意', () => {
+    const v = chengguRules.lookupVerse(21, 'female')
+    expect(v).toContain('生身此命不如意')
+  })
+})
