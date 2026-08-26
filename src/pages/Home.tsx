@@ -747,7 +747,7 @@ export default function Home() {
           <p className="gs-reveal mt-4 text-[14px] tracking-[0.08em] text-inkmuted">
             {paymentEnabled
               ? "按次计费，无订阅；充值额外赠 15%"
-              : "游客模式全功能可用 · AI 参详自带密钥直连 · 账号与充值系统即将上线"}
+              : "游客模式全功能可用 · AI 参详即时体验 · 更多服务陆续开放"}
           </p>
           <div className="gs-cta-btn mt-10">
             <GoldButton

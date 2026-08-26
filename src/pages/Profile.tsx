@@ -187,7 +187,7 @@ export default function Profile() {
               更换设备后数据不互通。
             </p>
             <span className="shrink-0 rounded-full border border-golddim/40 px-4 py-1.5 text-[11.5px] tracking-[0.1em] text-golddim">
-              账号系统即将上线 · 支持云同步与充值
+              账号数据暂存本地 · 云同步与更多服务陆续开放
             </span>
           </div>
         </header>

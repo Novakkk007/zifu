@@ -75,7 +75,7 @@ function errorStateOf(err: unknown): { title: string; desc: string; showLogin: b
     case 'FORBIDDEN':
       return {
         title: '灵签余额不足',
-        desc: 'live 参详每次消耗 1 灵签。充值通道即将开放，敬请期待；当前可稍后再试演示引擎。',
+        desc: 'live 参详每次消耗 1 灵签。余额不足时可稍后再试，或先体验演示引擎。',
         showLogin: false,
       }
     case 'BAD_GATEWAY':
