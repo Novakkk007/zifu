@@ -3,7 +3,7 @@
  * 读 cases/found-2026-08-27-gh.json → 用 bazi-core 排盘 → 输出四柱/日主/大运 → cases/paipan-results/
  * 用法：npx tsx api/bazi-core/batch-paipan.ts
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { computeChartV2 } from '@contracts/bazi-core'
 import type { BirthInput } from '@contracts/bazi-core'
 
