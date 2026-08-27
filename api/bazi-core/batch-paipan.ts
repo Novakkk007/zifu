@@ -21,16 +21,16 @@ for (const c of cases) {
   try {
     const [y, m, d] = (c.solar || '').split('-').map((v) => parseInt(v, 10))
     if (!y || !m || !d) { fail++; continue }
-    const input: BirthInput = {
+    const input = {
       calendar: 'solar',
       year: y, month: m, day: d,
       hour: null, minute: null,  // 历史人物大多无时辰
       gender: c.gender === '女' ? 'female' : 'male',
       useTrueSolarTime: false,
       dayRollover: 'zichu',
-    }
-    const chart = computeChartV2(input)
-    const p = chart.pillars as Record<string, { ganzhi: string }>
+    } as unknown as BirthInput
+    const chart = computeChartV2(input as unknown as BirthInput)
+    const p = chart.pillars as unknown as Record<string, { ganzhi: string } | undefined>
     results.push({
       id: c.id ?? '',
       name: c.name ?? '',
@@ -42,7 +42,7 @@ for (const c of cases) {
       missing: (chart.wuxing?.missing ?? []).join(''),
       strongest: chart.wuxing?.strongest ?? '',
       weakest: chart.wuxing?.weakest ?? '',
-      dayunCount: chart.dayun?.length ?? 0,
+      dayunCount: Object.keys((chart.dayun ?? {}) as object).length,
     })
     ok++
   } catch {
