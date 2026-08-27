@@ -1,0 +1,209 @@
+import { useState } from "react";
+import { useEngine } from "@/hooks/useEngine";
+import { paipanBazi } from "@/engines/client/bazi";
+import { buildChartSummary } from "@/lib/ai-direct";
+import type { PaipanPayload } from "@/components/bazi-v2/api";
+import {
+  ROUNDTABLE_SCHOOLS,
+  runRoundTable,
+  parseRoundTable,
+  type RoundTableResult,
+} from "@/lib/roundtable";
+import { usePageMeta } from "@/lib/page-meta";
+
+export default function RoundTablePage() {
+  usePageMeta(
+    "论命圆桌 · 紫府",
+    "七大命理流派同盘论命——子平格局、三命通会、神峰通考、渊海子平、盲派、千里命稿、金口诀，各执一脉，共观一盘。"
+  );
+
+  const [solar, setSolar] = useState(true);
+  const [year, setYear] = useState("2009");
+  const [month, setMonth] = useState("8");
+  const [day, setDay] = useState("29");
+  const [hour, setHour] = useState("2");
+  const [gender, setGender] = useState<"male" | "female">("male");
+  const [question, setQuestion] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<RoundTableResult | null>(null);
+
+  const paipan = useEngine(paipanBazi, {
+    onSuccess: async (data) => {
+      const chart = (data as { chart: unknown }).chart;
+      if (!chart) return;
+      setLoading(true);
+      setError("");
+      try {
+        const res = await runRoundTable(buildChartSummary(chart), question || undefined);
+        setResult(parseRoundTable(res.content));
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "圆桌暂未开席，请稍后再试");
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: (e) => setError(e?.message ?? "排盘失败"),
+  });
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setResult(null);
+    const payload: PaipanPayload = {
+      calendar: solar ? "solar" : "lunar",
+      year: Number(year),
+      month: Number(month),
+      day: Number(day),
+      hour: Number(hour),
+      minute: 0,
+      gender,
+      useTrueSolarTime: false,
+      dayRollover: "zichu",
+      title: "论命圆桌",
+    };
+    paipan.mutate(payload);
+  };
+
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-10">
+      <p className="text-center font-serif text-[26px] font-bold tracking-[0.14em] text-golddim">
+        论 命 圆 桌
+      </p>
+      <p className="mt-2 text-center text-[13px] leading-relaxed text-inkmuted">
+        七席法脉，同观一盘。子平格局、三命通会、神峰通考、渊海子平、盲派、千里命稿、金口诀——
+        <br />
+        各持其法，各言其见；共识与分歧，一并呈上。
+      </p>
+
+      <form
+        onSubmit={submit}
+        className="mx-auto mt-8 max-w-xl rounded-2xl border border-golddim/25 bg-silk2 p-6 shadow-card"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex gap-1 rounded-lg bg-silk p-1">
+            {[
+              { k: true, t: "公历" },
+              { k: false, t: "农历" },
+            ].map((o) => (
+              <button
+                key={String(o.k)}
+                type="button"
+                onClick={() => setSolar(o.k)}
+                className={`rounded-md px-4 py-1.5 text-[12.5px] tracking-[0.1em] ${
+                  solar === o.k ? "bg-golddim text-white" : "text-inkmuted"
+                }`}
+              >
+                {o.t}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1 rounded-lg bg-silk p-1">
+            {[
+              { k: "male", t: "男命" },
+              { k: "female", t: "女命" },
+            ].map((o) => (
+              <button
+                key={o.k}
+                type="button"
+                onClick={() => setGender(o.k as "male" | "female")}
+                className={`rounded-md px-4 py-1.5 text-[12.5px] tracking-[0.1em] ${
+                  gender === o.k ? "bg-golddim text-white" : "text-inkmuted"
+                }`}
+              >
+                {o.t}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="mt-5 grid grid-cols-4 gap-3">
+          {[
+            { label: "年", v: year, set: setYear, ph: "2009" },
+            { label: "月", v: month, set: setMonth, ph: "8" },
+            { label: "日", v: day, set: setDay, ph: "29" },
+            { label: "时", v: hour, set: setHour, ph: "2" },
+          ].map((f) => (
+            <label key={f.label} className="block">
+              <span className="text-[11.5px] tracking-[0.14em] text-inkmuted">{f.label}</span>
+              <input
+                value={f.v}
+                onChange={(e) => f.set(e.target.value)}
+                placeholder={f.ph}
+                className="mt-1 w-full rounded-lg border border-golddim/20 bg-silk px-3 py-2 text-center text-[15px] font-bold text-inktext outline-none focus:border-golddim"
+              />
+            </label>
+          ))}
+        </div>
+        <input
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          placeholder="想请圆桌特别留意什么？（可选，如：事业、感情、今年运势）"
+          className="mt-4 w-full rounded-lg border border-golddim/20 bg-silk px-3 py-2.5 text-[13px] text-inktext outline-none focus:border-golddim"
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="mt-5 w-full rounded-xl bg-golddim py-3 font-serif text-[15px] font-bold tracking-[0.2em] text-white transition hover:brightness-110 disabled:opacity-50"
+        >
+          {loading ? "七席正在入座……" : "开 席"}
+        </button>
+        {error && <p className="mt-3 text-center text-[12.5px] text-red-400">{error}</p>}
+      </form>
+
+      {loading && (
+        <div className="mt-10 text-center">
+          <p className="font-serif text-[16px] tracking-[0.2em] text-golddim">七席入座 · 各执其法</p>
+          <p className="mt-2 text-[12px] text-inkmuted">子平格局 · 三命通会 · 神峰通考 · 渊海子平 · 盲派 · 千里命稿 · 金口诀</p>
+        </div>
+      )}
+
+      {result && (
+        <div className="mt-10">
+          <div className="grid gap-4 md:grid-cols-2">
+            {result.seats.map((seat, i) => {
+              const meta = ROUNDTABLE_SCHOOLS[i];
+              return (
+                <div
+                  key={seat.school}
+                  className="rounded-2xl border border-golddim/20 bg-silk2 p-5 shadow-card"
+                >
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-serif text-[15px] font-bold tracking-[0.12em] text-golddim">
+                      第{i + 1}席 · {seat.school}
+                    </span>
+                    <span className="text-[10.5px] tracking-[0.08em] text-inkmuted">
+                      {meta?.school}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[11px] text-inkmuted">{meta?.focus.join(" · ")}</p>
+                  <p className="mt-3 whitespace-pre-line font-serif text-[13.5px] leading-[1.9] text-inktext">
+                    {seat.content}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          {result.consensus && (
+            <div className="mt-6 rounded-2xl border border-golddim/30 bg-silk p-6 shadow-card">
+              <p className="font-serif text-[14px] font-bold tracking-[0.14em] text-golddim">
+                共识与分歧
+              </p>
+              <p className="mt-3 whitespace-pre-line text-[13.5px] leading-[1.9] text-inktext">
+                {result.consensus}
+              </p>
+            </div>
+          )}
+          {result.closing && (
+            <div className="mt-4 rounded-2xl border border-golddim/15 bg-silk p-5 text-center">
+              <p className="font-serif text-[13.5px] leading-[1.9] text-inktext">{result.closing}</p>
+              <p className="mt-2 text-[11px] tracking-[0.2em] text-inkmuted">—— 先生收束</p>
+            </div>
+          )}
+          <p className="mt-6 text-center text-[11px] text-inkmuted">
+            圆桌各家所论皆传统命理文化的观察视角，仅供文化研习，不作任何决策建议。
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
