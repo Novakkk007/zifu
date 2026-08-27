@@ -20,7 +20,7 @@ function VersionLine() {
 
 export default function Footer() {
   return (
-    <footer className="bg-deep3 py-16 text-center">
+    <footer className="bg-deep3 py-16 pb-44 text-center sm:pb-16">
       <div className="zf-container flex flex-col items-center gap-5">
         <Link to="/" className="flex items-center gap-2.5">
           <BrandLogo variant="mark" size={24} />
