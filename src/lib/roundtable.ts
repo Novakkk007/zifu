@@ -141,6 +141,27 @@ export function parseRoundTable(text: string): RoundTableResult {
   return { seats, consensus, closing }
 }
 
+/** 席位追问：对某一席深谈（第二回合） */
+export function buildFollowUpPrompt(
+  chartSummary: string,
+  schoolName: string,
+  prevContent: string,
+  followUp: string
+): string {
+  return `你是紫府论命圆桌的「${schoolName}」代表。刚才同盘论命时你已发言，访客想就你的说法继续深问。
+
+【命盘摘要】
+${chartSummary}
+
+【你上一轮的发言】
+${prevContent}
+
+【访客追问】
+${followUp}
+
+请以本派立场回应追问，200-350 字：先正面回应，再补一句本派视角的延伸；守住分寸，不给必然断言。直接输出内容，不要寒暄。`
+}
+
 /** 圆桌 AI 调用（先生 key 直连，长输出） */
 export async function runRoundTable(
   chartSummary: string,

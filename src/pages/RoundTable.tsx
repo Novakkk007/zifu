@@ -7,9 +7,12 @@ import {
   ROUNDTABLE_SCHOOLS,
   runRoundTable,
   parseRoundTable,
+  buildFollowUpPrompt,
   type RoundTableResult,
 } from "@/lib/roundtable";
 import { usePageMeta } from "@/lib/page-meta";
+
+const SEAT_ANGLES = [270, 322, 14, 66, 118, 170, 222]; // 环形均布（从正上起）
 
 export default function RoundTablePage() {
   usePageMeta(
@@ -27,15 +30,20 @@ export default function RoundTablePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<RoundTableResult | null>(null);
+  const [summary, setSummary] = useState("");
+  // 追问状态：{seatIndex, q, reply, busy}
+  const [followUp, setFollowUp] = useState<Record<number, { q: string; reply: string; busy: boolean }>>({});
 
   const paipan = useEngine(paipanBazi, {
     onSuccess: async (data) => {
       const chart = (data as { chart: unknown }).chart;
       if (!chart) return;
+      const s = buildChartSummary(chart);
+      setSummary(s);
       setLoading(true);
       setError("");
       try {
-        const res = await runRoundTable(buildChartSummary(chart), question || undefined);
+        const res = await runRoundTable(s, question || undefined);
         setResult(parseRoundTable(res.content));
       } catch (e) {
         setError(e instanceof Error ? e.message : "圆桌暂未开席，请稍后再试");
@@ -49,6 +57,7 @@ export default function RoundTablePage() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setResult(null);
+    setFollowUp({});
     const payload: PaipanPayload = {
       calendar: solar ? "solar" : "lunar",
       year: Number(year),
@@ -64,8 +73,26 @@ export default function RoundTablePage() {
     paipan.mutate(payload);
   };
 
+  const askFollowUp = async (idx: number) => {
+    const f = followUp[idx];
+    if (!f || !f.q.trim() || f.busy || !result) return;
+    const seat = result.seats[idx];
+    setFollowUp((prev) => ({ ...prev, [idx]: { ...f, busy: true } }));
+    try {
+      const res = await runRoundTable(
+        buildFollowUpPrompt(summary, seat.school, seat.content, f.q)
+      );
+      setFollowUp((prev) => ({ ...prev, [idx]: { ...prev[idx], reply: res.content, busy: false } }));
+    } catch (e) {
+      setFollowUp((prev) => ({
+        ...prev,
+        [idx]: { ...prev[idx], reply: e instanceof Error ? e.message : "该席暂未回应", busy: false },
+      }));
+    }
+  };
+
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
+    <div className="mx-auto max-w-6xl px-4 py-10">
       <p className="text-center font-serif text-[26px] font-bold tracking-[0.14em] text-golddim">
         论 命 圆 桌
       </p>
@@ -150,41 +177,158 @@ export default function RoundTablePage() {
       </form>
 
       {loading && (
-        <div className="mt-10 text-center">
-          <p className="font-serif text-[16px] tracking-[0.2em] text-golddim">七席入座 · 各执其法</p>
-          <p className="mt-2 text-[12px] text-inkmuted">子平格局 · 三命通会 · 神峰通考 · 渊海子平 · 盲派 · 千里命稿 · 金口诀</p>
+        <div className="mt-12 text-center">
+          <div className="flex items-center justify-center gap-2">
+            {ROUNDTABLE_SCHOOLS.map((s, i) => (
+              <span
+                key={s.id}
+                className="animate-pulse rounded-full border border-golddim/40 px-3 py-1 font-serif text-[12px] tracking-[0.1em] text-golddim"
+                style={{ animationDelay: `${i * 0.35}s` }}
+              >
+                {s.name}
+              </span>
+            ))}
+          </div>
+          <p className="mt-4 font-serif text-[15px] tracking-[0.2em] text-golddim">七席入座 · 各执其法</p>
         </div>
       )}
 
       {result && (
-        <div className="mt-10">
-          <div className="grid gap-4 md:grid-cols-2">
+        <div className="mt-12">
+          {/* 圆桌主视觉：中心命盘 + 7 席环绕（桌面）/ 纵向（移动） */}
+          <div className="relative hidden md:block" style={{ height: 620 }}>
+            {/* 桌面 */}
+            <div
+              className="absolute left-1/2 top-1/2 z-10 flex h-44 w-44 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 border-golddim/50 bg-silk2 text-center shadow-card"
+            >
+              <span className="text-[10.5px] tracking-[0.24em] text-inkmuted">今日命盘</span>
+              <span className="mt-1 font-serif text-[15px] font-bold tracking-[0.12em] text-golddim">
+                {gender === "male" ? "乾造" : "坤造"}
+              </span>
+              <span className="mt-1 text-[11.5px] text-inktext">
+                {year}-{month}-{day} {hour}时
+              </span>
+              <span className="mt-1 text-[10.5px] text-inkmuted">七席同观 · 共识可参</span>
+            </div>
             {result.seats.map((seat, i) => {
               const meta = ROUNDTABLE_SCHOOLS[i];
+              const ang = (SEAT_ANGLES[i] * Math.PI) / 180;
+              const x = 50 + 38 * Math.cos(ang);
+              const y = 50 + 38 * Math.sin(ang);
+              const f = followUp[i];
               return (
                 <div
                   key={seat.school}
-                  className="rounded-2xl border border-golddim/20 bg-silk2 p-5 shadow-card"
+                  className="absolute w-[215px] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-golddim/25 bg-silk2 p-3 shadow-card"
+                  style={{ left: `${x}%`, top: `${y}%` }}
                 >
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-serif text-[15px] font-bold tracking-[0.12em] text-golddim">
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-serif text-[13px] font-bold tracking-[0.08em] text-golddim">
                       第{i + 1}席 · {seat.school}
                     </span>
-                    <span className="text-[10.5px] tracking-[0.08em] text-inkmuted">
-                      {meta?.school}
-                    </span>
                   </div>
-                  <p className="mt-1 text-[11px] text-inkmuted">{meta?.focus.join(" · ")}</p>
-                  <p className="mt-3 whitespace-pre-line font-serif text-[13.5px] leading-[1.9] text-inktext">
+                  <span className="text-[10px] text-inkmuted">{meta?.school}</span>
+                  <p className="mt-1.5 line-clamp-3 text-[11.5px] leading-[1.7] text-inktext">
                     {seat.content}
                   </p>
+                  <button
+                    onClick={() =>
+                      setFollowUp((prev) => ({
+                        ...prev,
+                        [i]: prev[i] ?? { q: "", reply: "", busy: false },
+                      }))
+                    }
+                    className="mt-1.5 text-[10.5px] tracking-[0.08em] text-golddim hover:underline"
+                  >
+                    深问此席 →
+                  </button>
+                  {f && (
+                    <div className="mt-2 border-t border-golddim/15 pt-2">
+                      <input
+                        value={f.q}
+                        onChange={(e) =>
+                          setFollowUp((prev) => ({ ...prev, [i]: { ...prev[i], q: e.target.value } }))
+                        }
+                        onKeyDown={(e) => e.key === "Enter" && askFollowUp(i)}
+                        placeholder="问这一席……"
+                        className="w-full rounded border border-golddim/20 bg-silk px-2 py-1.5 text-[11.5px] text-inktext outline-none"
+                      />
+                      <button
+                        onClick={() => askFollowUp(i)}
+                        disabled={f.busy}
+                        className="mt-1.5 w-full rounded bg-golddim/80 py-1 text-[11px] tracking-[0.1em] text-white disabled:opacity-40"
+                      >
+                        {f.busy ? "思量中……" : "深谈"}
+                      </button>
+                      {f.reply && (
+                        <p className="mt-1.5 whitespace-pre-line text-[11px] leading-[1.7] text-inkmuted">
+                          {f.reply}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 移动端：纵向堆叠 */}
+          <div className="grid gap-4 md:hidden">
+            {result.seats.map((seat, i) => {
+              const meta = ROUNDTABLE_SCHOOLS[i];
+              const f = followUp[i];
+              return (
+                <div key={seat.school} className="rounded-2xl border border-golddim/20 bg-silk2 p-4 shadow-card">
+                  <span className="font-serif text-[14px] font-bold tracking-[0.1em] text-golddim">
+                    第{i + 1}席 · {seat.school}
+                  </span>
+                  <span className="ml-2 text-[10.5px] text-inkmuted">{meta?.school}</span>
+                  <p className="mt-2 whitespace-pre-line font-serif text-[13px] leading-[1.85] text-inktext">
+                    {seat.content}
+                  </p>
+                  <button
+                    onClick={() =>
+                      setFollowUp((prev) => ({
+                        ...prev,
+                        [i]: prev[i] ?? { q: "", reply: "", busy: false },
+                      }))
+                    }
+                    className="mt-2 text-[11px] tracking-[0.08em] text-golddim hover:underline"
+                  >
+                    深问此席 →
+                  </button>
+                  {f && (
+                    <div className="mt-2 border-t border-golddim/15 pt-2">
+                      <input
+                        value={f.q}
+                        onChange={(e) =>
+                          setFollowUp((prev) => ({ ...prev, [i]: { ...prev[i], q: e.target.value } }))
+                        }
+                        onKeyDown={(e) => e.key === "Enter" && askFollowUp(i)}
+                        placeholder="问这一席……"
+                        className="w-full rounded border border-golddim/20 bg-silk px-2 py-1.5 text-[12px] text-inktext outline-none"
+                      />
+                      <button
+                        onClick={() => askFollowUp(i)}
+                        disabled={f.busy}
+                        className="mt-1.5 w-full rounded bg-golddim/80 py-1.5 text-[11.5px] tracking-[0.1em] text-white disabled:opacity-40"
+                      >
+                        {f.busy ? "思量中……" : "深谈"}
+                      </button>
+                      {f.reply && (
+                        <p className="mt-1.5 whitespace-pre-line text-[12px] leading-[1.75] text-inkmuted">
+                          {f.reply}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
 
           {result.consensus && (
-            <div className="mt-6 rounded-2xl border border-golddim/30 bg-silk p-6 shadow-card">
+            <div className="mt-8 rounded-2xl border border-golddim/30 bg-silk p-6 shadow-card">
               <p className="font-serif text-[14px] font-bold tracking-[0.14em] text-golddim">
                 共识与分歧
               </p>
