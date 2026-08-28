@@ -46,14 +46,20 @@ async function exchangeAuthCode(
   return resp.json() as Promise<TokenResponse>;
 }
 
-const jwks = jose.createRemoteJWKSet(
-  new URL(`${env.kimiAuthUrl}/api/.well-known/jwks.json`),
-);
+// dev/测试环境未配 KIMI_AUTH_URL 时（中文路径 + 空值），new URL 会抛 Invalid URL 崩掉 dev server
+// 保护：非法/缺失时延迟到真正校验时再抛业务错误
+let jwks: ReturnType<typeof jose.createRemoteJWKSet> | null = null
+function getJwks() {
+  if (!jwks) {
+    jwks = jose.createRemoteJWKSet(new URL(`${env.kimiAuthUrl}/api/.well-known/jwks.json`))
+  }
+  return jwks
+}
 
 async function verifyAccessToken(
   accessToken: string,
 ): Promise<{ userId: string; clientId: string }> {
-  const { payload } = await jose.jwtVerify(accessToken, jwks);
+  const { payload } = await jose.jwtVerify(accessToken, getJwks());
   const userId = payload.user_id as string;
   const clientId = payload.client_id as string;
   if (!userId) {
