@@ -180,6 +180,18 @@ const SECONDARY_ENGINES: HomeEntry[] = [
     flagship: true,
   },
   {
+    glyph: "圆",
+    title: "论命圆桌",
+    desc: "子平格局、三命通会、盲派等七大流派同盘论命，共识与分歧一并呈上",
+    to: "/roundtable",
+  },
+  {
+    glyph: "照",
+    title: "观照见性",
+    desc: "相由心生——以生辰为底色，如月照水，映照当下的你",
+    to: "/guanzhao",
+  },
+  {
     glyph: "命",
     title: "八字排盘",
     desc: "录入生辰，依古法起四柱、排大运流年",
