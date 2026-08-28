@@ -7,6 +7,7 @@ import { LoadingState } from "@/components/LoadingState";
 // 路由级懒加载：非首页引擎页面按需分包，首屏不再同步加载全部引擎
 const Hecan = lazy(() => import("@/pages/Hecan"));
 const RoundTable = lazy(() => import("@/pages/RoundTable"));
+const Guanzhao = lazy(() => import("@/pages/Guanzhao"));
 const Bazi = lazy(() => import("@/pages/Bazi"));
 const Hepan = lazy(() => import("@/pages/bazi/Hepan"));
 const Liuyao = lazy(() => import("@/pages/Liuyao"));
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/hecan" element={<Hecan />} />
           <Route path="/roundtable" element={<RoundTable />} />
+          <Route path="/guanzhao" element={<Guanzhao />} />
           <Route path="/bazi" element={<Bazi />} />
           <Route path="/bazi/hepan" element={<Hepan />} />
           <Route path="/liuyao" element={<Liuyao />} />
