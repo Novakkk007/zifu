@@ -1047,16 +1047,18 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     multipleHitPolicy: 'list-all',
     rulesetVersion: V,
     find: (ctx) => {
-      // 月支→天干（zhenyi id=44 data + id=156 data 并集）
-      const table = [[8], [1], [8], [3], [5], [4], [2], [5], [8], [1], [7], [9]]
-      return stemHits(ctx, table[ctx.monthBranchIdx])
+      // 月支起例：44 表→天干 + 156 表→地支（两表目标类型不同，并集命中）
+      const ganTable = [[], [1], [8], [], [3], [2], [], [5], [4], [], [7], [6]] // 丑乙 寅壬 辰丁 巳丙 未己 申戊 戌辛 亥庚
+      const zhiTable = [[8], [], [], [5], [], [], [2], [], [], [11], [], []] // 子申 卯巳 午寅 酉亥
+      return [...stemHits(ctx, ganTable[ctx.monthBranchIdx]), ...branchHits(ctx, zhiTable[ctx.monthBranchIdx])]
     },
     verse: '丑乙寅壬辰丁巳丙，未己申戊戌辛亥庚；子申卯巳午寅酉亥。',
     basis: '以月支起例，四柱天干见之为命中（zhenyi 原文核对 main=8）',
     source: 'zhenyi shensha-rules.json id=44/156（MIT）',
     modernExplanation: '天德合为天德贵人之合，传统视为福荫；本规则仅记录位置。',
     testFixtures: [
-      { input: { pillars: ['乙丑', '丁卯', '丙午', '癸酉'] }, expectHits: ['月干'] },
+      { input: { pillars: ['乙丑', '丙辰', '丁卯', '癸酉'] }, expectHits: ['日干'] },
+      { input: { pillars: ['丙申', '丙子', '丙午', '癸酉'] }, expectHits: ['年支'] },
     ],
   },
   {
@@ -1264,22 +1266,27 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
   {
     ruleId: 'shensha.sifei.v1',
     name: '四废日',
-    variant: '甲系（两系并存需约定口径，本库取甲系）',
-    inputBasis: 'yearBranch',
+    variant: '按月支查日柱，甲乙两系并存（zhenyi main=8 tags=15，id 146/147）',
+    inputBasis: 'monthBranch',
     targetPosition: 'dayPillar',
     multipleHitPolicy: 'list-all',
     rulesetVersion: V,
     find: (ctx) => {
-      const table = [[42], [42], [56], [56], [56], [48], [48], [48], [50], [50], [50], [42]]
-      const targets = new Set(table[ctx.yearBranchIdx].map((i) => JIAZI[i]))
+      // 月支→日柱（两系并集，zhenyi id=146 甲系 + id=147 乙系）
+      const table = [
+        [42, 53], [42, 53], [56, 57], [56, 57], [56, 57],
+        [48, 59], [48, 59], [48, 59], [50, 51], [50, 51], [50, 51], [42, 53],
+      ]
+      const targets = new Set(table[ctx.monthBranchIdx].map((i) => JIAZI[i]))
       return dayPillarHits(ctx, targets)
     },
-    verse: '寅卯辰庚申，巳午未壬子，申酉戌甲寅，亥子丑丙午。',
-    basis: '以年支三合位起例，日柱命中即记；多派取墓绝死囚，甲/乙两系并存（外部 MIT 源吸收，待问真对拍）',
-    source: '外部参考表（zhenyi/mingyu，MIT）',
-    modernExplanation: '四废日为传统日柱属性条目；本规则仅记录属性，不作事件断言。',
+    verse: '甲系：寅卯辰庚申，巳午未壬子，申酉戌甲寅，亥子丑丙午；乙系：寅卯辰辛酉，巳午未癸亥，申酉戌乙卯，亥子丑丁巳。',
+    basis: '以月支起例，日柱命中即记；甲乙两系并存（zhenyi 原文核对 main=8）',
+    source: 'zhenyi shensha-rules.json id=146/147（MIT）',
+    modernExplanation: '四废日为传统日柱属性条目（两系口径并存）；本规则仅记录属性，不作事件断言。',
     testFixtures: [
-      { input: { pillars: ['辛丑', '丁卯', '丙午', '癸酉'] }, expectHits: ['日柱'] },
+      { input: { pillars: ['辛丑', '丙子', '丙午', '癸酉'] }, expectHits: ['日柱'] },
+      { input: { pillars: ['己卯', '丙子', '丁巳', '辛亥'] }, expectHits: ['日柱'] },
     ],
   },
   {
