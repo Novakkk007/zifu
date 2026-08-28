@@ -10,13 +10,13 @@
  *          旧版 1.0.0 排盘结果仍为有效历史数据（不迁移、不作废）。
  * - 1.2.0：神煞注册表 v3，新增红鸾、天喜、劫煞、灾煞（共 16 种）。
  * - 1.3.0：神煞注册表 v4，新增元辰、金舆、孤辰、寡宿、红艳煞、学堂、词馆、天厨（共 24 种）。
- * - 1.4.0：神煞注册表 v5，新增天罗、地网、魁罡、金神、天赦、十恶大败、亡神、天医、
+ * - 1.5.0：神煞注册表 v5，新增天罗、地网、魁罡、金神、天赦、十恶大败、亡神、天医、
  *          福星贵人、天/地/人三奇、阴差阳错、流霞、血刃、勾绞煞（共 40 种）。
  */
-export const RULESET_VERSION = '1.4.0'
+export const RULESET_VERSION = '1.5.0'
 
 /** 算法版本（与 RULESET_VERSION 同步发布） */
-export const ALGORITHM_VERSION = '1.4.0'
+export const ALGORITHM_VERSION = '1.5.0'
 
 export * as stemsBranches from './stems-branches'
 export * as tengods from './tengods'

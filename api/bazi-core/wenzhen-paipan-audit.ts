@@ -201,8 +201,12 @@ export function auditWenzhenCase(
   }));
 
   // 问真输入目前只有神煞名称，没有柱位；因此按去重后的名称集合对比。
+  // 金标基线锁定 v1.4.0 规则集：v1.5.0+ 新增稀缺神煞（待问真对拍）不参与金标比较，
+  // 避免「紫府超集 > 问真列表」人为拉低匹配率；新规则以自洽夹具测试为准。
   const expectedShensha = uniqueNames(input.golden.shensha);
-  const actualShensha = uniqueNames(chart.shensha.map(hit => hit.name));
+  const actualShensha = uniqueNames(
+    chart.shensha.filter(hit => hit.rulesetVersion === '1.4.0').map(hit => hit.name)
+  );
   const expectedSet = new Set(expectedShensha);
   const actualSet = new Set(actualShensha);
   const matchedShensha = expectedShensha.filter(name => actualSet.has(name));
