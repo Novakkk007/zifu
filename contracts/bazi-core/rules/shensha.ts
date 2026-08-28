@@ -1342,12 +1342,18 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     multipleHitPolicy: 'list-all',
     rulesetVersion: V,
     find: (ctx) => {
-      // 30 纳音序列（60 甲子每 2 组共享）：末字即五行
+      // zhenyi main=17（nayin_first）：四柱每柱纳音五行都查（不只日柱）
       const NAYIN30 = ['海中金', '炉中火', '大林木', '路旁土', '剑锋金', '山头火', '涧下水', '城头土', '白蜡金', '杨柳木', '泉中水', '屋上土', '霹雳火', '松柏木', '长流水', '沙中金', '山下火', '平地木', '壁上土', '金箔金', '覆灯火', '天河水', '大驿土', '钗钏金', '桑柘木', '大溪水', '沙中土', '天上火', '石榴木', '大海水']
-      const nayin = NAYIN30[Math.floor(ctx.dayJiaziIdx / 2)]
-      const wuxing = nayin[nayin.length - 1]
       const table: Record<string, number[]> = { 金: [6, 3], 木: [6, 3], 水: [9, 10], 火: [9, 10], 土: [4, 5] }
-      return branchHits(ctx, table[wuxing] ?? [])
+      const targets = new Set<number>()
+      for (const p of ctx.pillars) {
+        const gz = STEMS[p.stemIdx] + BRANCHES[p.branchIdx]
+        const jiaziIdx = JIAZI.indexOf(gz)
+        if (jiaziIdx < 0) continue
+        const nayin = NAYIN30[Math.floor(jiaziIdx / 2)]
+        for (const t of table[nayin[nayin.length - 1]] ?? []) targets.add(t)
+      }
+      return branchHits(ctx, [...targets])
     },
     verse: '金午卯，木午卯，水酉戌，火酉戌，土辰巳。',
     basis: '以日主纳音五行起例，四柱地支见之为命中（zhenyi 原文核对 main=17）',
@@ -1368,9 +1374,9 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     rulesetVersion: V,
     find: (ctx) => {
       const table: number[][] = [
-        [8, 9, 4, 5, 2, 7, 0], [6, 7], [2, 3, 4, 9], [0, 1, 3, 8],
-        [8, 9, 4, 5, 2, 7, 0], [6, 7], [2, 3, 4, 9], [0, 1, 3, 8],
-        [8, 9, 4, 5, 2, 7, 0], [6, 7], [2, 3, 4, 9], [0, 1, 3, 8],
+        [8, 9, 4, 5, 2, 7, 0], [1, 6, 7], [2, 3, 4, 9], [0, 1, 3, 8],
+        [8, 9, 4, 5, 2, 7, 0], [1, 6, 7], [2, 3, 4, 9], [0, 1, 3, 8],
+        [8, 9, 4, 5, 2, 7, 0], [1, 6, 7], [2, 3, 4, 9], [0, 1, 3, 8],
       ]
       return stemHits(ctx, table[ctx.monthBranchIdx])
     },
