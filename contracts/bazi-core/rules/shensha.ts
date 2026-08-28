@@ -20,7 +20,7 @@ export const RULE_META = {
  * 本注册表条目的 rulesetVersion 字段值。
  * 与 rules/index.ts 的 RULESET_VERSION 保持一致（有测试断言同步）。
  */
-export const SHENSHA_RULESET_VERSION = '1.4.0'
+export const SHENSHA_RULESET_VERSION = '1.5.0'
 
 /** 神煞计算上下文（时柱可能缺失） */
 export interface ShenshaContext {
@@ -138,6 +138,7 @@ const SANHE_OF_BRANCH = (b: number): number => {
 }
 
 const V = SHENSHA_RULESET_VERSION
+const V_LEGACY = '1.4.0'  // 金标基线：老 40 种神煞锁 1.4.0，不随版本滚动
 
 export const SHENSHA_REGISTRY: ShenshaDef[] = [
   {
@@ -147,7 +148,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => {
       // 按日干序：甲戊庚→丑未，乙己→子申，丙丁→亥酉，辛→寅午，壬癸→卯巳
       const table: number[][] = [
@@ -183,7 +184,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[5, 6, 8, 9, 8, 9, 11, 0, 2, 3][ctx.dayStemIdx]]),
     verse: '甲乙巳午报君知，丙戊申宫丁己鸡，庚猪辛鼠壬逢虎，癸人见兔入云梯。',
     basis: '以日干起例，地支见之为命中',
@@ -202,7 +203,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => {
       const table: number[][] = [
         [0, 6], // 甲乙 → 子午
@@ -235,7 +236,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[9, 3, 6, 0][SANHE_OF_BRANCH(ctx.dayBranchIdx)]]),
     verse: '申子辰在酉，寅午戌在卯，巳酉丑在午，亥卯未在子。',
     basis: '以日支起例（兼顾年支），地支见之为命中',
@@ -254,7 +255,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[2, 8, 11, 5][SANHE_OF_BRANCH(ctx.dayBranchIdx)]]),
     verse: '申子辰马在寅，寅午戌马在申，巳酉丑马在亥，亥卯未马在巳。',
     basis: '以日支起例（兼顾年支），地支见之为命中',
@@ -273,7 +274,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[4, 10, 1, 7][SANHE_OF_BRANCH(ctx.dayBranchIdx)]]),
     verse: '申子辰见辰，寅午戌见戌，巳酉丑见丑，亥卯未见未。',
     basis: '以日支起例（兼顾年支），地支见之为命中',
@@ -292,7 +293,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[3, 4, 6, 7, 6, 7, 9, 10, 0, 1][ctx.dayStemIdx]]),
     verse: '甲刃在卯，丙戊刃在午，庚刃在酉，壬刃在子；阴干刃在辰戌丑未（流派之说）。',
     basis: '以日干起例，地支见之为命中',
@@ -311,7 +312,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[2, 3, 5, 6, 5, 6, 8, 9, 11, 0][ctx.dayStemIdx]]),
     verse: '甲禄在寅，乙禄在卯，丙戊禄在巳，丁己禄在午，庚禄在申，辛禄在酉，壬禄在亥，癸禄在子。',
     basis: '以日干起例，地支见之为命中',
@@ -330,7 +331,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayJiazi',
     targetPosition: 'nonDayBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => {
       const voids = kongWangBranches(ctx.dayJiaziIdx)
       return ctx.pillars
@@ -356,7 +357,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'monthBranch',
     targetPosition: 'anyStemOrBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => {
       // 正丁二坤（申）宫，三壬四辛同，五亥六甲上，七癸八寅逢，九丙十居乙，子巳丑庚中
       // 支序：寅2 卯3 辰4 巳5 午6 未7 申8 酉9 戌10 亥11 子0 丑1
@@ -402,7 +403,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'monthBranch',
     targetPosition: 'anyStem',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     // 三合分组序：0=申子辰→壬(8)，1=寅午戌→丙(2)，2=巳酉丑→庚(6)，3=亥卯未→甲(0)
     find: (ctx) => stemHits(ctx, [[8, 2, 6, 0][SANHE_OF_BRANCH(ctx.monthBranchIdx)]]),
     verse: '寅午戌月在丙，申子辰月在壬，亥卯未月在甲，巳酉丑月在庚。',
@@ -422,7 +423,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[0, 6, 9, 3][SANHE_OF_BRANCH(ctx.dayBranchIdx)]]),
     verse: '申子辰见子，寅午戌见午，巳酉丑见酉，亥卯未见卯。',
     basis: '以日支起例（兼顾年支），地支见之为命中',
@@ -441,7 +442,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'yearBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     // 卯上起子逆数：子→卯 丑→寅 寅→丑 卯→子 辰→亥 巳→戌 午→酉 未→申 申→未 酉→午 戌→巳 亥→辰
     find: (ctx) => branchHits(ctx, [[3, 2, 1, 0, 11, 10, 9, 8, 7, 6, 5, 4][ctx.yearBranchIdx]]),
     verse: '卯上起子，逆数至生年支，即是红鸾。',
@@ -461,7 +462,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'yearBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     // 红鸾对冲：子→酉 丑→申 寅→未 卯→午 辰→巳 巳→辰 午→卯 未→寅 申→丑 酉→子 戌→亥 亥→戌
     find: (ctx) => branchHits(ctx, [[9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 11, 10][ctx.yearBranchIdx]]),
     verse: '天喜者，红鸾之对冲位也。',
@@ -481,7 +482,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     // 三合绝地：申子辰→巳 寅午戌→亥 巳酉丑→寅 亥卯未→申
     find: (ctx) => branchHits(ctx, [[5, 11, 2, 8][SANHE_OF_BRANCH(ctx.dayBranchIdx)]]),
     verse: '申子辰劫在巳，寅午戌劫在亥，巳酉丑劫在寅，亥卯未劫在申。',
@@ -501,7 +502,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     // 三合冲将星：申子辰→午 寅午戌→子 巳酉丑→卯 亥卯未→酉
     find: (ctx) => branchHits(ctx, [[6, 0, 3, 9][SANHE_OF_BRANCH(ctx.dayBranchIdx)]]),
     verse: '申子辰灾在午，寅午戌灾在子，巳酉丑灾在卯，亥卯未灾在酉。',
@@ -521,7 +522,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'yearBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => {
       const maleTarget = [7, 6, 9, 4, 3, 2, 1, 0, 11, 10, 9, 8][ctx.yearBranchIdx]
       const target = ctx.gender === 'female' ? (maleTarget + 6) % 12 : maleTarget
@@ -544,7 +545,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[4, 5, 7, 8, 7, 8, 10, 11, 1, 2][ctx.dayStemIdx]]),
     verse: '甲龙乙蛇，丙戊羊，丁己猴，庚犬辛猪，壬牛癸虎。',
     basis: '以日干起例，四柱地支见对应支为命中',
@@ -562,7 +563,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'yearBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[2, 2, 5, 5, 5, 8, 8, 8, 11, 11, 11, 2][ctx.yearBranchIdx]]),
     verse: '亥子丑人见寅，寅卯辰人见巳，巳午未人见申，申酉戌人见亥。',
     basis: '以年支所属亥子丑、寅卯辰、巳午未、申酉戌分组起例，四柱地支见前位为命中',
@@ -580,7 +581,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'yearBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[10, 10, 1, 1, 1, 4, 4, 4, 7, 7, 7, 10][ctx.yearBranchIdx]]),
     verse: '亥子丑人见戌，寅卯辰人见丑，巳午未人见辰，申酉戌人见未。',
     basis: '以年支所属亥子丑、寅卯辰、巳午未、申酉戌分组起例，四柱地支见后位为命中',
@@ -598,7 +599,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[6, 8, 2, 7, 4, 4, 10, 9, 0, 8][ctx.dayStemIdx]]),
     verse: '甲午乙申丙见寅，丁未戊己辰上寻，庚戌辛酉壬见子，癸临申上是红艳。',
     basis: '以日干起例，四柱地支见对应支为命中',
@@ -616,7 +617,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[11, 6, 2, 9, 2, 9, 5, 0, 8, 3][ctx.dayStemIdx]]),
     verse: '甲学堂在亥，乙在午，丙戊在寅，丁己在酉，庚在巳，辛在子，壬在申，癸在卯。',
     basis: '以日干的长生位起例，四柱地支见之为命中',
@@ -634,7 +635,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[5, 0, 8, 3, 8, 3, 11, 6, 2, 9][ctx.dayStemIdx]]),
     verse: '词馆取学堂之对冲位：甲巳、乙子、丙戊申、丁己卯、庚亥、辛午、壬寅、癸酉。',
     basis: '以日干学堂所在支的对冲位起例，四柱地支见之为命中',
@@ -652,7 +653,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: (ctx) => branchHits(ctx, [[5, 6, 7, 8, 7, 8, 9, 10, 11, 0][ctx.dayStemIdx]]),
     verse: '甲在巳，乙在午，丙戊在未，丁己在申，庚在酉，辛在戌，壬在亥，癸在子。',
     basis: '以日干食神的临官位起例，四柱地支见之为命中',
@@ -670,7 +671,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx => (ctx.dayBranchIdx === 4 ? branchHits(ctx, [5]) : []),
     verse: '辰为天罗，辰人见巳是罗中。',
     basis: '以日支起例，日支为辰时，四柱地支见巳为命中',
@@ -690,7 +691,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx => (ctx.dayBranchIdx === 10 ? branchHits(ctx, [11]) : []),
     verse: '戌为地网，戌人见亥是网中。',
     basis: '以日支起例，日支为戌时，四柱地支见亥为命中',
@@ -710,7 +711,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayJiazi',
     targetPosition: 'dayPillar',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx => dayPillarHits(ctx, new Set(['庚辰', '庚戌', '壬辰', '戊戌'])),
     verse: '壬辰庚戌与庚辰，戊戌魁罡四座神。',
     basis: '以日柱干支整体起例，日柱为庚辰、庚戌、壬辰或戊戌时命中',
@@ -730,7 +731,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayStem',
     targetPosition: 'hourBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx => {
       if (ctx.dayStemIdx !== 5) return []
       const hour = ctx.pillars.find(p => p.label === '时柱')
@@ -754,7 +755,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayJiazi',
     targetPosition: 'dayPillar',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx => dayPillarHits(ctx, new Set(['戊寅', '甲午', '戊申', '甲子'])),
     verse: '春戊寅，夏甲午，秋戊申，冬甲子，乃天赦日。',
     basis: '以日柱干支整体起例，日柱为戊寅、甲午、戊申或甲子时命中',
@@ -774,7 +775,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayJiazi',
     targetPosition: 'dayPillar',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx =>
       dayPillarHits(ctx, new Set(['甲辰', '乙巳', '丙申', '丁亥', '戊戌', '己丑', '庚辰', '辛巳', '壬申', '癸亥'])),
     verse: '甲辰乙巳与壬申，丙申丁亥及庚辰，戊戌己丑辛巳日，癸亥十日号大败。',
@@ -796,7 +797,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx => branchHits(ctx, [[11, 5, 8, 2][SANHE_OF_BRANCH(ctx.dayBranchIdx)]]),
     verse: '申子辰见亥，寅午戌见巳，巳酉丑见申，亥卯未见寅。',
     basis: '以日支所属三合局起例，四柱地支见对应亡神支为命中',
@@ -816,7 +817,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'monthBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx => branchHits(ctx, [(ctx.monthBranchIdx + 11) % 12]),
     verse: '天医正月在丑，二月在寅，顺月推移，各居月建前一辰。',
     basis: '以月支起例，取月支前一位，四柱地支见之为命中',
@@ -836,7 +837,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx => branchHits(ctx, [[9, 8, 0, 11, 3, 2, 6, 5, 6, 5][ctx.dayStemIdx]]),
     verse: '甲邀酉禄乙邀申，丙爱鼠兮丁爱亥，戊寻玉兔己寻虎，庚辛逢马巳，壬癸爱马蛇。',
     basis: '以日干起例，按甲酉、乙申、丙子、丁亥、戊卯、己寅、庚午、辛巳、壬午、癸巳查四柱地支',
@@ -856,7 +857,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'pillarStems',
     targetPosition: 'anyStem',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx => orderedStemHits(ctx, [0, 4, 6]),
     verse: '天上三奇甲戊庚，须从次第顺布成。',
     basis: '按年、月、日、时顺序检查天干，甲、戊、庚依次全见时分别列出命中柱位',
@@ -876,7 +877,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'pillarStems',
     targetPosition: 'anyStem',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx => orderedStemHits(ctx, [1, 2, 3]),
     verse: '地下三奇乙丙丁，须从次第顺布成。',
     basis: '按年、月、日、时顺序检查天干，乙、丙、丁依次全见时分别列出命中柱位',
@@ -896,7 +897,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'pillarStems',
     targetPosition: 'anyStem',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx => orderedStemHits(ctx, [8, 9, 7]),
     verse: '人中三奇壬癸辛，须从次第顺布成。',
     basis: '按年、月、日、时顺序检查天干，壬、癸、辛依次全见时分别列出命中柱位',
@@ -916,7 +917,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayJiazi',
     targetPosition: 'dayPillar',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx =>
       dayPillarHits(
         ctx,
@@ -941,7 +942,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx => branchHits(ctx, [[9, 10, 7, 8, 5, 6, 4, 3, 11, 2][ctx.dayStemIdx]]),
     verse: '甲鸡乙犬丙羊加，丁是猴精戊见蛇，己马庚龙辛逐兔，壬猪癸虎是流霞。',
     basis: '以日干起例，四柱地支见对应支为命中',
@@ -961,7 +962,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'monthBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     // 子丑寅卯辰巳午未申酉戌亥月，依次见午子丑未寅申卯酉辰戌巳亥
     find: ctx => branchHits(ctx, [[6, 0, 1, 7, 2, 8, 3, 9, 4, 10, 5, 11][ctx.monthBranchIdx]]),
     verse: '寅月见丑，卯月见未，辰月见寅，巳月见申，逐月依表查血刃。',
@@ -982,7 +983,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
     inputBasis: 'yearBranch',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
-    rulesetVersion: V,
+    rulesetVersion: V_LEGACY,
     find: ctx => branchHits(ctx, [(ctx.yearBranchIdx + 3) % 12, (ctx.yearBranchIdx + 9) % 12]),
     verse: '命前三辰为勾，命后三辰为绞，阴阳男女分名而位同此两端。',
     basis: '以年支起例，四柱地支见年支顺数三位或逆数三位，统一标记为勾绞煞',
@@ -993,6 +994,379 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
         input: { pillars: ['甲子', '丁卯', '甲辰', '癸酉'] },
         expectHits: ['月支', '时支'],
       },
+    ],
+  },
+  // ==================== v1.5.0 稀缺神煞（外部 MIT 源吸收，2026-08-28）====================
+  {
+    ruleId: 'shensha.guoyin.v1',
+    name: '国印贵人',
+    variant: '按日干查（zhenyi/mingyu 口径一致）',
+    inputBasis: 'dayStem',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => branchHits(ctx, [[10], [11], [1], [2], [1], [2], [4], [5], [7], [8]][ctx.dayStemIdx]),
+    verse: '甲戌乙亥丙丑寅，丁戊丑寅庚辰巳，辛巳壬未癸申位。',
+    basis: '以日干起例，四柱地支见之为命中（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '传统命理以国印贵人象征公门文书之缘；本规则仅记录其位置，不断言具体处境。',
+    testFixtures: [
+      { input: { pillars: ['甲戌', '丁卯', '甲寅', '癸酉'] }, expectHits: ['年支'] },
+      { input: { pillars: ['甲子', '丁卯', '丙午', '己丑'] }, expectHits: ['时支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.feiren.v1',
+    name: '飞刃',
+    variant: '禄前一位之对宫/羊刃对冲（多派口径略有出入）',
+    inputBasis: 'dayStem',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => branchHits(ctx, [[9], [8], [0], [11], [0], [11], [3], [2], [6], [5]][ctx.dayStemIdx]),
+    verse: '甲酉乙申丙子亥，丁子戊子己亥庚卯，辛寅壬午癸巳。',
+    basis: '以日干起例，四柱地支见之为命中（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '飞刃属「刃」系传统符号，象征果决与锋芒；本规则仅记录位置，不作事件断言。',
+    testFixtures: [
+      { input: { pillars: ['辛酉', '丁卯', '甲寅', '癸酉'] }, expectHits: ['年支', '时支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.tiandehestem.v1',
+    name: '天德合（日干系）',
+    variant: '按日干查（与天德贵人表互参）',
+    inputBasis: 'dayStem',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) =>
+      branchHits(ctx, [[], [1], [5], [4], [8], [7], [11], [10], [2], []][ctx.dayStemIdx]),
+    verse: '乙丑壬寅丁辰丙巳，己未戊申辛戌庚亥。',
+    basis: '以日干起例，四柱地支见之为命中（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '天德合为天德贵人之合，传统视为福荫；本规则仅记录位置。',
+    testFixtures: [
+      { input: { pillars: ['辛丑', '丁卯', '乙巳', '癸酉'] }, expectHits: ['年支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.tiandehebranch.v1',
+    name: '天德合（日支系）',
+    variant: '按日支查（与天德贵人表互参）',
+    inputBasis: 'dayBranch',
+    targetPosition: 'anyStem',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) =>
+      stemHits(ctx, [[8], [], [], [5], [], [], [2], [], [], [11], [], []][ctx.dayBranchIdx]),
+    verse: '子申卯巳午寅酉亥。',
+    basis: '以日支起例，四柱天干见之为命中（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '天德合（日支系）与日干系互为补充口径；本规则仅记录位置。',
+    testFixtures: [
+      { input: { pillars: ['壬子', '丁卯', '丙子', '癸酉'] }, expectHits: ['年干'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.yuedehe.v1',
+    name: '月德合',
+    variant: '按日支查（与月德贵人表互参）',
+    inputBasis: 'dayBranch',
+    targetPosition: 'anyStem',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) =>
+      stemHits(ctx, [[3], [1], [7], [5], [3], [1], [7], [5], [3], [1], [7], [5]][ctx.dayBranchIdx]),
+    verse: '子丁丑乙寅辛卯己，辰丁巳乙午辛未己，申丁酉乙戌辛亥己。',
+    basis: '以日支起例，四柱天干见之为命中（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '月德合为月德贵人之合，传统视为温和福荫；本规则仅记录位置。',
+    testFixtures: [
+      { input: { pillars: ['庚子', '丁卯', '丙子', '癸酉'] }, expectHits: ['月干'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.pima.v1',
+    name: '披麻',
+    variant: '年支顺推九位（十二神/流年系变体）',
+    inputBasis: 'yearBranch',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => branchHits(ctx, [(ctx.yearBranchIdx + 9) % 12]),
+    verse: '子酉丑戌寅亥，卯子辰丑巳寅，午卯未辰申巳，酉午戌未亥申。',
+    basis: '以年支起例顺推九位，四柱地支见之为命中（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '披麻为流年十二神系传统符号；本规则仅记录位置，不作吉凶断言。',
+    testFixtures: [
+      { input: { pillars: ['甲子', '丁卯', '甲辰', '癸酉'] }, expectHits: ['时支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.diaoke.v1',
+    name: '吊客',
+    variant: '年支顺推十位（十二神/流年系变体）',
+    inputBasis: 'yearBranch',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => branchHits(ctx, [(ctx.yearBranchIdx + 10) % 12]),
+    verse: '子戌丑亥寅子，卯丑辰寅巳卯，午辰未巳申午，酉未戌申亥酉。',
+    basis: '以年支起例顺推十位，四柱地支见之为命中（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '吊客为流年十二神系传统符号；本规则仅记录位置，不作吉凶断言。',
+    testFixtures: [
+      { input: { pillars: ['甲子', '丁卯', '甲辰', '甲戌'] }, expectHits: ['时支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.sangmen.v1',
+    name: '丧门',
+    variant: '年支顺推二位（十二神/流年系变体）',
+    inputBasis: 'yearBranch',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => branchHits(ctx, [(ctx.yearBranchIdx + 2) % 12]),
+    verse: '子寅丑卯寅辰，卯巳辰午巳未，午申未酉申戌，酉亥戌子亥丑。',
+    basis: '以年支起例顺推二位，四柱地支见之为命中（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '丧门为流年十二神系传统符号；本规则仅记录位置，不作吉凶断言。',
+    testFixtures: [
+      { input: { pillars: ['甲寅', '丁卯', '甲辰', '癸酉'] }, expectHits: ['日支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.shiling.v1',
+    name: '十灵日',
+    variant: '十柱通行版',
+    inputBasis: 'dayJiazi',
+    targetPosition: 'dayPillar',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) =>
+      dayPillarHits(ctx, new Set(['乙亥', '癸未', '庚寅', '丁酉', '壬寅', '甲辰', '庚戌', '辛亥', '丙辰', '戊午'])),
+    verse: '乙亥癸未庚寅丁酉，壬寅甲辰庚戌辛亥，丙辰戊午号十灵。',
+    basis: '日柱命中即记（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '十灵日传统上被视为聪慧灵秀之象；本规则仅记录日柱属性，不作能力断言。',
+    testFixtures: [
+      { input: { pillars: ['辛丑', '丁卯', '乙亥', '癸酉'] }, expectHits: ['日柱'] },
+      { input: { pillars: ['辛丑', '丁卯', '甲辰', '癸酉'] }, expectHits: ['日柱'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.jiuchou.v1',
+    name: '九丑日',
+    variant: '九柱通行版',
+    inputBasis: 'dayJiazi',
+    targetPosition: 'dayPillar',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) =>
+      dayPillarHits(ctx, new Set(['己卯', '壬午', '戊子', '辛卯', '丁酉', '己酉', '壬子', '戊午', '辛酉'])),
+    verse: '己卯壬午戊子辛卯，丁酉己酉壬子戊午辛酉。',
+    basis: '日柱命中即记（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '九丑日为传统日柱属性条目；本规则仅记录属性，不作事件断言。',
+    testFixtures: [
+      { input: { pillars: ['辛丑', '丁卯', '己卯', '癸酉'] }, expectHits: ['日柱'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.liuxiu.v1',
+    name: '六秀日',
+    variant: '六柱通行版',
+    inputBasis: 'dayJiazi',
+    targetPosition: 'dayPillar',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) =>
+      dayPillarHits(ctx, new Set(['戊子', '己丑', '丙午', '丁未', '戊午', '己未'])),
+    verse: '戊子己丑丙午丁未，戊午己未号六秀。',
+    basis: '日柱命中即记（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '六秀日传统上被视为秀气内敛之象；本规则仅记录日柱属性。',
+    testFixtures: [
+      { input: { pillars: ['辛丑', '丁卯', '丙午', '癸酉'] }, expectHits: ['日柱'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.bazhuan.v1',
+    name: '八专日',
+    variant: '八柱通行版',
+    inputBasis: 'dayJiazi',
+    targetPosition: 'dayPillar',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) =>
+      dayPillarHits(ctx, new Set(['戊戌', '丁未', '癸丑', '甲寅', '乙卯', '己未', '庚申', '辛酉'])),
+    verse: '戊戌丁未癸丑甲寅，乙卯己未庚申辛酉。',
+    basis: '日柱命中即记（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '八专日为传统日柱属性条目；本规则仅记录属性，不作事件断言。',
+    testFixtures: [
+      { input: { pillars: ['辛丑', '丁卯', '甲寅', '癸酉'] }, expectHits: ['日柱'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.guluan.v1',
+    name: '孤鸾煞',
+    variant: '八柱通行版（多取女命）',
+    inputBasis: 'dayJiazi',
+    targetPosition: 'dayPillar',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) =>
+      dayPillarHits(ctx, new Set(['丁巳', '乙巳', '丙午', '戊申', '辛亥', '壬子', '甲寅', '戊午'])),
+    verse: '丁巳乙巳丙午戊申，辛亥壬子甲寅戊午。',
+    basis: '日柱命中即记（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '传统命理以孤鸾讨论关系课题，名称不必然对应现实结果；本规则仅记录日柱属性。',
+    testFixtures: [
+      { input: { pillars: ['辛丑', '丁卯', '丙午', '癸酉'] }, expectHits: ['日柱'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.tianzhuan.v1',
+    name: '天转日',
+    variant: '按年支三合查日柱',
+    inputBasis: 'yearBranch',
+    targetPosition: 'dayPillar',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => {
+      const table = [[48], [48], [51], [51], [51], [42], [42], [42], [57], [57], [57], [48]]
+      const targets = new Set(table[ctx.yearBranchIdx].map((i) => JIAZI[i]))
+      return dayPillarHits(ctx, targets)
+    },
+    verse: '寅卯辰乙卯，巳午未丙午，申酉戌辛酉，亥子丑壬子。',
+    basis: '以年支三合位起例，日柱命中即记（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '天转日为传统日柱属性条目；本规则仅记录属性。',
+    testFixtures: [
+      { input: { pillars: ['辛丑', '丁卯', '壬子', '癸酉'] }, expectHits: ['日柱'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.dizhuan.v1',
+    name: '地转日',
+    variant: '按年支三合查日柱',
+    inputBasis: 'yearBranch',
+    targetPosition: 'dayPillar',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => {
+      const table = [[12], [12], [27], [27], [27], [54], [54], [54], [9], [9], [9], [12]]
+      const targets = new Set(table[ctx.yearBranchIdx].map((i) => JIAZI[i]))
+      return dayPillarHits(ctx, targets)
+    },
+    verse: '寅卯辰辛卯，巳午未戊午，申酉戌癸酉，亥子丑丙子。',
+    basis: '以年支三合位起例，日柱命中即记（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '地转日为传统日柱属性条目；本规则仅记录属性。',
+    testFixtures: [
+      { input: { pillars: ['辛丑', '丁卯', '丙子', '癸酉'] }, expectHits: ['日柱'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.sifei.v1',
+    name: '四废日',
+    variant: '甲系（两系并存需约定口径，本库取甲系）',
+    inputBasis: 'yearBranch',
+    targetPosition: 'dayPillar',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => {
+      const table = [[42], [42], [56], [56], [56], [48], [48], [48], [50], [50], [50], [42]]
+      const targets = new Set(table[ctx.yearBranchIdx].map((i) => JIAZI[i]))
+      return dayPillarHits(ctx, targets)
+    },
+    verse: '寅卯辰庚申，巳午未壬子，申酉戌甲寅，亥子丑丙午。',
+    basis: '以年支三合位起例，日柱命中即记；多派取墓绝死囚，甲/乙两系并存（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '四废日为传统日柱属性条目；本规则仅记录属性，不作事件断言。',
+    testFixtures: [
+      { input: { pillars: ['辛丑', '丁卯', '丙午', '癸酉'] }, expectHits: ['日柱'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.gonglu.v1',
+    name: '拱禄格',
+    variant: '日柱对称查邻柱同干',
+    inputBasis: 'dayJiazi',
+    targetPosition: 'dayPillar',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => {
+      const pairs: Record<number, number> = { 49: 59, 59: 49, 43: 53, 53: 43, 5: 55, 55: 5, 54: 4, 4: 54 }
+      const pair = pairs[ctx.dayJiaziIdx]
+      if (pair === undefined) return []
+      const other = JIAZI[pair]
+      const hit = ctx.pillars.find(
+        (p) => p.label !== '日柱' && STEMS[p.stemIdx] + BRANCHES[p.branchIdx] === other
+      )
+      return hit
+        ? [{ position: `${hit.label.replace('柱', '')}支`, char: BRANCHES[hit.branchIdx] }]
+        : []
+    },
+    verse: '癸丑癸亥丁未丁巳，己巳己未戊午戊辰。',
+    basis: '日柱为对称柱之一端，邻柱（年/月/时）见另一端同干即记（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '拱禄格为传统格局名目；本规则仅记录柱位配置，不作富贵断言。',
+    testFixtures: [
+      { input: { pillars: ['癸亥', '丁卯', '癸丑', '癸酉'] }, expectHits: ['年支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.tongzi.v1',
+    name: '童子煞',
+    variant: '按年支查（另存日主纳音法，二法勿混）',
+    inputBasis: 'yearBranch',
+    targetPosition: 'anyBranch',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => {
+      const table: number[][] = [
+        [3, 7, 4], [3, 7, 4], [2, 0], [2, 0], [2, 0],
+        [3, 7, 4], [3, 7, 4], [3, 7, 4], [2, 0], [2, 0], [2, 0], [3, 7, 4],
+      ]
+      return branchHits(ctx, table[ctx.yearBranchIdx])
+    },
+    verse: '子丑卯未辰，寅卯辰寅子，巳午未卯未辰，申酉戌寅子，亥卯未辰。',
+    basis: '以年支起例，四柱地支见之为命中；派别极多，二法须分别标注（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '童子煞为传统关煞系符号，派别口径差异大；本规则仅记录位置，不作任何断言。',
+    testFixtures: [
+      { input: { pillars: ['甲子', '丁卯', '甲辰', '癸酉'] }, expectHits: ['月支', '日支'] },
+    ],
+  },
+  {
+    ruleId: 'shensha.dexiu.v1',
+    name: '德秀贵人',
+    variant: '按年支三合查日干/月干',
+    inputBasis: 'yearBranch',
+    targetPosition: 'anyStem',
+    multipleHitPolicy: 'list-all',
+    rulesetVersion: V,
+    find: (ctx) => {
+      const table: number[][] = [
+        [8, 9, 4, 5, 2, 7, 0], [6, 7], [2, 3, 4, 9], [0, 1, 3, 8],
+        [8, 9, 4, 5, 2, 7, 0], [6, 7], [2, 3, 4, 9], [0, 1, 3, 8],
+        [8, 9, 4, 5, 2, 7, 0], [6, 7], [2, 3, 4, 9], [0, 1, 3, 8],
+      ]
+      const targets = table[ctx.yearBranchIdx]
+      return ctx.pillars
+        .filter((p) => (p.label === '日柱' || p.label === '月柱') && targets.includes(p.stemIdx))
+        .map((p) => ({ position: `${p.label.replace('柱', '')}干`, char: STEMS[p.stemIdx] }))
+    },
+    verse: '寅午戌丙丁戊癸，申子辰壬癸戊己丙辛甲，巳酉丑乙庚辛，亥卯未甲乙丁壬。',
+    basis: '以年支三合局起例，日干/月干见之为命中（外部 MIT 源吸收，待问真对拍）',
+    source: '外部参考表（zhenyi/mingyu，MIT）',
+    modernExplanation: '德秀贵人传统上与文华之气相联；本规则仅记录位置，不作能力断言。',
+    testFixtures: [
+      { input: { pillars: ['甲午', '丁卯', '丙辰', '癸酉'] }, expectHits: ['月干', '日干'] },
     ],
   },
 ]
