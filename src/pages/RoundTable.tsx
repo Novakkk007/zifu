@@ -106,7 +106,7 @@ export default function RoundTablePage() {
         onSubmit={submit}
         className="mx-auto mt-8 max-w-xl rounded-2xl border border-golddim/25 bg-silk2 p-6 shadow-card"
       >
-        <div className="flex items-center justify-between">
+        <div className="mt-5 grid grid-cols-2 gap-2">
           <div className="flex gap-1 rounded-lg bg-silk p-1">
             {[
               { k: true, t: "公历" },
@@ -116,7 +116,7 @@ export default function RoundTablePage() {
                 key={String(o.k)}
                 type="button"
                 onClick={() => setSolar(o.k)}
-                className={`rounded-md px-4 py-1.5 text-[12.5px] tracking-[0.1em] ${
+                className={`flex-1 rounded-md px-3 py-1.5 text-[12px] tracking-[0.1em] ${
                   solar === o.k ? "bg-golddim text-white" : "text-inkmuted"
                 }`}
               >
@@ -133,7 +133,7 @@ export default function RoundTablePage() {
                 key={o.k}
                 type="button"
                 onClick={() => setGender(o.k as "male" | "female")}
-                className={`rounded-md px-4 py-1.5 text-[12.5px] tracking-[0.1em] ${
+                className={`flex-1 rounded-md px-3 py-1.5 text-[12px] tracking-[0.1em] ${
                   gender === o.k ? "bg-golddim text-white" : "text-inkmuted"
                 }`}
               >
@@ -142,7 +142,7 @@ export default function RoundTablePage() {
             ))}
           </div>
         </div>
-        <div className="mt-5 grid grid-cols-4 gap-3">
+        <div className="mt-5 grid grid-cols-4 gap-2">
           {[
             { label: "年", v: year, set: setYear, ph: "2009" },
             { label: "月", v: month, set: setMonth, ph: "8" },
