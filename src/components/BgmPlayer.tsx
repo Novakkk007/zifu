@@ -97,7 +97,7 @@ export default function BgmPlayer() {
     <button
       type="button"
       onClick={toggle}
-      className="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] right-3 z-40 flex h-10 w-10 items-center justify-center rounded-full border border-gold/40 bg-deep2/95 text-sm text-goldbright shadow-lg backdrop-blur transition hover:bg-deep3 sm:bottom-40 sm:left-5 sm:h-11 sm:w-auto sm:gap-2 sm:px-4 sm:text-sm"
+      className="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] right-3 z-40 flex h-10 w-10 items-center justify-center rounded-full border border-gold/40 bg-deep2/95 text-sm text-goldbright shadow-lg backdrop-blur transition hover:bg-deep3 sm:bottom-[8.5rem] sm:right-6 sm:h-11 sm:w-auto sm:gap-2 sm:px-4 sm:text-sm"
       aria-label={on ? '关闭背景音乐' : '开启背景音乐'}
       title={on ? '古风乐起 · 点此停' : '古风背景音乐 · 徐徐而来'}
     >
