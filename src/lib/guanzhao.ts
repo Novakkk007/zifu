@@ -1,8 +1,10 @@
 /**
  * 观照见性 · AI 观照
  * 与八字参详不同：不排盘断事、不吉凶预言——以生辰为底色，如月照水，映照当下的你。
- * 输入：命盘摘要 → 观照 prompt → AI 直连（先生 key）→ 观照短文 + 箴言
+ * 输入：命盘摘要 → 观照 prompt → AI（CF Worker 代理）→ 观照短文 + 箴言
  */
+import { proxyAI } from './ai-proxy'
+
 export interface GuanzhaoResult {
   verse: string // 开篇金句
   body: string // 观照正文
@@ -31,40 +33,13 @@ ${focus || '无——只求一照'}
 风格：文白相间，如月照水，克制而有余韵。不要出现「你的命」「注定」「大凶」「大吉」等字眼。`
 }
 
-/** 观照 AI 调用（先生 key 直连） */
+/** 观照 AI 调用（先生 key 服务端化：CF Worker 代理） */
 export async function runGuanzhao(
   chartSummary: string,
   name?: string,
-  focus?: string,
-  apiKey?: string
+  focus?: string
 ): Promise<{ content: string }> {
-  const builtin = (import.meta as unknown as { env?: Record<string, string> }).env
-    ?.VITE_DEEPSEEK_API_KEY as string | undefined
-  const key = apiKey || builtin || ''
-  if (!key) throw new Error('未配置先生密钥，观照暂不可用')
-  const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model: 'deepseek-chat',
-      messages: [
-        {
-          role: 'system',
-          content:
-            '你是紫府的先生：通晓命理典籍，温和如春风，有分寸，无论如何给访客希望。今夜只做观照，不下断语。',
-        },
-        { role: 'user', content: buildGuanzhaoPrompt(chartSummary, name, focus) },
-      ],
-      max_tokens: 1600,
-      temperature: 0.85,
-    }),
-  })
-  if (!res.ok) {
-    const body = await res.text().catch(() => '')
-    throw new Error(`观照服务返回 ${res.status}${body ? `：${body.slice(0, 160)}` : ''}`)
-  }
-  const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> }
-  const content = data.choices?.[0]?.message?.content
-  if (!content) throw new Error('观照服务返回为空')
-  return { content }
+  const prompt = buildGuanzhaoPrompt(chartSummary, name, focus)
+  const res = await proxyAI('guanzhao', prompt, { maxTokens: 1600, temperature: 0.85 })
+  return { content: res.content }
 }
