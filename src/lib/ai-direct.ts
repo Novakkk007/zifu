@@ -24,7 +24,7 @@ export interface DirectReadingInput {
 }
 
 export interface DirectReadingResult {
-  source: 'live-direct'
+  source: 'live-direct' | 'zifu-ai-proxy'
   model: string
   content: string
 }
@@ -55,6 +55,7 @@ export interface DirectChatApiMessage {
 
 // 名家主题化上下文（LJM 十神角色映射——AI 参详增强，静态引入保持同步函数签名）
 import { ljmContextText } from '@contracts/engines/masters-rules/ljm'
+import { proxyAI } from './ai-proxy'
 
 /**
  * 命盘 → 结构化摘要（直连 prompt 用）。仅含引擎产出的数据，
@@ -247,35 +248,20 @@ export function resolveAiAccess(inputKey: string, inputProvider?: AIProvider): {
 
 /** 直连调用（OpenAI 兼容 chat/completions） */
 /** 每日内置 key（先生栏目专用）调用限额——防访客消耗失控（先生 key 成本锁死） */
-const DAILY_LIMIT = 15
-const USAGE_KEY = 'zifu:ai-daily-usage'
 
-function consumeUsage(): boolean {
-  try {
-    const today = new Date().toDateString()
-    const raw = localStorage.getItem(USAGE_KEY)
-    const d = raw ? JSON.parse(raw) : { day: today, n: 0 }
-    const day = d.day === today ? d : { day: today, n: 0 }
-    if (day.n >= DAILY_LIMIT) return false
-    day.n += 1
-    localStorage.setItem(USAGE_KEY, JSON.stringify(day))
-    return true
-  } catch {
-    return true
-  }
-}
 
 export async function aiDirectReading(input: DirectReadingInput): Promise<DirectReadingResult> {
   if (!input.apiKey) {
-    // 内置 key（无用户自带）→ 每日限额 30 次
-    const ok = consumeUsage()
-    if (!ok) {
-      return {
-        source: 'live-direct',
-        model: '内置额度已用完',
-        content:
-          '今日内置参详额度已用完（每日 30 次），明日再来；或填入你自己的 API key 继续。',
-      }
+    // 访客：先生 key 服务端化——经 CF Worker（服务端限流+用量统计）
+    try {
+      const prompt =
+        input.readingPrompt ??
+        buildReadingPrompt({ chartSummary: input.chartSummary, persona: input.persona, depth: input.depth })
+      const res = await proxyAI('guest-reading', prompt, { maxTokens: 1200, temperature: 0.7 })
+      return { source: 'zifu-ai-proxy', model: 'deepseek-chat', content: res.content }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'AI 服务暂不可用'
+      return { source: 'zifu-ai-proxy', model: '服务暂不可用', content: msg }
     }
   }
   const { apiKey, provider } = resolveAiAccess(input.apiKey, input.provider)
@@ -316,7 +302,7 @@ export async function aiDirectReading(input: DirectReadingInput): Promise<Direct
   }
   const content = data.choices?.[0]?.message?.content
   if (!content) throw new Error('AI 服务返回为空')
-  return { source: 'live-direct', model, content }
+  return { source: 'live-direct' as const, model, content }
 }
 
 /** 直连多轮追问：每轮重申先生人格与希望法则，并携带受限的前文 context。 */
@@ -347,7 +333,7 @@ export async function aiDirectChat(input: DirectChatInput): Promise<DirectReadin
   }
   const content = data.choices?.[0]?.message?.content
   if (!content) throw new Error('AI 服务返回为空')
-  return { source: 'live-direct', model, content }
+  return { source: 'live-direct' as const, model, content }
 }
 
 /** 密钥本地存储（仅本机 localStorage，不上传任何服务器） */

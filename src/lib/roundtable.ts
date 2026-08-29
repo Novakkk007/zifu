@@ -1,7 +1,8 @@
 /**
  * 论命圆桌 · 7 大命理流派同盘论命
- * 输入：命盘摘要 → 生成 7 段式圆桌 prompt → AI 直连（先生 key）→ 解析 7 席发言 + 共识小结
+ * 输入：命盘摘要 → 生成 7 段式圆桌 prompt → AI（CF Worker 代理/自带 key 直连）→ 解析 7 席发言 + 共识小结
  */
+import { proxyAI } from './ai-proxy'
 
 export interface RoundTableSchool {
   id: string
@@ -162,28 +163,27 @@ ${followUp}
 请以本派立场回应追问，200-350 字：先正面回应，再补一句本派视角的延伸；守住分寸，不给必然断言。直接输出内容，不要寒暄。`
 }
 
-/** 圆桌 AI 调用（先生 key 直连，长输出） */
+/** 圆桌 AI 调用（先生 key 服务端化：CF Worker 代理） */
 export async function runRoundTable(
   chartSummary: string,
   question?: string,
-  apiKey?: string,
-  provider?: 'deepseek' | 'kimi'
+  apiKey?: string
 ): Promise<{ source: string; model: string; content: string }> {
-  // key 解析：显式传入 > 内置先生 key（Vite 注入）> 空（报错提示）
-  const builtin = (import.meta as unknown as { env?: Record<string, string> }).env
-    ?.VITE_DEEPSEEK_API_KEY as string | undefined
-  const key = apiKey || builtin || ''
-  if (!key) throw new Error('未配置先生密钥，圆桌暂不可用')
-  const prov = provider ?? 'deepseek'
+  const prompt = buildRoundTablePrompt(chartSummary, question)
+  if (!apiKey) {
+    // 访客：走 CF Worker（服务端限流+用量统计，前端零 key）
+    const res = await proxyAI('roundtable', prompt, { maxTokens: 4200, temperature: 0.75 })
+    return { source: 'zifu-ai-proxy', model: 'deepseek-chat', content: res.content }
+  }
+  // 自带 key：直连
   const cfg = {
     deepseek: { baseUrl: 'https://api.deepseek.com/v1', defaultModel: 'deepseek-chat' },
     kimi: { baseUrl: 'https://api.moonshot.cn/v1', defaultModel: 'kimi-k2.6' },
-  }[prov]
+  }['deepseek']
   const baseUrl = cfg.baseUrl.replace(/\/$/, '')
-  const prompt = buildRoundTablePrompt(chartSummary, question)
   const res = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
       model: cfg.defaultModel,
       messages: [
