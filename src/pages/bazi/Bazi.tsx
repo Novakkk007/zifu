@@ -170,7 +170,7 @@ export default function Bazi() {
       <PageHero
         glyph="命"
         title="八字排盘"
-        sub="服务端排盘 · 真太阳时校正 · 全量规则可解释"
+        sub="输入出生信息，先生为你排盘——看性格底色、运势走向与人生脉络"
         pool={HERO_POOL}
         current="八字排盘"
       />

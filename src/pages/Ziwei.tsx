@@ -239,7 +239,7 @@ export default function Ziwei() {
             <SectionHeading
               eyebrow="BIRTH DATA"
               title="录入生辰"
-              sub="服务端排盘 · 安十二宫、布十四主星、标生年四化"
+              sub="输入出生信息，先生为你排紫微——看十二宫格局与人生十二面向"
             />
             <div className="mx-auto mt-12 max-w-2xl rounded-xl border border-golddim/20 bg-silk2/50 p-4 sm:p-8">
               <div className="grid gap-5 sm:grid-cols-2">

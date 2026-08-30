@@ -405,7 +405,7 @@ export default function Qimen() {
           <SectionHeading
             eyebrow="Time Chart"
             title="起 局"
-            sub="默认此时此刻（东八区），亦可自定时刻——同一时刻，局盘如一"
+            sub="心中有事，起一局看看当下的门道——默认此时此刻，也可自定时刻"
           />
           <div className="mt-12 w-full max-w-[680px] rounded-xl border border-golddim/25 bg-silk2 p-4 shadow-card sm:p-8 md:p-10">
             <FormInput

@@ -339,7 +339,7 @@ export default function Qizheng() {
           <SectionHeading
             eyebrow="Birth Chart"
             title="排 星 盘"
-            sub="录入生辰，以真实星历布十一曜于黄道十二宫与二十八宿"
+            sub="输入出生信息，先生为你布星盘——看七政四余与命度的关系"
           />
           <div className="mt-12 w-full max-w-[680px] rounded-xl border border-golddim/25 bg-silk2 p-4 shadow-card sm:p-8 md:p-10">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
