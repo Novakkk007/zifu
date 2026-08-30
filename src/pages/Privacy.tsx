@@ -101,10 +101,13 @@ export default function Privacy() {
   return (
     <div className="pb-28">
       <PageHero
-        chars={HERO_POOL}
-        eyebrow="PRIVACY POLICY"
+        breadcrumb="隐私政策"
         title="隐私之约"
+        latin="Privacy Policy"
         subtitle="生辰之重，托付之诚——我们如何对待你交出的每一次推演"
+        pool={HERO_POOL}
+        glyphCount={18}
+        minH="min-h-[30vh]"
       />
       <div className="mx-auto mt-12 max-w-3xl space-y-5 px-4">
         {CLAUSES.map((c, i) => (
