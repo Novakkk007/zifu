@@ -392,7 +392,7 @@ export default function Qimen() {
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold" aria-hidden />
           <span>
             {meta
-              ? `${meta.ruleVariant} · ${meta.precision === 'validated' ? '真实算法（已校验）' : meta.precision} · ${meta.algorithmVersion}`
+              ? `${meta.ruleVariant} · ${meta.precision === 'validated' ? '真实算法（已校验）' : meta.precision}`
               : '时家奇门-拆补法(转盘) · 真实节气起局'}
           </span>
         </p>

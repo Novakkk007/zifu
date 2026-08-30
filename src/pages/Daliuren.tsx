@@ -445,10 +445,10 @@ export default function Daliuren() {
                 <div className="flex flex-wrap items-center justify-center gap-2">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-golddim">
                     <span className="inline-block h-1.5 w-1.5 rounded-full bg-goldbright" />
-                    {meta.precision === 'validated' ? 'validated · 真实算法' : meta.precision} · {meta.ruleVariant}
+                    {meta.precision === 'validated' ? '真实算法（已校验）' : meta.precision} · {meta.ruleVariant}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-golddim/30 px-3 py-1 text-[11.5px] tracking-[0.12em] text-inkmuted">
-                    {meta.algorithmVersion} · {chart.xunShou}（旬空 {chart.xunkong.join('')}）
+                    {chart.xunShou}（旬空 {chart.xunkong.join('')}）
                   </span>
                 </div>
               </div>

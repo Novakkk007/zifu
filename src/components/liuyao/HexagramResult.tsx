@@ -251,10 +251,10 @@ export default function HexagramResult({
       >
         <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3.5 py-1.5 text-[11.5px] font-medium tracking-[0.12em] text-golddim">
           <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
-          已验证算法 · v{chart.rulesetVersion}
+          已验证算法
         </span>
         <span className="inline-flex items-center rounded-full border border-golddim/35 px-3.5 py-1.5 text-[11.5px] tracking-[0.12em] text-inkmuted">
-          {result.meta.ruleVariant} · {result.meta.algorithmVersion}
+          {result.meta.ruleVariant}
         </span>
       </motion.div>
     </div>
