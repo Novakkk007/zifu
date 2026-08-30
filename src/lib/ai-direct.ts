@@ -125,6 +125,7 @@ export function buildReadingPrompt(input: { chartSummary: string; persona: strin
   const personaGuide: Record<string, string> = {
     scholar: '讲述侧重：格局框架与逻辑推演，引经处说明为通识推演而非定论。',
     master: '讲述侧重：整体判断与关键提示，结合五行生克与格局变化，敢下判断。',
+    hermit: '讲述侧重：随性诙谐，妙语点破；比喻家常，围炉夜话，但学问在笑谈里不丢。',
     skeptic: '讲述侧重：审慎从容，指出多重可能与不确定处，不武断。',
   }
   const depthGuide: Record<string, string> = {
