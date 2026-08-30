@@ -299,23 +299,38 @@ export default function BirthFormCard({ value, onChange, loading, error, onSubmi
             ]}
           />
         </div>
-        <FormSelect
-          label="出生城市（决定经度）"
-          id="bazi-city"
-          value={value.city}
-          onChange={(e) => {
-            const city = e.target.value
-            // 城市联动建议 IANA 时区（用户仍可手动改）
-            onChange({ ...value, city, ianaTimezone: suggestTimezone(city) })
-          }}
-        >
-          {CITIES.map((c) => (
-            <option key={c.name} value={c.name}>
-              {c.name}（东经 {c.longitude.toFixed(2)}°）
-            </option>
-          ))}
-          <option value={CUSTOM_CITY}>自定义经度…</option>
-        </FormSelect>
+        <div>
+          <label htmlFor="bazi-city-search" className="mb-1.5 block font-sans text-[11.5px] font-medium tracking-[0.14em] text-inkmuted">
+            出生城市（决定经度 · 全国 {CITIES.length} 城）
+          </label>
+          <input
+            id="bazi-city-search"
+            list="bazi-city-list"
+            value={value.city === CUSTOM_CITY ? '自定义经度…' : value.city}
+            onChange={(e) => {
+              const v = e.target.value
+              if (v === CUSTOM_CITY || v === '自定义经度…') {
+                onChange({ ...value, city: CUSTOM_CITY })
+                return
+              }
+              const hit = CITIES.find((c) => c.name === v)
+              if (hit) onChange({ ...value, city: hit.name, ianaTimezone: suggestTimezone(hit.name) })
+            }}
+            placeholder="输入城市名搜索，如：杭州、喀什、三亚"
+            className="w-full rounded-lg border border-golddim/25 bg-silk px-3 py-2.5 text-[13.5px] text-inktext outline-none transition focus:border-golddim"
+          />
+          <datalist id="bazi-city-list">
+            {CITIES.map((c) => (
+              <option key={c.name} value={c.name}>
+                {c.name}（东经 {c.longitude.toFixed(2)}°）
+              </option>
+            ))}
+            <option value="自定义经度…">手动输入经度</option>
+          </datalist>
+          <p className="mt-1.5 text-[11px] leading-[1.6] text-inkmuted/70">
+            未找到城市？选「自定义经度…」手动输入精确经度。
+          </p>
+        </div>
       </div>
 
       {value.city === CUSTOM_CITY && (

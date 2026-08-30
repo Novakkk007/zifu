@@ -485,6 +485,65 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== S2.5 · 先生在此（人味入口——小白也能懂） ===== */}
+      <section className="relative border-t border-gold/10 bg-deep2 py-16 sm:py-20">
+        <div className="zf-container">
+          <div className="text-center">
+            <p className="font-latin text-[11px] font-medium uppercase tracking-[0.32em] text-gold">
+              THE MASTER IS HERE
+            </p>
+            <h2 className="mt-3 font-serif text-[clamp(24px,3.2vw,34px)] font-bold tracking-[0.1em] text-silktext">
+              先生在此
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-[13.5px] leading-[1.9] text-silkmuted">
+              紫府不是冷冰冰的工具——先生就坐在堂上。问八字、照心性、观全局，都可以找先生。
+            </p>
+          </div>
+          <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4">
+            {[
+              {
+                glyph: "批",
+                title: "先生详批",
+                desc: "逐句引经，深参你的命盘",
+                to: "/bazi",
+              },
+              {
+                glyph: "照",
+                title: "先生观照",
+                desc: "不下断语，只映照当下的你",
+                to: "/guanzhao",
+              },
+              {
+                glyph: "圆",
+                title: "先生圆桌",
+                desc: "七派同观一盘，共识与分歧并呈",
+                to: "/roundtable",
+              },
+              {
+                glyph: "笔",
+                title: "先生专栏",
+                desc: "闲时随笔，医病药平常时节",
+                to: "/column",
+              },
+            ].map((m) => (
+              <Link
+                key={m.title}
+                to={m.to}
+                className="gs-reveal group rounded-xl border border-gold/15 bg-deep/70 px-5 py-6 text-center transition-all duration-300 hover:-translate-y-1 hover:border-gold/55 hover:bg-deep"
+              >
+                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-gold/40 font-serif text-[20px] font-black text-goldbright">
+                  {m.glyph}
+                </span>
+                <h3 className="mt-4 font-serif text-[16px] font-bold tracking-[0.08em] text-silktext transition-colors group-hover:text-goldbright">
+                  {m.title}
+                </h3>
+                <p className="mt-2 text-[12px] leading-[1.7] text-silkmuted">{m.desc}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ===== S2b · 为什么信紫府（信任锚点） ===== */}
       <section className="bg-silk py-20">
         <div className="zf-container">
