@@ -552,7 +552,7 @@ export default function Qizheng() {
             {/* 精度与算法说明（meta.warnings 透传） */}
             <details className="mx-auto mt-8 max-w-[720px] rounded-xl border border-golddim/20 bg-silk2/70 px-6 py-4">
               <summary className="cursor-pointer text-center text-[12.5px] tracking-[0.1em] text-inkmuted">
-                星历来源与精度说明 · {chart.meta.ruleVariant} · {chart.meta.algorithmVersion}
+                星历来源与精度说明 · {chart.meta.ruleVariant}
               </summary>
               <ul className="mt-4 space-y-2 text-[12.5px] leading-[1.9] text-inkmuted">
                 {chart.meta.warnings.map((w) => (

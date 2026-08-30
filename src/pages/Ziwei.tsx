@@ -362,16 +362,13 @@ export default function Ziwei() {
               title="十二宫盘"
               sub={`${getSubmittedName(successfulSnapshot) || '缘主'} · ${chart.input.gender === 'male' ? '乾造' : '坤造'} · 点击任一宫位查看详情`}
             />
-            {/* 引擎 meta 徽章：流派 / 精度 / 算法版本 */}
+            {/* 引擎 meta 徽章：流派 / 精度 */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5 text-[12px]">
               <span className="rounded-full border border-gold/60 bg-gold/10 px-3.5 py-1.5 tracking-[0.1em] text-golddim">
                 {result.meta.ruleVariant}
               </span>
               <span className="rounded-full border border-[#2E7D6B]/50 bg-[#2E7D6B]/10 px-3.5 py-1.5 tracking-[0.1em] text-[#2E7D6B]">
-                {result.meta.precision === 'validated' ? 'validated · 已验证真实算法' : result.meta.precision}
-              </span>
-              <span className="rounded-full border border-golddim/30 bg-silk2/60 px-3.5 py-1.5 tracking-[0.1em] text-inkmuted">
-                {result.meta.algorithmVersion}
+                {result.meta.precision === 'validated' ? '已验证真实算法' : result.meta.precision}
               </span>
               {chartId !== null && (
                 <span className="rounded-full border border-golddim/30 bg-silk2/60 px-3.5 py-1.5 tracking-[0.1em] text-inkmuted">
