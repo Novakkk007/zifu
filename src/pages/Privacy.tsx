@@ -104,7 +104,7 @@ export default function Privacy() {
         chars={HERO_POOL}
         eyebrow="PRIVACY POLICY"
         title="隐私之约"
-        sub="生辰之重，托付之诚——我们如何对待你交出的每一次推演"
+        subtitle="生辰之重，托付之诚——我们如何对待你交出的每一次推演"
       />
       <div className="mx-auto mt-12 max-w-3xl space-y-5 px-4">
         {CLAUSES.map((c, i) => (
