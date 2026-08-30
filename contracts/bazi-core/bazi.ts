@@ -157,7 +157,7 @@ function computeRelations(pillars: BaziChartV2['pillars']): PillarRelation[] {
   const ps = [pillars.year, pillars.month, pillars.day, pillars.hour].filter(
     (p): p is PillarInfo => p !== null,
   )
-  const SRC = '《三命通会》论干支合冲刑害（传统公共文献）'
+  const SRC = '《三命通会》论干支合冲刑害'
 
   // 天干五合（两两）
   for (let i = 0; i < ps.length; i += 1) {

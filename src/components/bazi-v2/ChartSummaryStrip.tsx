@@ -35,7 +35,6 @@ export default function ChartSummaryStrip({ chart }: { chart: BaziChartV2 }) {
       label: '当前流年',
       value: currentLiunian ? `${currentLiunian.ganzhi}（${currentLiunian.year} 年）` : '—',
     },
-    { label: '规则版本', value: chart.rulesetVersion },
   ]
 
   return (

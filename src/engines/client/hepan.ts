@@ -21,27 +21,27 @@ const HEPAN_PROVENANCE: RuleProvenance[] = [
   {
     ruleId: 'hepan.wuxing-complement',
     variant: '紫府公开量化模型 v1（亏缺/盈余覆盖率）',
-    source: '《渊海子平》论五行盈亏（传统公共文献）',
+    source: '《渊海子平》论五行盈亏',
   },
   {
     ruleId: 'hepan.daymaster-relation',
     variant: '比和/相生/相制三分类',
-    source: '《滴天髓》论日主（传统公共文献）',
+    source: '《滴天髓》论日主',
   },
   {
     ruleId: 'hepan.zodiac-harmony',
     variant: '年支六合/三合/六冲/刑害分级',
-    source: '《三命通会·论合婚》（传统公共文献）',
+    source: '《三命通会·论合婚》',
   },
   {
     ruleId: 'hepan.yongshen-match',
     variant: '扶抑用神双向匹配',
-    source: '《穷通宝鉴》扶抑法（传统公共文献）',
+    source: '《穷通宝鉴》扶抑法',
   },
   {
     ruleId: 'hepan.cross-relations',
     variant: '逐柱交叉检视 天干五合/六合/三合半合/六冲/刑/害/破',
-    source: '《渊海子平》《三命通会》论干支合冲刑害（传统公共文献）',
+    source: '《渊海子平》《三命通会》论干支合冲刑害',
   },
 ]
 

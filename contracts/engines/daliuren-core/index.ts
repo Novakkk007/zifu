@@ -9,7 +9,7 @@
  *   九宗门取三传（贼克/比用/涉害/遥克/昴星/别责/八专/伏吟/返吟）→
  *   贵人诀起十二天将（昼夜分、天门地户顺逆）→ 六亲 / 旬遁遁干。
  *
- * 规则出处（传统公共文献）：《六壬大全》起例诸章、
+ * 规则出处：《六壬大全》起例诸章、
  * 《大六壬指南》课经；口诀如「甲戊庚牛羊」「甲课寅兮乙课辰」。
  */
 import {
@@ -38,8 +38,8 @@ export const DALIUREN_RULESET_VERSION = '1.0.0'
 export const DALIUREN_ALGORITHM_VERSION = 'daliuren-core@1.0.0'
 export const DALIUREN_RULE_VARIANT = '大六壬-通行起课法'
 
-const SOURCE_DAQUAN = '《六壬大全》（传统公共文献）'
-const SOURCE_ZHINAN = '《大六壬指南》（传统公共文献）'
+const SOURCE_DAQUAN = '《六壬大全》'
+const SOURCE_ZHINAN = '《大六壬指南》'
 
 /* ------------------------------------------------------------------ */
 /* 规则数据                                                            */

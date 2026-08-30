@@ -3,7 +3,7 @@
  * 纯函数库：输入两张 computeChartV2 真实命盘，输出规则化的结构契合分析。
  * 无 React / 无 DB / 无网络。前后端共用。
  *
- * 规则依据（传统公共文献）：
+ * 规则依据：
  * - 天干五合 / 地支六合、六冲、三合、相刑、六害：《渊海子平》《三命通会》
  * - 日主五行生克比和：《滴天髓》论日主
  * - 合婚取年支生肖之合冲：《三命通会·论合婚》
@@ -86,7 +86,7 @@ export interface HepanReport {
   rulesetVersion: string
 }
 
-const SOURCE_GANZHI = '《渊海子平》《三命通会》论干支合冲刑害（传统公共文献）'
+const SOURCE_GANZHI = '《渊海子平》《三命通会》论干支合冲刑害'
 
 /* ---------------- 工具 ---------------- */
 
@@ -222,7 +222,7 @@ function zodiacDim(a: BaziChartV2, b: BaziChartV2): HepanDimension {
     weight: HEPAN_SCORE_WEIGHTS.zodiacHarmony,
     findings: [`甲方年支${ya.branch}，乙方年支${yb.branch}——${rel}`],
     basis:
-      '传统合婚先论年支生肖：六合为上（95），三合次之（85），比和中平（75），无涉者平（60），刑害者下（45），六冲最忌（30）。见《三命通会·论合婚》（传统公共文献）。',
+      '传统合婚先论年支生肖：六合为上（95），三合次之（85），比和中平（75），无涉者平（60），刑害者下（45），六冲最忌（30）。见《三命通会·论合婚》。',
   }
 }
 
@@ -366,7 +366,7 @@ function crossRelationsDim(cross: CrossRelation[]): HepanDimension {
     weight: HEPAN_SCORE_WEIGHTS.crossRelations,
     findings,
     basis:
-      '两盘逐柱交叉检视：天干五合、地支六合与三合半合为「相应」，六冲、刑、害、破为「相碍」。基准 60，每相应 +12、每相碍 −10，限幅 0–100。规则见《渊海子平》《三命通会》（传统公共文献）。',
+      '两盘逐柱交叉检视：天干五合、地支六合与三合半合为「相应」，六冲、刑、害、破为「相碍」。基准 60，每相应 +12、每相碍 −10，限幅 0–100。规则见《渊海子平》《三命通会》。',
   }
 }
 

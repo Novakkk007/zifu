@@ -43,7 +43,7 @@ export default function HistorySection({
     onSuccess: async (data) => {
       const res = data as unknown as RecomputeResponse
       await utils.bazi.history.invalidate()
-      setNotice(`已按最新规则重算（规则版本 ${res.chart.rulesetVersion}），并生成新版本快照。`)
+      setNotice(`已按最新规则重算，并生成新版本快照。`)
       const row = ((history.data ?? []) as HistoryRow[]).find((r) => r.id === res.chartId)
       onRestore(res.chart, row?.title ?? '八字排盘', res.chartId)
     },
@@ -61,7 +61,7 @@ export default function HistorySection({
       <div className="mx-auto max-w-[860px] rounded-xl border border-golddim/25 bg-silk2 p-10 text-center shadow-card">
         <p className="font-serif text-[16px] font-bold tracking-[0.12em] text-inktext">排盘记录</p>
         <p className="mx-auto mt-3 max-w-[420px] text-[13px] leading-[1.9] text-inkmuted">
-          登录后，每次排盘自动存档（含规则版本），可随时回填查看、对比与删除。
+          登录后，每次排盘自动存档，可随时回填查看、对比与删除。
         </p>
         <DeepButton to={LOGIN_PATH} className="mt-6">
           登录后保存排盘记录
@@ -98,6 +98,7 @@ export default function HistorySection({
               r.result && typeof r.result === 'object' && 'rulesetVersion' in r.result
                 ? String((r.result as { rulesetVersion?: string }).rulesetVersion ?? '')
                 : ''
+            void ruleset
             return (
               <li key={r.id} className="flex flex-wrap items-center gap-3 py-3.5">
                 <button
@@ -116,7 +117,7 @@ export default function HistorySection({
                   </p>
                   <p className="mt-1 text-[11.5px] text-inkmuted">
                     {new Date(r.createdAt).toLocaleString('zh-CN', { hour12: false })}
-                    {ruleset && <span className="ml-2">规则版本 {ruleset}</span>}
+                    
                   </p>
                 </button>
                 <button

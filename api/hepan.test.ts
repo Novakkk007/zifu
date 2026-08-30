@@ -86,8 +86,8 @@ describe("hepan-core 规则单元", () => {
       expect(r.resultWuxing).toBeTruthy();
       expect(r.positions).toContain("×");
     }
-    // 全量关系均带出处
-    for (const r of cross) expect(r.source).toContain("传统公共文献");
+    // 全量关系均带出处（书名）
+    for (const r of cross) expect(r.source.length).toBeGreaterThan(0);
   });
 
   it("报告结构：五维度 + 公开权重合成总分 + disclaimer", () => {
