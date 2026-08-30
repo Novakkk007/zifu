@@ -96,7 +96,7 @@ const SCENARIOS: (HomeEntry & { emoji: string; eyebrow: string })[] = [
     emoji: "💰",
     eyebrow: "Career & Wealth",
     title: "事业财富运程",
-    desc: "从财官格局与阶段节律入手，参看事业选择与财富趋势。",
+    desc: "看看今年事业与财运的走向——选择的时机与方向。",
     to: "/scenario/wealth",
   },
   {
@@ -104,7 +104,7 @@ const SCENARIOS: (HomeEntry & { emoji: string; eyebrow: string })[] = [
     emoji: "💑",
     eyebrow: "Love & Marriage",
     title: "感情婚姻合参",
-    desc: "并看双方命盘关系，梳理相处模式、情感倾向与沟通线索。",
+    desc: "两个人合不合得来——性格、缘分与相处之道。",
     to: "/scenario/love",
   },
   {
@@ -112,7 +112,7 @@ const SCENARIOS: (HomeEntry & { emoji: string; eyebrow: string })[] = [
     emoji: "🌙",
     eyebrow: "Sleep & Almanac",
     title: "今晚安寝时令",
-    desc: "结合今日干支与节气流转，为今晚作息提供传统时令参考。",
+    desc: "今日宜忌与安寝提示——跟着节气过好每一天。",
     to: "/daily",
   },
   {
@@ -565,6 +565,41 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== S7 · 次级引擎入口 ===== */}
+      <section className="border-t border-gold/10 bg-deep2 pb-28">
+        <div className="zf-container">
+          <div className="flex flex-col gap-3 border-b border-gold/15 pb-7 pt-10 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="font-latin text-[11px] font-medium uppercase tracking-[0.32em] text-gold">
+                GET STARTED
+              </p>
+              <h2 className="mt-3 font-serif text-[25px] font-bold tracking-[0.1em] text-silktext">
+                从这里开始
+              </h2>
+            </div>
+            <p className="text-[13px] leading-relaxed text-silkmuted">
+              想算什么，直接点——全部免费体验，无需注册
+            </p>
+          </div>
+          <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-4">
+            {SECONDARY_ENGINES.map(engine => (
+              <Link
+                key={engine.title}
+                to={engine.to}
+                className="gs-reveal group flex items-center gap-3 rounded-lg border border-gold/10 bg-deep/65 px-4 py-4 transition-all duration-300 hover:border-gold/45 hover:bg-deep"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-gold/30 font-serif text-[17px] font-bold text-goldbright">
+                  {engine.glyph}
+                </span>
+                <span className="min-w-0 font-serif text-[14px] font-semibold tracking-[0.05em] text-silktext transition-colors group-hover:text-goldbright sm:text-[15px]">
+                  {engine.title}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ===== S3 · 场景入口 ===== */}
       <section className="relative overflow-hidden bg-deep2 py-24 sm:py-28">
         <div
@@ -578,9 +613,9 @@ export default function Home() {
         <div className="relative zf-container">
           <SectionHeading
             dark
-            eyebrow="Four Life Scenarios"
-            title="此刻，你想参看什么"
-            sub="从当下最关心的事出发，进入相应的传统文化参详场景"
+            eyebrow="WHAT DO YOU WANT TO KNOW"
+            title="此刻，你想知道什么"
+            sub="从你最关心的事出发——事业、感情、健康、起居"
           />
           <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2">
             {SCENARIOS.map(scenario => (
@@ -616,10 +651,37 @@ export default function Home() {
                     {scenario.desc}
                   </p>
                   <span className="zf-link-more mt-6 inline-flex items-center gap-1 text-[13px] font-medium tracking-[0.12em] text-goldbright">
-                    进入参详 <span className="zf-arrow">→</span>
+                    去看看 <span className="zf-arrow">→</span>
                   </span>
                 </div>
               </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== S4 · 古籍跑马灯 ===== */}
+      <section className="gs-marquee border-y border-[rgba(199,162,58,0.18)] bg-deep py-8">
+        <p className="text-center font-serif text-[15px] font-semibold tracking-[0.24em] text-goldbright">
+          典籍为据 · 句句可溯
+        </p>
+        <div className="zf-marquee mt-5 overflow-hidden">
+          <div className="zf-marquee-track flex w-max items-center whitespace-nowrap">
+            {[0, 1].map(dup => (
+              <div
+                key={dup}
+                aria-hidden={dup === 1}
+                className="flex items-center"
+              >
+                {BOOKS.map(b => (
+                  <span key={`${dup}-${b}`} className="flex items-center">
+                    <span className="px-5 font-serif text-[17px] text-golddim">
+                      《{b}》
+                    </span>
+                    <span className="text-silkmuted">·</span>
+                  </span>
+                ))}
+              </div>
             ))}
           </div>
         </div>
@@ -669,33 +731,6 @@ export default function Home() {
       {/* ===== S3c · 命例对拍征集（社区生态 D） ===== */}
       <CaseInviteCard />
 
-      {/* ===== S4 · 古籍跑马灯 ===== */}
-      <section className="gs-marquee border-y border-[rgba(199,162,58,0.18)] bg-deep py-8">
-        <p className="text-center font-serif text-[15px] font-semibold tracking-[0.24em] text-goldbright">
-          典籍为据 · 句句可溯
-        </p>
-        <div className="zf-marquee mt-5 overflow-hidden">
-          <div className="zf-marquee-track flex w-max items-center whitespace-nowrap">
-            {[0, 1].map(dup => (
-              <div
-                key={dup}
-                aria-hidden={dup === 1}
-                className="flex items-center"
-              >
-                {BOOKS.map(b => (
-                  <span key={`${dup}-${b}`} className="flex items-center">
-                    <span className="px-5 font-serif text-[17px] text-golddim">
-                      《{b}》
-                    </span>
-                    <span className="text-silkmuted">·</span>
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ===== S5 · 引流工具 ===== */}
       <section className="bg-deep py-24 sm:py-28">
         <div className="zf-container">
@@ -730,41 +765,6 @@ export default function Home() {
           <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-3">
             {LEARNING_ENTRIES.map(entry => (
               <FeatureCard key={entry.title} dark {...entry} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== S7 · 次级引擎入口 ===== */}
-      <section className="border-t border-gold/10 bg-deep2 pb-28">
-        <div className="zf-container">
-          <div className="flex flex-col gap-3 border-b border-gold/15 pb-7 pt-10 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="font-latin text-[11px] font-medium uppercase tracking-[0.32em] text-gold">
-                More Engines
-              </p>
-              <h2 className="mt-3 font-serif text-[25px] font-bold tracking-[0.1em] text-silktext">
-                更多古法引擎
-              </h2>
-            </div>
-            <p className="text-[13px] leading-relaxed text-silkmuted">
-              按术式选择，进入完整排盘与参详工具
-            </p>
-          </div>
-          <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-4">
-            {SECONDARY_ENGINES.map(engine => (
-              <Link
-                key={engine.title}
-                to={engine.to}
-                className="gs-reveal group flex items-center gap-3 rounded-lg border border-gold/10 bg-deep/65 px-4 py-4 transition-all duration-300 hover:border-gold/45 hover:bg-deep"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-gold/30 font-serif text-[17px] font-bold text-goldbright">
-                  {engine.glyph}
-                </span>
-                <span className="min-w-0 font-serif text-[14px] font-semibold tracking-[0.05em] text-silktext transition-colors group-hover:text-goldbright sm:text-[15px]">
-                  {engine.title}
-                </span>
-              </Link>
             ))}
           </div>
         </div>
