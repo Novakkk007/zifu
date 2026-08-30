@@ -6,6 +6,7 @@ const FOOT_LINKS = [
   { to: '/wiki', label: '藏经阁' },
   { to: '/talks', label: '主创说' },
   { to: '/terms', label: '服务条款' },
+  { to: '/privacy', label: '隐私政策' },
 ]
 
 function VersionLine() {
