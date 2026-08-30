@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useEngine } from "@/hooks/useEngine";
 import { paipanBazi } from "@/engines/client/bazi";
 import { buildChartSummary } from "@/lib/ai-direct";
@@ -217,9 +218,12 @@ export default function RoundTablePage() {
               const y = 50 + 38 * Math.sin(ang);
               const f = followUp[i];
               return (
-                <div
+                <motion.div
                   key={seat.school}
-                  className="absolute w-[215px] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-golddim/25 bg-silk2 p-3 shadow-card"
+                  initial={{ opacity: 0, scale: 0.7, y: 18 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: 0.25 + i * 0.18, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute w-[215px] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-golddim/25 bg-silk2 p-3 shadow-card transition-shadow hover:shadow-[0_10px_30px_-12px_rgba(201,166,86,0.45)]"
                   style={{ left: `${x}%`, top: `${y}%` }}
                 >
                   <div className="flex items-baseline justify-between">
@@ -267,7 +271,7 @@ export default function RoundTablePage() {
                       )}
                     </div>
                   )}
-                </div>
+                </motion.div>
               );
             })}
           </div>
