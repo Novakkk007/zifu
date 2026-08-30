@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Coins, ScrollText, ShieldAlert, UserRound, Wallet } from 'lucide-react'
 import { trpc } from '@/providers/trpc'
+import { hasDevice, myWallet, rechargeLingqian, setNick } from '@/lib/auth-client'
+import type { WalletInfo } from '@/lib/auth-client'
 import { setPageMeta } from '@/lib/pageMeta'
 import { useAuth } from '@/hooks/useAuth'
 import { usePaymentEnabled, RECHARGE_CLOSED_HINT } from '@/hooks/usePaymentEnabled'
-import { LOGIN_PATH } from '@/const'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/Card'
 import { ZifuButton } from '@/components/Buttons'
 import { Modal } from '@/components/Modal'
@@ -66,17 +67,48 @@ export default function Account() {
   const paymentEnabled = usePaymentEnabled()
   const utils = trpc.useUtils()
 
+  /* ===== 生产钱包（匿名设备账号，CF Worker DO 记账）===== */
+  const [dev, setDev] = useState<boolean>(() => hasDevice())
+  const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null)
+  const [walletLoading, setWalletLoading] = useState(false)
+  const [rechargeMsg, setRechargeMsg] = useState<string | null>(null)
+
+  const refreshWallet = useCallback(async () => {
+    if (!hasDevice()) return
+    setWalletLoading(true)
+    try {
+      setWalletInfo(await myWallet())
+    } finally {
+      setWalletLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!dev) return
+    let alive = true
+    myWallet()
+      .then((w) => {
+        if (alive) setWalletInfo(w)
+      })
+      .finally(() => {
+        if (alive) setWalletLoading(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [dev])
+
   useEffect(() => {
     setPageMeta(
       '用户中心 · 紫府',
-      '紫府用户中心——个人资料与排盘记录管理。',
+      '紫府用户中心——灵签钱包与个人资料管理。',
     );
   }, [])
 
   const enabled = isAuthenticated
-  const wallet = trpc.billing.wallet.useQuery(undefined, { enabled, retry: false })
-  const orders = trpc.billing.orders.useQuery(undefined, { enabled, retry: false })
-  const history = trpc.bazi.history.useQuery(undefined, { enabled, retry: false })
+  const wallet = trpc.billing.wallet.useQuery(undefined, { enabled: enabled && !dev, retry: false })
+  const orders = trpc.billing.orders.useQuery(undefined, { enabled: enabled && !dev, retry: false })
+  const history = trpc.bazi.history.useQuery(undefined, { enabled: enabled && !dev, retry: false })
 
   const [rechargeOpen, setRechargeOpen] = useState(false)
   const [rechargeStatus, setRechargeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
@@ -106,8 +138,8 @@ export default function Account() {
 
   const canConfirmDelete = useMemo(() => deleteText.trim() === '确认删除', [deleteText])
 
-  /* ===== 未登录：引导登录卡 ===== */
-  if (!isLoading && !isAuthenticated) {
+  /* ===== 未登录/无设备：引导创建账页 ===== */
+  if (!isLoading && !isAuthenticated && !dev) {
     return (
       <div className="zf-container flex min-h-[60dvh] items-center justify-center py-20">
         <Card className="w-full max-w-md text-center">
@@ -117,11 +149,27 @@ export default function Account() {
           <CardContent className="flex flex-col items-center gap-4 py-8">
             <UserRound className="h-10 w-10 text-golddim" aria-hidden />
             <p className="text-[14px] leading-[1.9] text-inkmuted">
-              登录后可查看灵签钱包、订单与我的命盘。
+              紫府账页：无需手机号与密码，本设备一键创建。
+              <br />
+              注册即赠 <b className="text-golddim">36 灵签</b>——用于解锁 AI 详批等深度服务。
             </p>
-            <ZifuButton variant="foil" to={LOGIN_PATH}>
-              前往登录 / 注册
+            <ZifuButton
+              variant="foil"
+              onClick={() => {
+                void (async () => {
+                  if (!hasDevice()) {
+                    localStorage.setItem('zifu:deviceId', `zf-${Math.random().toString(36).slice(2, 14)}`)
+                  }
+                  setDev(true)
+                  await refreshWallet()
+                })()
+              }}
+            >
+              创建 / 恢复我的账页
             </ZifuButton>
+            <p className="text-[11.5px] leading-[1.7] text-inkmuted/70">
+              账页数据存储于紫府服务器（灵签余额）；换设备可用「恢复账页」重新绑定。
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -216,7 +264,56 @@ export default function Account() {
             )}
           </CardHeader>
           <CardContent className="flex flex-col gap-6">
-            {wallet.isLoading ? (
+            {dev ? (
+              /* 生产钱包：CF Worker DO 记账 */
+              walletLoading ? (
+                <LoadingState rows={4} />
+              ) : walletInfo?.error ? (
+                <ErrorState description={walletInfo.error} onRetry={refreshWallet} retrying={walletLoading} />
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[13px] tracking-[0.1em] text-inkmuted">灵签余额</span>
+                    <span className="font-serif text-[34px] font-black leading-none text-golddim">
+                      {walletInfo?.balance ?? 36}
+                    </span>
+                    <span className="text-[12px] text-inkmuted/70">灵签</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <ZifuButton
+                      variant="foil"
+                      onClick={() => {
+                        void (async () => {
+                          const r = await rechargeLingqian()
+                          setRechargeMsg(r.ok ? `体验赠签 +36，当前 ${r.balance} 灵签` : (r.error ?? '充值暂不可用'))
+                          await refreshWallet()
+                        })()
+                      }}
+                    >
+                      <Coins className="h-4 w-4" aria-hidden />
+                      充值（体验赠签）
+                    </ZifuButton>
+                    <ZifuButton
+                      variant="ghost"
+                      onClick={() => {
+                        const nick = window.prompt('设置昵称（最多 12 字）', walletInfo?.nick ?? '')
+                        if (nick) {
+                          void setNick(nick).then(refreshWallet)
+                        }
+                      }}
+                    >
+                      设置昵称
+                    </ZifuButton>
+                  </div>
+                  {rechargeMsg && (
+                    <p className="text-[12.5px] leading-[1.8] text-inkmuted">{rechargeMsg}</p>
+                  )}
+                  <p className="text-[11.5px] leading-[1.8] text-inkmuted/70">
+                    详批类服务 9 灵签/次，扣减前必有确认提示。支付通道接入后，充值将支持微信/支付宝。
+                  </p>
+                </>
+              )
+            ) : wallet.isLoading ? (
               <LoadingState rows={4} />
             ) : wallet.isError ? (
               <ErrorState
