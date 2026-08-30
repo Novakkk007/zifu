@@ -35,7 +35,6 @@ export default function TimeAuditBar({ chart }: { chart: BaziChartV2 }) {
   }
   items.push(
     { label: '换日规则', value: a.dayRollover === 'zichu' ? '子初换日（23:00）' : '0 点换日' },
-    { label: '规则版本', value: `RULESET ${a.rulesetVersion}` },
   )
 
   return (

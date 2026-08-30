@@ -31,7 +31,7 @@ const DRAWS_PROVENANCE: RuleProvenance[] = [
   {
     ruleId: 'draws.guanyin-100',
     variant: '观音灵签通行本一百首（吉凶等第归并上/中/下）',
-    source: '观音灵签一百首（传统公共文献）',
+    source: '观音灵签一百首',
   },
   {
     ruleId: 'draws.csprng',

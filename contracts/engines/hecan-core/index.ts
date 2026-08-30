@@ -245,7 +245,7 @@ const BAZI_PROVENANCE: RuleProvenance[] = [
   {
     ruleId: 'hecan.bazi',
     variant: 'computeChartV2 子平排盘',
-    source: '《渊海子平》《三命通会》（传统公共文献）',
+    source: '《渊海子平》《三命通会》',
   },
   {
     ruleId: 'hecan.cross-check',
