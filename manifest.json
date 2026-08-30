@@ -1,13 +1,13 @@
 {
   "name": "紫府 Zifu Palace · 古籍数字化 AI 推演平台",
   "short_name": "紫府",
-  "start_url": "/zifu/",
-  "scope": "/zifu/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#100A24",
   "theme_color": "#100A24",
   "icons": [
-    { "src": "/zifu/assets/app-icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/zifu/assets/app-icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "assets/app-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/app-icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
