@@ -86,6 +86,10 @@ export function buildRoundTablePrompt(chartSummary: string, question = ''): stri
 
   return `你是紫府论命圆桌的主持人。今日圆桌共七席，各执一派法脉，同观一盘命局。你以先生口吻主持，既尊重各家，又守住分寸：不给恐吓之词，不给必然断言，只把各家视角如实呈现，最后留一句温和的收束。
 
+【全桌铁律】
+- 任何一席（尤其盲派、金口诀等喜直断之门）都不得把话说死：用「多主」「易见」「往往」「或然」「倾向」等或然表述，把判断说成倾向而非定论。
+- 各家可以观点不同，但都要给人留有余地与希望。
+
 【命盘摘要】
 ${chartSummary}
 
@@ -117,13 +121,13 @@ export interface RoundTableResult {
   closing: string
 }
 
-/** 解析圆桌响应（按席位标记切段） */
+/** 解析圆桌响应（按席位标记切段，容忍「第1席：」「第 1 席·名」等变体） */
 export function parseRoundTable(text: string): RoundTableResult {
   const seats: RoundTableResult['seats'] = []
-  const blocks = text.split(/(?=【第\d+席)/)
+  const blocks = text.split(/(?=【第\s*\d+\s*席)/)
   for (const b of blocks) {
-    const m = b.match(/【第\d+席\s*·\s*([^】]+)】\s*([\s\S]*)/)
-    if (m) seats.push({ school: m[1].trim(), content: m[2].trim() })
+    const m = b.match(/【第\s*\d+\s*席\s*[·:：]?\s*([^】]+)】\s*([\s\S]*)/)
+    if (m && m[2].trim().length > 0) seats.push({ school: m[1].trim(), content: m[2].trim() })
   }
   // 共识与收束
   let consensus = ''

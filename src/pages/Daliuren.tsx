@@ -355,7 +355,7 @@ export default function Daliuren() {
           <SectionHeading
             eyebrow="Divination"
             title="起 课"
-            sub="默认此时此刻，亦可自定年月日时——真实节气换将，同一时刻，课传如一"
+            sub="心中有事，起一课参详——默认此时此刻，也可自定时刻"
           />
           <div className="mt-12 w-full max-w-[680px] rounded-xl border border-golddim/25 bg-silk2 p-4 shadow-card sm:p-8 md:p-10">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
