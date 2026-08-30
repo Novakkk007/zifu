@@ -64,6 +64,11 @@ export async function chargeLingqian(amount: number): Promise<WalletInfo> {
   return call('/charge', { method: 'POST', body: JSON.stringify({ amount }) })
 }
 
+/** 退款（AI 服务失败时退回本次扣费——先扣后退净零，无刷签风险） */
+export async function refundLingqian(amount: number): Promise<WalletInfo> {
+  return call('/refund', { method: 'POST', body: JSON.stringify({ amount }) })
+}
+
 /** 充值（支付通道未开放时为体验赠签） */
 export async function rechargeLingqian(): Promise<WalletInfo> {
   return call('/recharge', { method: 'POST', body: JSON.stringify({}) })

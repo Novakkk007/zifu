@@ -15,6 +15,7 @@ import SectionHeading from '@/components/SectionHeading'
 import { SegmentedControl } from '@/components/FormControls'
 import { DeepButton, GoldButton } from '@/components/Buttons'
 import DirectAiChat from '@/components/DirectAiChat'
+import LingqianReading from '@/components/LingqianReading'
 import { trpc } from '@/providers/trpc'
 import { useAuth } from '@/hooks/useAuth'
 import { buildChartSummary } from '@/lib/ai-direct'
@@ -226,6 +227,8 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
           persona={persona}
           depth={depth}
         />
+        {/* 生产计费详批：灵签扣费闭环（游客免登录也可用，账页赠 36 灵签） */}
+        <LingqianReading chartSummary={directChartSummary} persona={persona} depth={depth} />
       </div>
     )
   }
