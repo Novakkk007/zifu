@@ -17,6 +17,15 @@ try {
   /* 隐私模式 sessionStorage 不可用则静默跳过 */
 }
 
+// PWA：生产环境注册 Service Worker（安装到桌面/离线壳）
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {
+      /* 注册失败静默（不影响站点） */
+    })
+  })
+}
+
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
     <BrowserRouter basename={import.meta.env.BASE_URL}>
