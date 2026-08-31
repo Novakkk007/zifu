@@ -44,13 +44,21 @@ export default function GuanzhaoPage() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setContent("");
+    const y = Number(year), mo = Number(month), d = Number(day), h = Number(hour);
+    if (!y || y < 1900 || y > 2100) return setError("年份请填 1900-2100 之间的数字");
+    if (!mo || mo < 1 || mo > 12) return setError("月份请填 1-12 之间的数字");
+    if (!d || d < 1 || d > 31) return setError("日期请填 1-31 之间的数字");
+    if (h === 24) {
+      paipan.mutate({
+        calendar: "solar", year: y, month: mo, day: d, hour: 0, minute: 0,
+        gender, useTrueSolarTime: false, dayRollover: "zichu", title: "观照见性",
+      });
+      return;
+    }
+    if (isNaN(h) || h < 0 || h > 23) return setError("时辰请填 0-23 之间的数字（24 点即午夜 0 点）");
     const payload: PaipanPayload = {
       calendar: "solar",
-      year: Number(year),
-      month: Number(month),
-      day: Number(day),
-      hour: Number(hour),
-      minute: 0,
+      year: y, month: mo, day: d, hour: h, minute: 0,
       gender,
       useTrueSolarTime: false,
       dayRollover: "zichu",

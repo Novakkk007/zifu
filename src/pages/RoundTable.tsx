@@ -60,13 +60,36 @@ export default function RoundTablePage() {
     e.preventDefault();
     setResult(null);
     setFollowUp({});
+    const y = Number(year), mo = Number(month), d = Number(day), h = Number(hour);
+    // 中文校验（24 点 = 午夜 0 点，用户常见输入）
+    if (!y || y < 1900 || y > 2100) {
+      setError("年份请填 1900-2100 之间的数字");
+      return;
+    }
+    if (!mo || mo < 1 || mo > 12) {
+      setError("月份请填 1-12 之间的数字");
+      return;
+    }
+    if (!d || d < 1 || d > 31) {
+      setError("日期请填 1-31 之间的数字");
+      return;
+    }
+    if (h === 24) {
+      setError("");
+      paipan.mutate({
+        calendar: solar ? "solar" : "lunar",
+        year: y, month: mo, day: d, hour: 0, minute: 0,
+        gender, useTrueSolarTime: false, dayRollover: "zichu", title: "论命圆桌",
+      });
+      return;
+    }
+    if (isNaN(h) || h < 0 || h > 23) {
+      setError("时辰请填 0-23 之间的数字（24 点即午夜 0 点）");
+      return;
+    }
     const payload: PaipanPayload = {
       calendar: solar ? "solar" : "lunar",
-      year: Number(year),
-      month: Number(month),
-      day: Number(day),
-      hour: Number(hour),
-      minute: 0,
+      year: y, month: mo, day: d, hour: h, minute: 0,
       gender,
       useTrueSolarTime: false,
       dayRollover: "zichu",
