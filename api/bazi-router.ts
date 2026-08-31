@@ -16,12 +16,12 @@ export const ALGORITHM_VERSION = "computeChartV2@1";
  */
 export const birthInput = z
   .object({
-    calendar: z.enum(["solar", "lunar"]),
-    year: z.number().int().min(1900).max(2100),
-    month: z.number().int().min(1).max(12),
-    day: z.number().int().min(1).max(31),
+    calendar: z.enum(["solar", "lunar"], { errorMap: () => ({ message: "历法格式不正确" }) }),
+    year: z.number().int().min(1900, "年份请填 1900-2100 之间的数字").max(2100),
+    month: z.number().int().min(1, "月份请填 1-12 之间的数字").max(12),
+    day: z.number().int().min(1, "日期请填 1-31 之间的数字").max(31),
     /** 0-23；null = 时辰未知（时柱不排，称骨返回 null） */
-    hour: z.number().int().min(0).max(23).nullable(),
+    hour: z.number().int().min(0, "时辰请填 0-23 之间的数字").max(23, "时辰请填 0-23 之间的数字（24 点即午夜 0 点）").nullable(),
     minute: z.number().int().min(0).max(59),
     gender: z.enum(["male", "female"]),
     /** 农历闰月标记（calendar='lunar' 时有效） */
