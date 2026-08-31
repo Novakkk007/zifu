@@ -172,7 +172,7 @@ function YijiCards({ dayStem }: { dayStem: DayStem }) {
   // 宜忌：共享引擎 daily-core（公版黄历基础规则，按日干映射）
   const { yi, ji } = yijiOf(dayStem)
   return (
-    <div className="mx-auto w-full max-w-[960px]">
+    <div className="mx-auto w-full max-w-[960px] overflow-x-clip">
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {[
           { title: '宜', items: yi, gold: true, fromX: -32 },
