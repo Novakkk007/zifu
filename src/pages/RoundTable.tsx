@@ -31,6 +31,7 @@ export default function RoundTablePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<RoundTableResult | null>(null);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
   const [summary, setSummary] = useState("");
   // 追问状态：{seatIndex, q, reply, busy}
   const [followUp, setFollowUp] = useState<Record<number, { q: string; reply: string; busy: boolean }>>({});
@@ -276,11 +277,12 @@ export default function RoundTablePage() {
             })}
           </div>
 
-          {/* 移动端：纵向堆叠 */}
+          {/* 移动端：纵向堆叠（默认 2 席，其余折叠——减少首屏压力） */}
           <div className="grid gap-4 md:hidden">
             {result.seats.map((seat, i) => {
               const meta = ROUNDTABLE_SCHOOLS[i];
               const f = followUp[i];
+              if (i >= 2 && !mobileExpanded) return null;
               return (
                 <div key={seat.school} className="rounded-2xl border border-golddim/20 bg-silk2 p-4 shadow-card">
                   <span className="font-serif text-[14px] font-bold tracking-[0.1em] text-golddim">
@@ -329,6 +331,15 @@ export default function RoundTablePage() {
                 </div>
               );
             })}
+            {result.seats.length > 2 && (
+              <button
+                type="button"
+                onClick={() => setMobileExpanded((v) => !v)}
+                className="w-full rounded-xl border border-golddim/30 bg-silk py-3 text-[12.5px] tracking-[0.12em] text-golddim transition hover:bg-silk2"
+              >
+                {mobileExpanded ? "收起其余席位 ↑" : `展开其余 ${result.seats.length - 2} 席 ↓`}
+              </button>
+            )}
           </div>
 
           {result.consensus && (
