@@ -16,7 +16,7 @@ export const ALGORITHM_VERSION = "computeChartV2@1";
  */
 export const birthInput = z
   .object({
-    calendar: z.enum(["solar", "lunar"], { errorMap: () => ({ message: "历法格式不正确" }) }),
+    calendar: z.enum(["solar", "lunar"], "历法格式不正确"),
     year: z.number().int().min(1900, "年份请填 1900-2100 之间的数字").max(2100),
     month: z.number().int().min(1, "月份请填 1-12 之间的数字").max(12),
     day: z.number().int().min(1, "日期请填 1-31 之间的数字").max(31),
