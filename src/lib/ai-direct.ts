@@ -56,6 +56,7 @@ export interface DirectChatApiMessage {
 // 名家主题化上下文（LJM 十神角色映射——AI 参详增强，静态引入保持同步函数签名）
 import { ljmContextText } from '@contracts/engines/masters-rules/ljm'
 import { proxyAI } from './ai-proxy'
+import { tiaohouRefinedOf } from '@contracts/engines/masters-rules/tiaohou-refined'
 
 /**
  * 命盘 → 结构化摘要（直连 prompt 用）。仅含引擎产出的数据，
@@ -90,6 +91,23 @@ export function buildChartSummary(chart: unknown): string {
     if (verseHit?.verse) {
       lines.push(`神煞口诀参考（讲到时可引一句，不逐字背诵）：${verseHit.verse}`)
     }
+  }
+  // 调候参考（穷通宝鉴逐干逐月口径——参考层，见 tiaohou-refined.ts）
+  try {
+    const dayStem = p.day?.stem
+    const monthBranch = p.month?.branch
+    if (dayStem && monthBranch) {
+      const stemIdx = '甲乙丙丁戊己庚辛壬癸'.indexOf(dayStem)
+      const branchIdx = '子丑寅卯辰巳午未申酉戌亥'.indexOf(monthBranch)
+      const th = tiaohouRefinedOf(stemIdx, branchIdx)
+      if (th?.order) {
+        lines.push(
+          `调候参考（穷通宝鉴口径）：${dayStem}日生${monthBranch}月，用神次序 ${th.order}（${th.note}）——讲到调候时节可用，不机械套用`,
+        )
+      }
+    }
+  } catch {
+    /* 调候缺失静默 */
   }
   // 岁运维度（大运当前步 + 流年）——只作节律参详素材，不作事件预测
   try {
