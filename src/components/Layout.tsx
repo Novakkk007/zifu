@@ -6,6 +6,7 @@ import Footer from '@/components/Footer'
 import ZifuFab from '@/components/ZifuFab'
 import BgmPlayer from '@/components/BgmPlayer'
 import PreviewBanner from '@/components/PreviewBanner'
+import MobileTabBar from '@/components/MobileTabBar'
 
 const FeedbackWidget = lazy(() => import('@/components/FeedbackWidget'))
 
@@ -26,6 +27,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
+      <MobileTabBar />
       <ZifuFab />
       <BgmPlayer />
       <Suspense fallback={null}>
