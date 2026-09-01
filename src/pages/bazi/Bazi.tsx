@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { BaziChartV2 } from "@contracts/bazi-core";
 import { usePageMeta } from "@/lib/page-meta";
@@ -230,6 +231,51 @@ export default function Bazi() {
 
               {/* 首屏结果摘要（四柱卡之前） */}
               <ChartSummaryStrip chart={chart} />
+
+              {/* 深化入口（二层级联：合盘/先生解盘/圆桌） */}
+              <div className="rounded-2xl border border-golddim/25 bg-silk2/80 p-4">
+                <p className="text-center text-[12px] tracking-[0.16em] text-inkmuted">
+                  想再进一步？先生还备着——
+                </p>
+                <div className="mt-3 grid grid-cols-3 gap-3">
+                  <Link
+                    to="/bazi/hepan"
+                    className="group rounded-xl border border-golddim/25 bg-silk px-3 py-3.5 text-center transition-all hover:border-golddim/70 hover:shadow-card"
+                  >
+                    <span className="block font-serif text-[15px] font-bold tracking-[0.1em] text-golddim">
+                      缘分合盘
+                    </span>
+                    <span className="mt-1 block text-[11px] leading-[1.6] text-inkmuted">
+                      两个人的盘并起来看
+                    </span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      document.getElementById("ai-reading")?.scrollIntoView({ behavior: reduce ? "auto" : "smooth" })
+                    }}
+                    className="group rounded-xl border border-golddim/25 bg-silk px-3 py-3.5 text-center transition-all hover:border-golddim/70 hover:shadow-card"
+                  >
+                    <span className="block font-serif text-[15px] font-bold tracking-[0.1em] text-golddim">
+                      先生解盘
+                    </span>
+                    <span className="mt-1 block text-[11px] leading-[1.6] text-inkmuted">
+                      逐句引经，深参此盘
+                    </span>
+                  </button>
+                  <Link
+                    to="/roundtable"
+                    className="group rounded-xl border border-golddim/25 bg-silk px-3 py-3.5 text-center transition-all hover:border-golddim/70 hover:shadow-card"
+                  >
+                    <span className="block font-serif text-[15px] font-bold tracking-[0.1em] text-golddim">
+                      圆桌论此盘
+                    </span>
+                    <span className="mt-1 block text-[11px] leading-[1.6] text-inkmuted">
+                      七派同观，共识分歧并呈
+                    </span>
+                  </Link>
+                </div>
+              </div>
 
               {/* 排盘依据 */}
               <TimeAuditBar chart={chart} />

@@ -544,6 +544,77 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== S2.6 · 三大入口（六爻引流主位） ===== */}
+      <section className="relative bg-deep2 pb-20">
+        <div className="zf-container">
+          <div className="grid gap-4 md:grid-cols-3">
+            {/* 六爻：引流主位 */}
+            <Link
+              to="/liuyao"
+              className="gs-reveal group relative overflow-hidden rounded-2xl border border-gold/45 bg-deep p-7 transition-all duration-500 hover:-translate-y-1 hover:border-gold/90 hover:shadow-[0_20px_55px_-28px_rgba(228,198,106,0.7)] sm:p-8"
+            >
+              <span className="absolute right-4 top-2 select-none text-[64px] opacity-[0.1] transition-all duration-500 group-hover:scale-110 group-hover:opacity-20">
+                卦
+              </span>
+              <p className="font-latin text-[10.5px] font-medium uppercase tracking-[0.3em] text-gold">
+                ASK THE HEXAGRAM
+              </p>
+              <h3 className="mt-5 font-serif text-[clamp(22px,2.6vw,28px)] font-bold tracking-[0.1em] text-silktext">
+                遇事不决 · 问六爻
+              </h3>
+              <p className="mt-3 text-[13px] leading-[1.85] text-silkmuted">
+                心中默念所问之事，连摇六次，先生依《增删卜易》为你参详。无需生辰，一分钟即可起卦。
+              </p>
+              <span className="zf-link-more mt-5 inline-flex items-center gap-1 text-[13px] font-medium tracking-[0.12em] text-goldbright">
+                起一卦 <span className="zf-arrow">→</span>
+              </span>
+            </Link>
+            {/* 八字：简单解析 */}
+            <Link
+              to="/bazi"
+              className="gs-reveal group relative overflow-hidden rounded-2xl border border-gold/25 bg-deep/85 p-7 transition-all duration-500 hover:-translate-y-1 hover:border-gold/70 hover:shadow-[0_20px_55px_-28px_rgba(228,198,106,0.55)] sm:p-8"
+            >
+              <span className="absolute right-4 top-2 select-none text-[64px] opacity-[0.09] transition-all duration-500 group-hover:scale-110 group-hover:opacity-18">
+                命
+              </span>
+              <p className="font-latin text-[10.5px] font-medium uppercase tracking-[0.3em] text-gold">
+                YOUR NATAL CHART
+              </p>
+              <h3 className="mt-5 font-serif text-[clamp(22px,2.6vw,28px)] font-bold tracking-[0.1em] text-silktext">
+                排八字 · 看性格运势
+              </h3>
+              <p className="mt-3 text-[13px] leading-[1.85] text-silkmuted">
+                输入出生信息，先生为你排盘——性格底色、运势走向，一张盘里看分明。
+              </p>
+              <span className="zf-link-more mt-5 inline-flex items-center gap-1 text-[13px] font-medium tracking-[0.12em] text-goldbright">
+                排一张盘 <span className="zf-arrow">→</span>
+              </span>
+            </Link>
+            {/* 每日时令 */}
+            <Link
+              to="/daily"
+              className="gs-reveal group relative overflow-hidden rounded-2xl border border-gold/25 bg-deep/85 p-7 transition-all duration-500 hover:-translate-y-1 hover:border-gold/70 hover:shadow-[0_20px_55px_-28px_rgba(228,198,106,0.55)] sm:p-8"
+            >
+              <span className="absolute right-4 top-2 select-none text-[64px] opacity-[0.09] transition-all duration-500 group-hover:scale-110 group-hover:opacity-18">
+                日
+              </span>
+              <p className="font-latin text-[10.5px] font-medium uppercase tracking-[0.3em] text-gold">
+                DAILY ALMANAC
+              </p>
+              <h3 className="mt-5 font-serif text-[clamp(22px,2.6vw,28px)] font-bold tracking-[0.1em] text-silktext">
+                今日宜忌 · 每日时令
+              </h3>
+              <p className="mt-3 text-[13px] leading-[1.85] text-silkmuted">
+                合节气与今日干支，看宜忌、作息与日常提示——跟着老日子把今天过好。
+              </p>
+              <span className="zf-link-more mt-5 inline-flex items-center gap-1 text-[13px] font-medium tracking-[0.12em] text-goldbright">
+                看今日 <span className="zf-arrow">→</span>
+              </span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ===== S2b · 为什么信紫府（信任锚点） ===== */}
       <section className="bg-silk py-20">
         <div className="zf-container">

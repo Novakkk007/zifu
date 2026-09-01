@@ -208,7 +208,7 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
 
   if (!authLoading && !user) {
     return (
-      <div className="zf-container max-w-[880px]">
+      <div id="ai-reading" className="zf-container max-w-[880px]">
         <SectionHeading
           eyebrow="AI Reading"
           title="AI 详批 · 四维交互"
@@ -237,7 +237,7 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
   const errState = reading.isError ? errorStateOf(reading.error) : null
 
   return (
-    <div className="zf-container max-w-[880px]">
+    <div id="ai-reading" className="zf-container max-w-[880px]">
       <SectionHeading
         eyebrow="AI Reading"
         title="AI 详批 · 四维交互"
