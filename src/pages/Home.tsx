@@ -485,6 +485,36 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== S2.4 · 三问速通（问句代替术语——零门槛第一门） ===== */}
+      <section className="relative bg-deep2 pt-2">
+        <div className="zf-container">
+          <p className="text-center font-sans text-[11px] tracking-[0.3em] text-silkmuted/70">
+            不知道从哪开始？问一句就行——
+          </p>
+          <div className="mt-4 flex flex-wrap items-stretch justify-center gap-3">
+            {[
+              { q: "我今年怎么样？", a: "排八字看运势", to: "/bazi" },
+              { q: "我们合适吗？", a: "缘分合盘", to: "/bazi/hepan" },
+              { q: "心里有事，拿不定主意", a: "问一卦", to: "/liuyao" },
+              { q: "心里乱，想静一静", a: "先生观照", to: "/guanzhao" },
+            ].map((item) => (
+              <Link
+                key={item.q}
+                to={item.to}
+                className="gs-reveal group flex items-center gap-3 rounded-full border border-gold/25 bg-deep/60 px-5 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/70 hover:bg-deep"
+              >
+                <span className="font-serif text-[14.5px] font-medium tracking-[0.06em] text-silktext transition-colors group-hover:text-goldbright">
+                  「{item.q}」
+                </span>
+                <span className="text-[11.5px] tracking-[0.1em] text-golddim">
+                  → {item.a}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ===== S2.5 · 先生在此（人味入口——小白也能懂） ===== */}
       <section className="relative border-t border-gold/10 bg-deep2 py-16 sm:py-20">
         <div className="zf-container">
