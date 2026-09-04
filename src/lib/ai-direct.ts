@@ -58,6 +58,7 @@ import { ljmContextText } from '@contracts/engines/masters-rules/ljm'
 import { proxyAI } from './ai-proxy'
 import { tiaohouRefinedOf } from '@contracts/engines/masters-rules/tiaohou-refined'
 import { daYunNotes } from '@contracts/engines/masters-rules/dayun-notes'
+import { gejuOf } from '@contracts/engines/masters-rules/geju-rules'
 
 /**
  * 命盘 → 结构化摘要（直连 prompt 用）。仅含引擎产出的数据，
@@ -109,6 +110,15 @@ export function buildChartSummary(chart: unknown): string {
     }
   } catch {
     /* 调候缺失静默 */
+  }
+  // 格局定名（课题口径：主格+副格混合取格）
+  try {
+    const g = gejuOf(chart as never)
+    lines.push(
+      `格局：主格${g.main}${g.vice ? `，副格${g.vice}` : ''}（${g.mainBasis}${g.vice ? '；' + g.viceBasis : ''}）。用神倾向：${g.yongshen}`,
+    )
+  } catch {
+    /* 取格缺失静默 */
   }
   // 岁运维度（大运当前步 + 流年）——只作节律参详素材，不作事件预测
   try {
