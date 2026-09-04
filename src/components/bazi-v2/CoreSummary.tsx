@@ -33,7 +33,7 @@ export default function CoreSummary({ chart, onAiRead }: { chart: BaziChartV2; o
       {
         icon: '📜',
         title: `格局：${geju.main}${geju.vice ? ` · ${geju.vice}` : ''}`,
-        text: `${geju.mainBasis}${geju.vice ? '；' + geju.viceBasis : ''}。用神倾向：${geju.yongshen}`,
+        text: `${geju.mainBasis}${geju.vice ? '；' + geju.viceBasis : ''}。用神倾向：${geju.yongshen}${geju.warnings.length > 0 ? `。提醒：${geju.warnings[0]}` : ''}`,
       },
       {
         icon: '☯',

@@ -16,6 +16,8 @@ export interface GejuResult {
   viceBasis: string
   /** 用神倾向（人话一句话，供 AI 参考——只作参详素材） */
   yongshen: string
+  /** 特殊提醒（如「枭神夺食」——课题口径：原局无食神则不夺） */
+  warnings: string[]
 }
 
 // 月令藏干主气对应的十神（由月支五行 vs 日主推算——直接由 tenGods 的 hidden 层月柱主气取）
@@ -86,5 +88,19 @@ export function gejuOf(chart: BaziChartV2): GejuResult {
   } else {
     yongshen = '依调候参考层取用（以月令与日主参详），本层只提示格局走向。'
   }
-  return { main, mainBasis, vice, viceBasis, yongshen }
+
+  // 4. 特殊提醒（课题口径）
+  const warnings: string[] = []
+  // 枭神夺食：偏印为主格 且 原局有食神（无食神则不夺——课题口径）
+  const shiShenCount = countTenGod(chart, ['食神'])
+  if ((mainTenGod === '偏印' || mainTenGod === '正印') && shiShenCount > 0) {
+    warnings.push('枭神夺食：印星旺而原局有食神——福气被夺之象（不会享福、劳碌、对晚辈苛刻）；逢食神被克之流年大运尤需留意')
+  } else if ((mainTenGod === '偏印' || mainTenGod === '正印') && shiShenCount === 0) {
+    warnings.push('印格无食神：原局无食神则不夺（课题口径）——但印重之人表达偏弱，宜主动「泄秀」')
+  }
+  // 财印相战
+  if (caiYiZhan && caiCount >= 4) {
+    warnings.push('财印相战：财星旺攻印星——为利折名之险，逢土旺运尤须守底线')
+  }
+  return { main, mainBasis, vice, viceBasis, yongshen, warnings }
 }
