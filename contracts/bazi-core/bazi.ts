@@ -667,6 +667,18 @@ export function computeChartV2(input: BirthInput): BaziChartV2 {
       ? null
       : computeGong('shen', pillars.month.branchIdx, hourBranchIdx, pillars.year.stemIdx)
 
+  // 胎元：月干进一、月支进三（传统排盘数据，仅文化标记）
+  const fetalStemIdx = (pillars.month.stemIdx + 1) % 10
+  const fetalBranchIdx = (pillars.month.branchIdx + 3) % 12
+  const fetalOrigin = {
+    ganzhi: `${STEMS[fetalStemIdx]}${BRANCHES[fetalBranchIdx]}`,
+    stem: STEMS[fetalStemIdx],
+    branch: BRANCHES[fetalBranchIdx],
+    stemIdx: fetalStemIdx,
+    branchIdx: fetalBranchIdx,
+    nayin: NAYIN[Math.floor(findJiazi(fetalStemIdx, fetalBranchIdx) / 2)],
+  }
+
   return {
     rulesetVersion: RULESET_VERSION,
     input,
@@ -683,6 +695,7 @@ export function computeChartV2(input: BirthInput): BaziChartV2 {
     chenggu,
     dayun,
     liunian,
+    fetalOrigin,
     mingGong,
     shenGong,
   }

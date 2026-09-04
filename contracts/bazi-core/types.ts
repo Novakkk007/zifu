@@ -271,6 +271,16 @@ export interface YongShenAnalysis {
   disclaimer: string
 }
 
+/** 胎元信息（月干进一、月支进三）——传统排盘数据，仅文化标记 */
+export interface FetalOrigin {
+  ganzhi: string
+  stem: string
+  branch: string
+  stemIdx: number
+  branchIdx: number
+  nayin: string
+}
+
 /** 命宫/身宫（单独标注，不混称「六柱」） */
 export interface GongInfo {
   ganzhi: string
@@ -298,6 +308,8 @@ export interface BaziChartV2 {
   chenggu: BoneWeight | null
   dayun: DayunInfo
   liunian: LiunianInfo[]
+  /** 胎元（月干进一、月支进三）——传统排盘数据，仅文化标记 */
+  fetalOrigin: FetalOrigin | null
   /** 时辰未知时为 null */
   mingGong: GongInfo | null
   /** 时辰未知时为 null */

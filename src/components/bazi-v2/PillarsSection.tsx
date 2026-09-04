@@ -141,14 +141,20 @@ export default function PillarsSection({ chart }: { chart: BaziChartV2 }) {
         ))}
       </div>
 
-      {(chart.mingGong || chart.shenGong) && (
+      {(chart.mingGong || chart.shenGong || chart.fetalOrigin) && (
         <div className="mt-5">
           <p className="mb-2.5 text-center text-[11.5px] tracking-[0.16em] text-inkmuted">
-            命宫 / 身宫（传统起法，单列参考，不入四柱）
+            命宫 / 身宫 / 胎元（传统起法，单列参考，不入四柱）
           </p>
-          <div className="mx-auto grid max-w-[520px] grid-cols-2 gap-4">
+          <div className="mx-auto grid max-w-[520px] grid-cols-2 gap-4 sm:grid-cols-3">
             {chart.mingGong && <GongCard title="命宫" gong={chart.mingGong} />}
             {chart.shenGong && <GongCard title="身宫" gong={chart.shenGong} />}
+            {chart.fetalOrigin && (
+              <GongCard
+                title="胎元"
+                gong={{ ganzhi: chart.fetalOrigin.ganzhi, stem: chart.fetalOrigin.stem, branch: chart.fetalOrigin.branch, method: `纳音${chart.fetalOrigin.nayin} · 月干进一、月支进三` }}
+              />
+            )}
           </div>
         </div>
       )}

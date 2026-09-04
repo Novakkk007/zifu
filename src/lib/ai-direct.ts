@@ -111,6 +111,15 @@ export function buildChartSummary(chart: unknown): string {
   } catch {
     /* 调候缺失静默 */
   }
+  // 胎元（文化标记——课题 03 手册：胎元仅作传统排盘数据参考）
+  try {
+    const fo = (chart as never as { fetalOrigin?: { ganzhi: string } | null }).fetalOrigin
+    if (fo?.ganzhi) {
+      lines.push(`胎元：${fo.ganzhi}（传统排盘数据，仅作文化标记参考）`)
+    }
+  } catch {
+    /* 胎元缺失静默 */
+  }
   // 格局定名（课题口径：主格+副格混合取格）
   try {
     const g = gejuOf(chart as never)
