@@ -102,5 +102,26 @@ export function gejuOf(chart: BaziChartV2): GejuResult {
   if (caiYiZhan && caiCount >= 4) {
     warnings.push('财印相战：财星旺攻印星——为利折名之险，逢土旺运尤须守底线')
   }
+  // 三刑检测（寅巳申/丑戌未/子卯）
+  const branches = [chart.pillars.year?.branch, chart.pillars.month?.branch, chart.pillars.day?.branch, chart.pillars.hour?.branch].filter((b): b is string => !!b)
+  const bSet = new Set(branches)
+  if (bSet.has('寅') && bSet.has('巳') && bSet.has('申')) {
+    warnings.push('寅巳申三刑（无恩之刑）：恩中生怨、热心反招是非——帮人先想清「落空担不担得起」；人际、官非多留意')
+  }
+  if (bSet.has('丑') && bSet.has('戌') && bSet.has('未')) {
+    warnings.push('丑戌未三刑（恃势之刑）：人事纠纷、官非之象——遇事走正路、留凭证')
+  }
+  // 双冲检测（同一地支被两处相冲——如日支被双申冲）
+  const CHONG: Record<string, string> = {
+    子: '午', 午: '子', 丑: '未', 未: '丑', 寅: '申', 申: '寅', 卯: '酉', 酉: '卯', 辰: '戌', 戌: '辰', 巳: '亥', 亥: '巳',
+  }
+  for (const b of branches) {
+    const c = CHONG[b]
+    if (!c) continue
+    if (branches.filter((x) => x === c).length >= 2) {
+      warnings.push(`双冲${b}：${b}被双${c}相冲——根基、婚姻宫、身体多动荡，宜动中求稳`)
+      break
+    }
+  }
   return { main, mainBasis, vice, viceBasis, yongshen, warnings }
 }
