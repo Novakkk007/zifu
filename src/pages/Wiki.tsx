@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import PageHero from '@/components/content/PageHero'
 import { usePageMeta } from '@/lib/page-meta'
 import SectionHeading from '@/components/SectionHeading'
+import { PLAIN_TERMS } from '@/data/plain-terms'
 import { GoldButton } from '@/components/Buttons'
 import { BOOKS, BOOK_CATEGORIES } from '@/components/content/books'
 import type { Book, BookCategory } from '@/components/content/books'
@@ -222,6 +223,26 @@ export default function Wiki() {
               ))}
             </AnimatePresence>
           </motion.div>
+        </div>
+      </section>
+
+      {/* S2.5 · 术语·说人话（课题学习沉淀的通俗词条） */}
+      <section className="relative bg-silk pb-28 pt-4">
+        <div className="zf-container">
+          <SectionHeading
+            eyebrow="Plain Terms"
+            title="术语 · 说人话"
+            sub="命理行话，一句人话讲明白——不懂术语，也能看懂自己的盘"
+            className="mb-10"
+          />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {Object.entries(PLAIN_TERMS).map(([term, text]) => (
+              <div key={term} className="rounded-xl border border-golddim/25 bg-silk2 p-5">
+                <p className="font-serif text-[16px] font-bold tracking-[0.12em] text-golddim">{term}</p>
+                <p className="mt-2 text-[13px] leading-[1.9] text-inktext">{text}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
