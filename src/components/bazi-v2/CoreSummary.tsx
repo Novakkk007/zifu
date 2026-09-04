@@ -6,6 +6,7 @@
 import { useMemo } from 'react'
 import type { BaziChartV2 } from '@contracts/bazi-core'
 import { analyzeWithMasters } from '@contracts/engines/masters-rules'
+import { gejuOf } from '@contracts/engines/masters-rules/geju-rules'
 
 const WUXING_LABEL: Record<string, string> = {
   木: '如树木生长，重条达与舒展',
@@ -27,7 +28,13 @@ export default function CoreSummary({ chart, onAiRead }: { chart: BaziChartV2; o
     const g = chart.wuxing.strength.grade
     const ys = chart.yongshen.yongshen
     const masterHint = analyzeWithMasters(chart, 1)[0]
+    const geju = gejuOf(chart)
     const items = [
+      {
+        icon: '📜',
+        title: `格局：${geju.main}${geju.vice ? ` · ${geju.vice}` : ''}`,
+        text: `${geju.mainBasis}${geju.vice ? '；' + geju.viceBasis : ''}。用神倾向：${geju.yongshen}`,
+      },
       {
         icon: '☯',
         title: `你是「${me}」日主`,
