@@ -468,10 +468,10 @@ export default function Home() {
           </p>
           <div className="mt-9 flex flex-col items-center gap-4 sm:flex-row">
             <span className="inline-block">
-              <GoldButton to="/bazi">开始排盘</GoldButton>
+              <GoldButton to="/bazi">找先生看看</GoldButton>
             </span>
             <span className="inline-block">
-              <GhostButton to="/liuyao">六爻起卦</GhostButton>
+              <GhostButton to="/liuyao">遇事不决 · 问一卦</GhostButton>
             </span>
           </div>
         </div>
