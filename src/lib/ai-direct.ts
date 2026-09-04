@@ -57,6 +57,7 @@ export interface DirectChatApiMessage {
 import { ljmContextText } from '@contracts/engines/masters-rules/ljm'
 import { proxyAI } from './ai-proxy'
 import { tiaohouRefinedOf } from '@contracts/engines/masters-rules/tiaohou-refined'
+import { daYunNotes } from '@contracts/engines/masters-rules/dayun-notes'
 
 /**
  * 命盘 → 结构化摘要（直连 prompt 用）。仅含引擎产出的数据，
@@ -120,6 +121,15 @@ export function buildChartSummary(chart: unknown): string {
       lines.push(
         `大运：${cur.ganzhi}（${cur.stemTenGod}），约${cur.startYear}年起（${cur.startAge}-${cur.endAge}岁）`,
       )
+      // 大运人话批注（课题断法：盖头/截脚/天克地冲/身弱不担财/驿马/合绊）
+      try {
+        const notes = daYunNotes(chart as never, cur as never)
+        if (notes.length > 0) {
+          lines.push(`当前大运批注（断法依据，讲到岁运时可用人话表达）：${notes.map((n) => n.tag).join('；')}`)
+        }
+      } catch {
+        /* 批注缺失静默 */
+      }
     }
     const ln = c.liunian?.current
     if (ln) {
