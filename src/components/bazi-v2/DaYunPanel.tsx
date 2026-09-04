@@ -2,7 +2,8 @@ import { useState } from "react";
 import type { BaziChartV2, DayunStep, LiunianInfo } from "@contracts/bazi-core";
 import DirectAiChat from "@/components/DirectAiChat";
 import { buildChartSummary } from "@/components/bazi-v2/api";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
+import { daYunNotes } from '@contracts/engines/masters-rules/dayun-notes'
 
 export function liunianWithinStep(
   liunian: LiunianInfo[],
@@ -172,6 +173,19 @@ export default function DaYunPanel({ chart }: { chart: BaziChartV2 }) {
                         当前大运
                       </span>
                     )}
+                    {daYunNotes(chart, step).slice(0, 1).map((n) => (
+                      <span
+                        key={n.tag}
+                        title={n.detail}
+                        className={cn(
+                          "mt-1.5 max-w-full rounded px-1.5 py-0.5 text-[10px] leading-[1.5]",
+                          n.tone === '慎' ? "bg-[#7a2e2e]/15 text-[#c96a5a]" : "bg-gold/10 text-golddim",
+                          active && "bg-black/20"
+                        )}
+                      >
+                        {n.tag.split('：')[0]}：{n.tag.split('：')[1]?.slice(0, 8)}
+                      </span>
+                    ))}
                   </button>
                 </li>
               );
