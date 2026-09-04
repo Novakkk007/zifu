@@ -57,6 +57,7 @@ export interface DirectChatApiMessage {
 import { ljmContextText } from '@contracts/engines/masters-rules/ljm'
 import { proxyAI } from './ai-proxy'
 import { tiaohouRefinedOf } from '@contracts/engines/masters-rules/tiaohou-refined'
+import { daYunNotes } from '@contracts/engines/masters-rules/dayun-notes'
 
 /**
  * 命盘 → 结构化摘要（直连 prompt 用）。仅含引擎产出的数据，
@@ -120,6 +121,15 @@ export function buildChartSummary(chart: unknown): string {
       lines.push(
         `大运：${cur.ganzhi}（${cur.stemTenGod}），约${cur.startYear}年起（${cur.startAge}-${cur.endAge}岁）`,
       )
+      // 大运人话批注（课题断法：盖头/截脚/天克地冲/身弱不担财/驿马/合绊）
+      try {
+        const notes = daYunNotes(chart as never, cur as never)
+        if (notes.length > 0) {
+          lines.push(`当前大运批注（断法依据，讲到岁运时可用人话表达）：${notes.map((n) => n.tag).join('；')}`)
+        }
+      } catch {
+        /* 批注缺失静默 */
+      }
     }
     const ln = c.liunian?.current
     if (ln) {
@@ -167,7 +177,9 @@ export function buildReadingPrompt(input: { chartSummary: string; persona: strin
     '3. 点穴：命局最关键的一两处，点透；若访客未问具体事，讲述后温和一问（如"你最近更挂心哪一处？"），待他开口再深入指点。\\n' +
     '4. 神煞参详指引：神煞为传统象法，讲到即可、点到为止——柱位传统对应（年柱主早年与祖上、月柱主父母与事业、日柱主自身与婚姻、时柱主子女与晚年）；只作文化象征，不作事件断言。\\n' +
     '4b. 岁运参详指引（讲大运流年的五原则——Kimi K3 研究成果）：①讲周期不讲定数——运势说成天气而非判决（"这十年好比一段山路，前三年坡陡些，往后渐渐平顺——路是定的，走法是你的"）；②讲可为处——再差的流年也指出一两件可做的小事（"明年宜守不宜攻，正好把身体养好、把书读进去"）；③低谷给希望高峰存谦敬——凶处必有出口，吉处不忘提醒；④话不说尽留三分余地（"我看到的只是一个大概，具体还要看你怎么应"）；⑤以人为主体，运是背景不是主角（"命是河床，人是水。运只管风向，舵一直在你手里"）。\\n' +
-    '5. 只做文化层面的参详，不做医疗、投资、法律等具体决策建议。\\n' +
+    '4f. 推导顺序纪律（师门口径 2026-09-04）：严格按「命盘→大运→未来」的顺序讲述，先讲清原局（性格、格局），再讲大运流年，最后落到未来与建议——严禁脱离盘面凭空发散、严禁跳过盘面直接谈未来。\\n' +
+    '4g. 开场结构（「三句好话」原则）：开讲先给三句真诚的肯定（优点、亮点、命局的好），再转入不足与提醒，最后以转机与希望收尾——先扬后抑，扬要具体不空洞，抑要温和给出路。\\n' +
+    '5. 只做文化层面的参详，不做医疗、投资、法律等具体决策建议。\\\\n' +
     '6. 不给出确定性生死病灾断言；不得编造古籍原文引文，只能做通识概述。\\n\\n' +
     '希望法则（无论如何，给希望——不可违背）：\\n' +
     '- 每一处警示之后，必给一条出路或转机；再"凶"的象，也要找到"路"。\\n' +

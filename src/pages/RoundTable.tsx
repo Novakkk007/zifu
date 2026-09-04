@@ -220,6 +220,15 @@ export default function RoundTablePage() {
 
       {result && (
         <div className="mt-12">
+          {/* 先生开场（三句好话——先扬后抑） */}
+          {result.opening && (
+            <div className="mx-auto max-w-2xl rounded-2xl border border-golddim/30 bg-silk2 p-5 text-center shadow-card">
+              <p className="font-serif text-[13px] font-bold tracking-[0.18em] text-golddim">先生开场</p>
+              <p className="mt-2 whitespace-pre-line font-serif text-[14.5px] leading-[2] text-inktext">
+                {result.opening}
+              </p>
+            </div>
+          )}
           {/* 圆桌主视觉：中心命盘 + 7 席环绕（桌面）/ 纵向（移动） */}
           <div className="relative hidden md:block" style={{ height: 620 }}>
             {/* 桌面 */}

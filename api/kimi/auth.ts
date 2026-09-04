@@ -101,6 +101,11 @@ function selfRedirectUri(req: Request): string {
 }
 
 function buildAuthorizeUrl(redirectUri: string, state: string): string {
+  if (!env.kimiAuthUrl) {
+    // 与上方 getJwks 注释同一意图：KIMI_AUTH_URL 未配置时不能靠 new URL 抛裸 TypeError 崩掉进程，
+    // 改为抛出可被 handler 捕获的业务错误（服务端配置错误 → 5xx fail-closed）。
+    throw Errors.internal("KIMI_AUTH_URL is not configured");
+  }
   const url = new URL(`${env.kimiAuthUrl}/api/oauth/authorize`);
   url.searchParams.set("client_id", env.appId);
   url.searchParams.set("redirect_uri", redirectUri);
@@ -109,6 +114,7 @@ function buildAuthorizeUrl(redirectUri: string, state: string): string {
   url.searchParams.set("state", state);
   return url.toString();
 }
+
 
 /**
  * OAuth 起点（GET /api/oauth/begin）：
@@ -119,9 +125,20 @@ export function createOAuthBeginHandler() {
   return async (c: Context) => {
     const redirectUri = selfRedirectUri(c.req.raw);
     const state = randomBytes(32).toString("hex");
+    // 先构建授权 URL：KIMI_AUTH_URL 未配置时抛出业务错误，不入库、不重定向（fail-closed），
+    // 避免 302 到空地址或在未配置第三方登录时留下孤立 state 行。
+    let authorizeUrl: string;
+    try {
+      authorizeUrl = buildAuthorizeUrl(redirectUri, state);
+    } catch {
+      return c.json(
+        { error: "OAuth is not configured on this server" },
+        503,
+      );
+    }
     await createOAuthState(state, redirectUri);
     void pruneExpiredOAuthStates();
-    return c.redirect(buildAuthorizeUrl(redirectUri, state), 302);
+    return c.redirect(authorizeUrl, 302);
   };
 }
 

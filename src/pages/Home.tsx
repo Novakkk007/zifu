@@ -468,10 +468,10 @@ export default function Home() {
           </p>
           <div className="mt-9 flex flex-col items-center gap-4 sm:flex-row">
             <span className="inline-block">
-              <GoldButton to="/bazi">开始排盘</GoldButton>
+              <GoldButton to="/bazi">找先生看看</GoldButton>
             </span>
             <span className="inline-block">
-              <GhostButton to="/liuyao">六爻起卦</GhostButton>
+              <GhostButton to="/liuyao">遇事不决 · 问一卦</GhostButton>
             </span>
           </div>
         </div>
@@ -482,6 +482,36 @@ export default function Home() {
           <span className="text-[12px] tracking-[0.24em] text-silkmuted">
             向下参看
           </span>
+        </div>
+      </section>
+
+      {/* ===== S2.4 · 三问速通（问句代替术语——零门槛第一门） ===== */}
+      <section className="relative bg-deep2 pt-2">
+        <div className="zf-container">
+          <p className="text-center font-sans text-[11px] tracking-[0.3em] text-silkmuted/70">
+            不知道从哪开始？问一句就行——
+          </p>
+          <div className="mt-4 flex flex-wrap items-stretch justify-center gap-3">
+            {[
+              { q: "我今年怎么样？", a: "排八字看运势", to: "/bazi" },
+              { q: "我们合适吗？", a: "缘分合盘", to: "/bazi/hepan" },
+              { q: "心里有事，拿不定主意", a: "问一卦", to: "/liuyao" },
+              { q: "心里乱，想静一静", a: "先生观照", to: "/guanzhao" },
+            ].map((item) => (
+              <Link
+                key={item.q}
+                to={item.to}
+                className="gs-reveal group flex items-center gap-3 rounded-full border border-gold/25 bg-deep/60 px-5 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/70 hover:bg-deep"
+              >
+                <span className="font-serif text-[14.5px] font-medium tracking-[0.06em] text-silktext transition-colors group-hover:text-goldbright">
+                  「{item.q}」
+                </span>
+                <span className="text-[11.5px] tracking-[0.1em] text-golddim">
+                  → {item.a}
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 

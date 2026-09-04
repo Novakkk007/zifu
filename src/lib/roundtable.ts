@@ -97,9 +97,14 @@ ${chartSummary}
 ${question || '无'}
 
 【圆桌议程】
+主持人开场：先用 2-3 句真诚的话肯定这位命主（命局里的好、亮点、值得敬重处）——具体不空洞，像先生迎客；然后请各席发言。
+
 ${seats}
 
 【输出格式】严格按以下结构输出，每席独立成段，不要遗漏任何一席：
+【先生开场】
+（2-3 句真诚肯定命主的话）
+
 【第1席 · 子平格局派】
 （发言）
 
@@ -116,6 +121,8 @@ ${seats}
 }
 
 export interface RoundTableResult {
+  /** 先生开场（三句好话——先扬） */
+  opening: string
   seats: Array<{ school: string; content: string }>
   consensus: string
   closing: string
@@ -129,6 +136,10 @@ export function parseRoundTable(text: string): RoundTableResult {
     const m = b.match(/【第\s*\d+\s*席\s*[·:：]?\s*([^】]+)】\s*([\s\S]*)/)
     if (m && m[2].trim().length > 0) seats.push({ school: m[1].trim(), content: m[2].trim() })
   }
+  // 先生开场（三句好话）
+  let opening = ''
+  const om = text.match(/【先生开场】\s*([\s\S]*?)(?=【第\s*\d+\s*席|【共识与分歧】|$)/)
+  if (om) opening = om[1].trim()
   // 共识与收束
   let consensus = ''
   let closing = ''
@@ -143,7 +154,7 @@ export function parseRoundTable(text: string): RoundTableResult {
       seats.push({ school: n, content: '（此席本次缺席，可追问唤醒）' })
     }
   }
-  return { seats, consensus, closing }
+  return { opening, seats, consensus, closing }
 }
 
 /** 席位追问：对某一席深谈（第二回合） */
@@ -164,7 +175,7 @@ ${prevContent}
 【访客追问】
 ${followUp}
 
-请以本派立场回应追问，200-350 字：先正面回应，再补一句本派视角的延伸；守住分寸，不给必然断言。直接输出内容，不要寒暄。`
+请以本派立场回应追问，200-350 字：先正面回应，再补一句本派视角的延伸；守住分寸，不给必然断言。\n人话要求：虽然以本派立场答，但表达要说人话——不出现十神、用神、干支、神煞等术语（本派的名头与视角可以保留，如「依金口诀立课」），全部换成生活化说法与具体岁数；短句口语；每条判断跟一个落点（可做的事）。直接输出内容，不要寒暄。`
 }
 
 /** 圆桌 AI 调用（先生 key 服务端化：CF Worker 代理） */

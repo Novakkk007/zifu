@@ -8,6 +8,7 @@ import type {
 } from "@/components/liuyao/api";
 import { cn } from "@/lib/utils";
 import { daXiangOf } from "@contracts/engines/liuyao-core";
+import { GUACI_PLAIN } from "@contracts/liuyao/guaci-plain";
 
 const LIUYAO_FOLLOWUPS = [
   "世应与动爻之间，应当怎样理解？",
@@ -85,6 +86,12 @@ function HexagramMeaning({
         <span className="mr-2 text-golddim">大象曰</span>
         {daXiang ?? "此卦大象辞暂未收录。"}
       </blockquote>
+      {GUACI_PLAIN[hex.name] && (
+        <p className="mt-4 rounded-lg bg-gold/8 px-4 py-3 font-sans text-[13.5px] leading-[1.9] text-inktext">
+          <span className="mr-1.5 font-serif font-bold tracking-[0.1em] text-golddim">说人话</span>
+          {GUACI_PLAIN[hex.name]}
+        </p>
+      )}
     </article>
   );
 }
