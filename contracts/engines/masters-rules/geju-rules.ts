@@ -123,5 +123,12 @@ export function gejuOf(chart: BaziChartV2): GejuResult {
       break
     }
   }
+  // 四马全见检测（寅申巳亥全——含胎元）
+  const fo = (chart as never as { fetalOrigin?: { branch: string } | null }).fetalOrigin
+  const allBranches = fo?.branch ? [...branches, fo.branch] : branches
+  const allSet = new Set(allBranches)
+  if (allSet.has('寅') && allSet.has('申') && allSet.has('巳') && allSet.has('亥')) {
+    warnings.push('寅申巳亥四马全见：驿马重重、一生动荡奔动——宜动中求稳，不宜强行落地')
+  }
   return { main, mainBasis, vice, viceBasis, yongshen, warnings }
 }
