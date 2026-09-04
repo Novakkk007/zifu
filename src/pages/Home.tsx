@@ -11,6 +11,7 @@ import { usePageMeta } from "@/lib/page-meta";
 const SiweiDemo = lazy(() => import("@/components/SiweiDemo"));
 const HomeInstallPrompt = lazy(() => import("@/components/HomeInstallPrompt"));
 import CaseInviteCard from '@/components/CaseInviteCard'
+import QuoteRotator from '@/components/QuoteRotator'
 
 const BOOKS = [
   "周易",
@@ -482,6 +483,13 @@ export default function Home() {
           <span className="text-[12px] tracking-[0.24em] text-silkmuted">
             向下参看
           </span>
+        </div>
+      </section>
+
+      {/* S2.3 · 先生的话（金句轮播——人味） */}
+      <section className="relative bg-deep2 py-8">
+        <div className="zf-container">
+          <QuoteRotator />
         </div>
       </section>
 
