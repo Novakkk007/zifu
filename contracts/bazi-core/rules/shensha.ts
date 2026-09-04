@@ -595,7 +595,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
   {
     ruleId: 'shensha.hongyan.v1',
     name: '红艳煞',
-    variant: '日干起例通行版',
+    variant: '日干起例通行版（多取女命）',
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',
@@ -938,7 +938,7 @@ export const SHENSHA_REGISTRY: ShenshaDef[] = [
   {
     ruleId: 'shensha.liuxia.v1',
     name: '流霞',
-    variant: '日干起例通行歌诀版',
+    variant: '日干起例通行歌诀版（多取女命）',
     inputBasis: 'dayStem',
     targetPosition: 'anyBranch',
     multipleHitPolicy: 'list-all',

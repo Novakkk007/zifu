@@ -27,7 +27,7 @@ export const TIAOHOU_REFINED: TiaohouRefinedEntry[][] = [
     { order: '水>火>金', note: '先癸后丁，庚金佐助' }, // 巳
     { order: '水>火>金', note: '先癸后丁，庚金次辅' }, // 午
     { order: '火>金>水', note: '先丁后庚，癸水酌用' }, // 未
-    { order: '火>水', note: '先丙后癸' }, // 申
+    { order: '火>金', note: '先丁后庚——见甲必寻丁（丁火泄秀制杀，甲庚丁为固定组合）' }, // 申
     { order: '火>金', note: '先取丁火制金暖木' }, // 酉
     { order: '火>水', note: '先丙后癸' }, // 戌
     { order: '火>水', note: '先丙后癸' }, // 亥
