@@ -41,6 +41,6 @@ export async function runGuanzhao(
   focus?: string
 ): Promise<{ content: string }> {
   const prompt = buildGuanzhaoPrompt(chartSummary, name, focus)
-  const res = await proxyAI('guanzhao', prompt, { maxTokens: 1600, temperature: 0.85 })
+  const res = await proxyAI('guanzhao', prompt, { maxTokens: 3500, temperature: 0.85 })
   return { content: res.content }
 }

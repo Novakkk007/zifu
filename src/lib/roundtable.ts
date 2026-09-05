@@ -187,7 +187,7 @@ export async function runRoundTable(
   const prompt = buildRoundTablePrompt(chartSummary, question)
   if (!apiKey) {
     // 访客：走 CF Worker（服务端限流+用量统计，前端零 key）
-    const res = await proxyAI('roundtable', prompt, { maxTokens: 4200, temperature: 0.75 })
+    const res = await proxyAI('roundtable', prompt, { maxTokens: 9000, temperature: 0.75 })
     return { source: 'zifu-ai-proxy', model: 'deepseek-chat', content: res.content }
   }
   // 自带 key：直连
