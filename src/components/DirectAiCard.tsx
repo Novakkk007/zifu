@@ -42,6 +42,8 @@ export default function DirectAiCard({
   const [keyDraft, setKeyDraft] = useState(getStoredKey)
   const [savedKey, setSavedKey] = useState(getStoredKey)
   const [busy, setBusy] = useState(false)
+  const [chars, setChars] = useState(0)
+  const [chars, setChars] = useState(0)
   const [result, setResult] = useState<DirectReadingResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -59,17 +61,21 @@ export default function DirectAiCard({
   const run = async () => {
     if (!hasAccess || busy || !chartSummary) return
     setBusy(true)
+    setChars(0)
     setError(null)
     setResult(null)
     try {
-      const r = await aiDirectReading({
-        chartSummary,
-        persona,
-        depth,
-        provider: savedKey.trim() ? provider : 'deepseek',
-        apiKey: savedKey.trim(),
-        readingPrompt,
-      })
+      const r = await aiDirectReading(
+        {
+          chartSummary,
+          persona,
+          depth,
+          provider: savedKey.trim() ? provider : 'deepseek',
+          apiKey: savedKey.trim(),
+          readingPrompt,
+        },
+        (n) => setChars(n)
+      )
       setResult(r)
     } catch (e) {
       setError(e instanceof Error ? e.message : '参详失败，请稍后再试')
@@ -142,7 +148,7 @@ export default function DirectAiCard({
           disabled={!hasAccess || busy || !chartSummary}
           className="rounded-xl border border-gold/60 bg-gold/10 px-8 py-3 text-[14px] font-medium tracking-[0.1em] text-goldbright transition-colors enabled:hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {busy ? 'AI 解读中…' : actionLabel}
+          {busy ? (chars > 0 ? `先生正在写 · 已 ${chars} 字…` : 'AI 解读中…') : actionLabel}
         </button>
       </div>
       {!chartSummary && (

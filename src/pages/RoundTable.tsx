@@ -29,6 +29,7 @@ export default function RoundTablePage() {
   const [gender, setGender] = useState<"male" | "female">("male");
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [result, setResult] = useState<RoundTableResult | null>(null);
   const [mobileExpanded, setMobileExpanded] = useState(false);
@@ -43,9 +44,10 @@ export default function RoundTablePage() {
       const s = buildChartSummary(chart);
       setSummary(s);
       setLoading(true);
+      setProgress(0);
       setError("");
       try {
-        const res = await runRoundTable(s, question || undefined);
+        const res = await runRoundTable(s, question || undefined, undefined, (n) => setProgress(n));
         setResult(parseRoundTable(res.content));
       } catch (e) {
         setError(e instanceof Error ? e.message : "圆桌暂未开席，请稍后再试");
@@ -215,6 +217,11 @@ export default function RoundTablePage() {
             ))}
           </div>
           <p className="mt-4 font-serif text-[15px] tracking-[0.2em] text-golddim">七席入座 · 各执其法</p>
+          <p className="mt-3 text-[12.5px] leading-[1.9] text-inkmuted">
+            {progress > 0
+              ? `先生已落笔 ${progress} 字——好话不怕慢，先沏杯茶。`
+              : '先生正与七席同观一盘，约需一两分钟——好话不怕慢，先沏杯茶。'}
+          </p>
         </div>
       )}
 

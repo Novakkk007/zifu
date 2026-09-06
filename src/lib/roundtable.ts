@@ -177,17 +177,42 @@ ${followUp}
 请以本派立场回应追问，200-350 字：先正面回应，再补一句本派视角的延伸；守住分寸，不给必然断言。\n人话要求：虽然以本派立场答，但表达要说人话——不出现十神、用神、干支、神煞等术语（本派的名头与视角可以保留，如「依金口诀立课」），全部换成生活化说法与具体岁数；短句口语；每条判断跟一个落点（可做的事）。直接输出内容，不要寒暄。`
 }
 
-/** 圆桌 AI 调用（先生 key 服务端化：CF Worker 代理） */
+/** 圆桌 AI 调用（先生 key 服务端化：Pages Functions 流式代理） */
 export async function runRoundTable(
   chartSummary: string,
   question?: string,
-  apiKey?: string
+  apiKey?: string,
+  onProgress?: (chars: number) => void
 ): Promise<{ source: string; model: string; content: string }> {
   const prompt = buildRoundTablePrompt(chartSummary, question)
   if (!apiKey) {
-    // 访客：走 CF Worker（服务端限流+用量统计，前端零 key）
-    const res = await proxyAI('roundtable', prompt, { maxTokens: 9000, temperature: 0.75 })
-    return { source: 'zifu-ai-proxy', model: 'deepseek-chat', content: res.content }
+    // 访客：流式走 Pages Functions（打字机——k2.6 思考约 90-120 秒，边写边看）
+    const base = typeof window !== 'undefined' && window.location.hostname.includes('zifu.pages.dev')
+      ? '' : 'https://zifu.pages.dev'
+    const res = await fetch(`${base}/api/roundtable`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, maxTokens: 9000, stream: true }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error((err as { error?: string }).error ?? '圆桌服务暂不可用')
+    }
+    // 真流式读取：边收边回调进度（思考期无数据=静默等待）
+    const reader = res.body?.getReader()
+    const decoder = new TextDecoder()
+    let text = ''
+    if (reader) {
+      for (;;) {
+        const { done, value } = await reader.read()
+        if (done) break
+        text += decoder.decode(value, { stream: true })
+        onProgress?.(text.length)
+      }
+    } else {
+      text = await res.text()
+    }
+    return { source: 'zifu-pages-api', model: 'kimi-k2.6', content: text }
   }
   // 自带 key：直连
   const cfg = {
