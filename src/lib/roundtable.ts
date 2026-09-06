@@ -186,9 +186,20 @@ export async function runRoundTable(
 ): Promise<{ source: string; model: string; content: string }> {
   const prompt = buildRoundTablePrompt(chartSummary, question)
   if (!apiKey) {
-    // 访客：走 CF Worker（服务端限流+用量统计，前端零 key）
-    const res = await proxyAI('roundtable', prompt, { maxTokens: 9000, temperature: 0.75 })
-    return { source: 'zifu-ai-proxy', model: 'deepseek-chat', content: res.content }
+    // 访客：流式走 Pages Functions（打字机——k2.6 思考约 90-120 秒，边写边看）
+    const base = typeof window !== 'undefined' && window.location.hostname.includes('zifu.pages.dev')
+      ? '' : 'https://zifu.pages.dev'
+    const res = await fetch(`${base}/api/roundtable`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, maxTokens: 9000, stream: true }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error((err as { error?: string }).error ?? '圆桌服务暂不可用')
+    }
+    const text = await res.text()
+    return { source: 'zifu-pages-api', model: 'kimi-k2.6', content: text }
   }
   // 自带 key：直连
   const cfg = {

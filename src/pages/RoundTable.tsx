@@ -215,6 +215,9 @@ export default function RoundTablePage() {
             ))}
           </div>
           <p className="mt-4 font-serif text-[15px] tracking-[0.2em] text-golddim">七席入座 · 各执其法</p>
+          <p className="mt-3 text-[12.5px] leading-[1.9] text-inkmuted">
+            先生正与七席同观一盘，约需一两分钟——好话不怕慢，先沏杯茶。
+          </p>
         </div>
       )}
 
