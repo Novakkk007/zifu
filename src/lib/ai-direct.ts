@@ -302,15 +302,18 @@ export function resolveAiAccess(inputKey: string, inputProvider?: AIProvider): {
 /** 每日内置 key（先生栏目专用）调用限额——防访客消耗失控（先生 key 成本锁死） */
 
 
-export async function aiDirectReading(input: DirectReadingInput): Promise<DirectReadingResult> {
+export async function aiDirectReading(
+  input: DirectReadingInput,
+  onProgress?: (chars: number) => void
+): Promise<DirectReadingResult> {
   if (!input.apiKey) {
-    // 访客：先生 key 服务端化——经 CF Worker（服务端限流+用量统计）
+    // 访客：先生 key 服务端化——经 Pages Functions（流式+限流+用量统计）
     try {
       const prompt =
         input.readingPrompt ??
         buildReadingPrompt({ chartSummary: input.chartSummary, persona: input.persona, depth: input.depth })
-      const res = await proxyAI('guest-reading', prompt, { maxTokens: 9000, temperature: 0.7 })
-      return { source: 'zifu-ai-proxy', model: 'deepseek-chat', content: res.content }
+      const res = await proxyAI('guest-reading', prompt, { maxTokens: 9000, temperature: 0.7 }, onProgress)
+      return { source: 'zifu-ai-proxy', model: 'kimi-k2.6', content: res.content }
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'AI 服务暂不可用'
       return { source: 'zifu-ai-proxy', model: '服务暂不可用', content: msg }

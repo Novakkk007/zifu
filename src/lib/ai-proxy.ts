@@ -10,7 +10,8 @@ export type ProxyKind = 'guest-reading' | 'roundtable' | 'guanzhao'
 export async function proxyAI(
   kind: ProxyKind,
   prompt: string,
-  opts?: { maxTokens?: number; temperature?: number }
+  opts?: { maxTokens?: number; temperature?: number },
+  onProgress?: (chars: number) => void
 ): Promise<{ content: string; tokens?: number }> {
   const res = await fetch(`${AI_PROXY_URL}/${kind}`, {
     method: 'POST',
@@ -38,7 +39,22 @@ export async function proxyAI(
     if (!data.content) throw new Error(data.error ?? 'AI 服务返回为空')
     return { content: data.content, tokens: data.tokens }
   }
-  const text = await res.text()
+  const text = await readStream(res, onProgress)
   if (!text) throw new Error('AI 服务返回为空')
   return { content: text }
+}
+
+/** 流式读取 + 进度回调（k2.6 思考期无数据=静默，开写后逐块回调） */
+async function readStream(res: Response, onProgress?: (chars: number) => void): Promise<string> {
+  const reader = res.body?.getReader()
+  if (!reader) return res.text()
+  const decoder = new TextDecoder()
+  let text = ''
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    text += decoder.decode(value, { stream: true })
+    onProgress?.(text.length)
+  }
+  return text
 }
