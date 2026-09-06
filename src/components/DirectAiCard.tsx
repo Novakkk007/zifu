@@ -43,7 +43,6 @@ export default function DirectAiCard({
   const [savedKey, setSavedKey] = useState(getStoredKey)
   const [busy, setBusy] = useState(false)
   const [chars, setChars] = useState(0)
-  const [chars, setChars] = useState(0)
   const [result, setResult] = useState<DirectReadingResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
