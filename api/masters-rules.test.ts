@@ -28,6 +28,7 @@ function makeChart(over: Partial<BaziChartV2> = {}): BaziChartV2 {
     liunian: [],
     mingGong: null,
     shenGong: null,
+    fetalOrigin: null,
     ...over,
   }
   return base

@@ -5,6 +5,9 @@ import { cn } from '@/lib/utils'
 import PageHero from '@/components/content/PageHero'
 import { usePageMeta } from '@/lib/page-meta'
 import SectionHeading from '@/components/SectionHeading'
+import { PLAIN_TERMS } from '@/data/plain-terms'
+import { yunQiOf, YUNQI_FRAMEWORK } from '@/data/wuyun-liuqi'
+import { CHANGSHENG_JIA, CHANGSHENG_MNEMONIC } from '@/data/changsheng'
 import { GoldButton } from '@/components/Buttons'
 import { BOOKS, BOOK_CATEGORIES } from '@/components/content/books'
 import type { Book, BookCategory } from '@/components/content/books'
@@ -222,6 +225,75 @@ export default function Wiki() {
               ))}
             </AnimatePresence>
           </motion.div>
+        </div>
+      </section>
+
+      {/* S2.5 · 术语·说人话（课题学习沉淀的通俗词条） */}
+      <section className="relative bg-silk pb-28 pt-4">
+        <div className="zf-container">
+          <SectionHeading
+            eyebrow="Plain Terms"
+            title="术语 · 说人话"
+            sub="命理行话，一句人话讲明白——不懂术语，也能看懂自己的盘"
+            className="mb-10"
+          />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {Object.entries(PLAIN_TERMS).map(([term, text]) => (
+              <div key={term} className="rounded-xl border border-golddim/25 bg-silk2 p-5">
+                <p className="font-serif text-[16px] font-bold tracking-[0.12em] text-golddim">{term}</p>
+                <p className="mt-2 text-[13px] leading-[1.9] text-inktext">{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* S2.6 · 五运六气（运气学说通识 + 当年示例） */}
+      <section className="relative bg-silk pb-28 pt-4">
+        <div className="zf-container">
+          <SectionHeading
+            eyebrow="Yun Qi"
+            title="五运六气"
+            sub="古人以干支推年度气候节律与养生方向——中运、司天、在泉三者相参"
+            className="mb-10"
+          />
+          {/* 当年示例 */}
+          {(() => {
+            const nowYear = new Date().getFullYear()
+            const gan = '甲乙丙丁戊己庚辛壬癸'[(nowYear - 4) % 10]
+            const zhi = '子丑寅卯辰巳午未申酉戌亥'[(nowYear - 4) % 12]
+            const r = yunQiOf(`${gan}${zhi}`)
+            return (
+              <div className="mx-auto mb-8 max-w-3xl rounded-xl border border-gold/30 bg-deep p-6 text-center">
+                <p className="font-serif text-[17px] font-bold tracking-[0.12em] text-goldbright">
+                  今年 · {nowYear}（{gan}{zhi}）年运气
+                </p>
+                <p className="mt-3 text-[14px] leading-[2] text-silktext">
+                  中运：{r.zhongYun} ｜ 司天：{r.siTian} ｜ 在泉：{r.zaiQuan}
+                </p>
+                <p className="mt-2 text-[12.5px] leading-[1.9] text-silkmuted">{r.plain}</p>
+              </div>
+            )
+          })()}
+          {/* 框架五卡 */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {YUNQI_FRAMEWORK.map((f) => (
+              <div key={f.title} className="rounded-xl border border-golddim/25 bg-silk2 p-5">
+                <p className="font-serif text-[15px] font-bold tracking-[0.12em] text-golddim">{f.title}</p>
+                <p className="mt-2 text-[13px] leading-[1.9] text-inktext">{f.text}</p>
+              </div>
+            ))}
+            {/* 十二长生速查 */}
+            <div className="rounded-xl border border-golddim/25 bg-silk2 p-5 md:col-span-2">
+              <p className="font-serif text-[15px] font-bold tracking-[0.12em] text-golddim">十二长生速查（甲木例）</p>
+              <p className="mt-2 text-[13px] leading-[2.1] text-inktext">
+                {Object.entries(CHANGSHENG_JIA)
+                  .map(([zhi, stage]) => `${zhi}＝${stage}`)
+                  .join('　')}
+              </p>
+              <p className="mt-2 border-t border-golddim/15 pt-2 text-[12px] leading-[1.9] text-inkmuted">{CHANGSHENG_MNEMONIC}</p>
+            </div>
+          </div>
         </div>
       </section>
 

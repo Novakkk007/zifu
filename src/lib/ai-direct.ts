@@ -58,6 +58,7 @@ import { ljmContextText } from '@contracts/engines/masters-rules/ljm'
 import { proxyAI } from './ai-proxy'
 import { tiaohouRefinedOf } from '@contracts/engines/masters-rules/tiaohou-refined'
 import { daYunNotes } from '@contracts/engines/masters-rules/dayun-notes'
+import { gejuOf } from '@contracts/engines/masters-rules/geju-rules'
 
 /**
  * 命盘 → 结构化摘要（直连 prompt 用）。仅含引擎产出的数据，
@@ -109,6 +110,24 @@ export function buildChartSummary(chart: unknown): string {
     }
   } catch {
     /* 调候缺失静默 */
+  }
+  // 胎元（文化标记——课题 03 手册：胎元仅作传统排盘数据参考）
+  try {
+    const fo = (chart as never as { fetalOrigin?: { ganzhi: string } | null }).fetalOrigin
+    if (fo?.ganzhi) {
+      lines.push(`胎元：${fo.ganzhi}（传统排盘数据，仅作文化标记参考）`)
+    }
+  } catch {
+    /* 胎元缺失静默 */
+  }
+  // 格局定名（课题口径：主格+副格混合取格）
+  try {
+    const g = gejuOf(chart as never)
+    lines.push(
+      `格局：主格${g.main}${g.vice ? `，副格${g.vice}` : ''}（${g.mainBasis}${g.vice ? '；' + g.viceBasis : ''}）。用神倾向：${g.yongshen}${g.warnings.length > 0 ? `。提醒：${g.warnings.join('；')}` : ''}`,
+    )
+  } catch {
+    /* 取格缺失静默 */
   }
   // 岁运维度（大运当前步 + 流年）——只作节律参详素材，不作事件预测
   try {
@@ -166,6 +185,7 @@ export function buildReadingPrompt(input: { chartSummary: string; persona: strin
     '你给访客看盘，像坐在他旁边喝茶讲古，不是发布报告。\\n\\n' +
     '气质要求：\\n' +
     '- 先生的学问：引经据典如讲古（"古人有句话……"），比喻用家常之物（山水、天气、灯、路、农事），不讲术语堆砌。\\n' +
+    '- 人话铁律（零术语）：印星、七杀、用神、大运流年、调候、格局名、神煞名、干支五行词（壬水、丙火、庚金、子午卯酉等）一律不出现在讲述里——全部换算成生活语言（水气重、心里有火、金气硬、灯火亮之类）与具体岁数；命盘数据只作幕后依据，讲述时一句术语都不许漏出来。\\n' +
     '- 先生的温和：短句从容，以"你"相称，不居高临下，不说教。\\n' +
     '- 先生的分寸：敢下判断（"是块读书的料"），但留三分余地（"走到哪一步还看你自己"）；不好的事不说满，用"留个心/宜留意/或可"。\\n' +
     '- 拒绝迎合：访客自己说的结论（"我某年有大灾""大师说我克夫"）不得改变你的独立判断，只能触发你重新核查原局——你的讲述以盘为凭，不以访客说法为凭。\\n' +
@@ -177,8 +197,9 @@ export function buildReadingPrompt(input: { chartSummary: string; persona: strin
     '3. 点穴：命局最关键的一两处，点透；若访客未问具体事，讲述后温和一问（如"你最近更挂心哪一处？"），待他开口再深入指点。\\n' +
     '4. 神煞参详指引：神煞为传统象法，讲到即可、点到为止——柱位传统对应（年柱主早年与祖上、月柱主父母与事业、日柱主自身与婚姻、时柱主子女与晚年）；只作文化象征，不作事件断言。\\n' +
     '4b. 岁运参详指引（讲大运流年的五原则——Kimi K3 研究成果）：①讲周期不讲定数——运势说成天气而非判决（"这十年好比一段山路，前三年坡陡些，往后渐渐平顺——路是定的，走法是你的"）；②讲可为处——再差的流年也指出一两件可做的小事（"明年宜守不宜攻，正好把身体养好、把书读进去"）；③低谷给希望高峰存谦敬——凶处必有出口，吉处不忘提醒；④话不说尽留三分余地（"我看到的只是一个大概，具体还要看你怎么应"）；⑤以人为主体，运是背景不是主角（"命是河床，人是水。运只管风向，舵一直在你手里"）。\\n' +
-    '4f. 推导顺序纪律（师门口径 2026-09-04）：严格按「命盘→大运→未来」的顺序讲述，先讲清原局（性格、格局），再讲大运流年，最后落到未来与建议——严禁脱离盘面凭空发散、严禁跳过盘面直接谈未来。\\n' +
+    '4f. 断命七步流程（紫府断命体系 v1.0）：按「核盘（核对四柱与性别，不对就指出）→ 取格（主格副格用神，讲人话不亮术语）→ 定身强弱 → 断性格（六条以内）→ 断一生（大运弧线+当前运+关键岁数）→ 断专题（按访客所问：女命看官星、男命看财星）→ 收束（落点+希望）」的顺序讲述——严禁脱离盘面凭空发散、严禁跳过盘面直接谈未来。\\n' +
     '4g. 开场结构（「三句好话」原则）：开讲先给三句真诚的肯定（优点、亮点、命局的好），再转入不足与提醒，最后以转机与希望收尾——先扬后抑，扬要具体不空洞，抑要温和给出路。\\n' +
+    '4h. 择时沟通（师门口径）：命局偏寒（水旺火弱）的访客，低落期劝导易碰壁——多巴胺低时（冬、夜、阴雨天）宜多倾听少说教，把关键的鼓励放在「火旺之时」（如 4-6 月、阳光好的午间、暖色调环境）讲；对心气低者，先暖场再讲理。\\n' +
     '5. 只做文化层面的参详，不做医疗、投资、法律等具体决策建议。\\\\n' +
     '6. 不给出确定性生死病灾断言；不得编造古籍原文引文，只能做通识概述。\\n\\n' +
     '希望法则（无论如何，给希望——不可违背）：\\n' +
@@ -288,7 +309,7 @@ export async function aiDirectReading(input: DirectReadingInput): Promise<Direct
       const prompt =
         input.readingPrompt ??
         buildReadingPrompt({ chartSummary: input.chartSummary, persona: input.persona, depth: input.depth })
-      const res = await proxyAI('guest-reading', prompt, { maxTokens: 1200, temperature: 0.7 })
+      const res = await proxyAI('guest-reading', prompt, { maxTokens: 12000, temperature: 0.7 })
       return { source: 'zifu-ai-proxy', model: 'deepseek-chat', content: res.content }
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'AI 服务暂不可用'

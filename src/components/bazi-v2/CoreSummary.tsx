@@ -6,6 +6,7 @@
 import { useMemo } from 'react'
 import type { BaziChartV2 } from '@contracts/bazi-core'
 import { analyzeWithMasters } from '@contracts/engines/masters-rules'
+import { gejuOf } from '@contracts/engines/masters-rules/geju-rules'
 
 const WUXING_LABEL: Record<string, string> = {
   木: '如树木生长，重条达与舒展',
@@ -27,7 +28,18 @@ export default function CoreSummary({ chart, onAiRead }: { chart: BaziChartV2; o
     const g = chart.wuxing.strength.grade
     const ys = chart.yongshen.yongshen
     const masterHint = analyzeWithMasters(chart, 1)[0]
+    const geju = gejuOf(chart)
     const items = [
+      {
+        icon: '📜',
+        title: `格局：${geju.main}${geju.vice ? ` · ${geju.vice}` : ''}`,
+        text: `${geju.mainBasis}${geju.vice ? '；' + geju.viceBasis : ''}。用神倾向：${geju.yongshen}${geju.warnings.length > 0 ? `。提醒：${geju.warnings[0]}` : ''}`,
+        chain: [
+          { step: '取格', detail: geju.mainBasis },
+          ...(geju.vice ? [{ step: '副格', detail: geju.viceBasis }] : []),
+          { step: '用神', detail: geju.yongshen },
+        ],
+      },
       {
         icon: '☯',
         title: `你是「${me}」日主`,
@@ -71,6 +83,21 @@ export default function CoreSummary({ chart, onAiRead }: { chart: BaziChartV2; o
               {item.icon} {item.title}
             </p>
             <p className="mt-2 text-[13.5px] leading-[1.9] text-silktext/90">{item.text}</p>
+            {'chain' in item && item.chain && (
+              <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-golddim/10 pt-3">
+                {item.chain.map((c, i) => (
+                  <span key={c.step} className="flex items-center gap-1.5">
+                    {i > 0 && <span className="text-golddim/60">→</span>}
+                    <span
+                      className="rounded-full border border-golddim/30 bg-deep px-2.5 py-1 text-[10.5px] text-golddim"
+                      title={c.detail}
+                    >
+                      {c.step}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>
