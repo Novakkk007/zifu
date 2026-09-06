@@ -1,8 +1,7 @@
 /**
  * 论命圆桌 · 7 大命理流派同盘论命
- * 输入：命盘摘要 → 生成 7 段式圆桌 prompt → AI（CF Worker 代理/自带 key 直连）→ 解析 7 席发言 + 共识小结
+ * 输入：命盘摘要 → 生成 7 段式圆桌 prompt → AI（Pages Functions 流式/自带 key 直连）→ 解析 7 席发言 + 共识小结
  */
-import { proxyAI } from './ai-proxy'
 
 export interface RoundTableSchool {
   id: string

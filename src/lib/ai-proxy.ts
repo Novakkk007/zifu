@@ -31,7 +31,14 @@ export async function proxyAI(
     }
     throw new Error(msg)
   }
-  const data = (await res.json()) as { content?: string; tokens?: number; error?: string }
-  if (!data.content) throw new Error(data.error ?? 'AI 服务返回为空')
-  return { content: data.content, tokens: data.tokens }
+  // 统一流式响应（text/plain）——k2.6 思考期 60-120s，非流式会被边缘超时
+  const contentType = res.headers.get('Content-Type') ?? ''
+  if (contentType.includes('application/json')) {
+    const data = (await res.json()) as { content?: string; tokens?: number; error?: string }
+    if (!data.content) throw new Error(data.error ?? 'AI 服务返回为空')
+    return { content: data.content, tokens: data.tokens }
+  }
+  const text = await res.text()
+  if (!text) throw new Error('AI 服务返回为空')
+  return { content: text }
 }
