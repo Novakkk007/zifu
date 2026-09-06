@@ -309,7 +309,7 @@ export async function aiDirectReading(input: DirectReadingInput): Promise<Direct
       const prompt =
         input.readingPrompt ??
         buildReadingPrompt({ chartSummary: input.chartSummary, persona: input.persona, depth: input.depth })
-      const res = await proxyAI('guest-reading', prompt, { maxTokens: 12000, temperature: 0.7 })
+      const res = await proxyAI('guest-reading', prompt, { maxTokens: 9000, temperature: 0.7 })
       return { source: 'zifu-ai-proxy', model: 'deepseek-chat', content: res.content }
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'AI 服务暂不可用'
