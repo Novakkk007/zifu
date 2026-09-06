@@ -39,7 +39,7 @@ export default function LingqianReading({
       charged = true
       setBalance(r.balance ?? null)
       const prompt = buildReadingPrompt({ chartSummary, persona, depth })
-      const res = await proxyAI('guest-reading', prompt, { maxTokens: 12000, temperature: 0.72 })
+      const res = await proxyAI('guest-reading', prompt, { maxTokens: 9000, temperature: 0.72 })
       setContent(res.content)
     } catch (e) {
       setError(e instanceof Error ? e.message : '详批服务暂不可用')

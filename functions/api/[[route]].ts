@@ -116,7 +116,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
           { role: 'system', content: SYSTEM[kind] },
           { role: 'user', content: prompt },
         ],
-        max_tokens: body.maxTokens ?? 12000,
+        max_tokens: body.maxTokens ?? 9000,
         // kimi-k2.6 思考模型不支持 temperature 参数——不传
       }),
     })
