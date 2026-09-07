@@ -12,6 +12,7 @@ const YAN_MENU: { group: '典籍 · 藏' | '术数 · 藏'; items: { to: string;
     items: [
       { to: '/wiki', label: '藏经阁（含五运六气）' },
       { to: '/daily', label: '今日盘' },
+      { to: '/toolkit', label: '百宝袋' },
       { to: '/column', label: '先生专栏' },
     ],
   },
