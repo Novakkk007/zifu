@@ -80,7 +80,7 @@ export function buildRoundTablePrompt(chartSummary: string, question = ''): stri
 - 方法：${s.method}
 - 口吻：${s.tone}
 - 论命抓手：${s.focus.join('、')}
-请以本派立场，针对此命盘发言 150-220 字：先点本派最看重的一两处，再给一句本派式的判断。`
+请以本派立场，针对此命盘发言 120-180 字：先点本派最看重的一处，再给一句本派式的判断（或然表述，不把话说死）。`
   ).join('\n\n')
 
   return `你是紫府论命圆桌的主持人。今日圆桌共七席，各执一派法脉，同观一盘命局。你以先生口吻主持，既尊重各家，又守住分寸：不给恐吓之词，不给必然断言，只把各家视角如实呈现，最后留一句温和的收束。
@@ -192,13 +192,13 @@ export async function runRoundTable(
     const res = await fetch(`${base}/api/roundtable`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, maxTokens: 9000, stream: true }),
+      body: JSON.stringify({ prompt, maxTokens: 6500, stream: true }),
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
       throw new Error((err as { error?: string }).error ?? '圆桌服务暂不可用')
     }
-    // 真流式读取：边收边回调进度（思考期无数据=静默等待）
+    // 真流式读取：边收边回调进度（思考期 reasoning 心跳剥离，不计正文）
     const reader = res.body?.getReader()
     const decoder = new TextDecoder()
     let text = ''
@@ -207,6 +207,8 @@ export async function runRoundTable(
         const { done, value } = await reader.read()
         if (done) break
         text += decoder.decode(value, { stream: true })
+        text = // eslint-disable-next-line no-control-regex
+    text.replace(new RegExp('\\u0000R\\d+', 'g'), '')
         onProgress?.(text.length)
       }
     } else {

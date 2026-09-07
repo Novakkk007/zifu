@@ -321,6 +321,40 @@ export default function Bazi() {
         }}
       />
 
+      {/* S4.5 · 圆桌论命入口（七席同观此盘） */}
+      {chart && (
+        <section className="bg-deep2 pt-4 pb-10">
+        <div className="zf-container max-w-[880px]">
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-gold/25 bg-gold/[0.06] px-6 py-7 text-center">
+            <p className="font-serif text-[19px] tracking-[0.16em] text-goldbright">
+              七席法脉 · 同观此盘
+            </p>
+            <p className="max-w-[540px] text-[12.5px] leading-[1.9] text-silkmuted">
+              子平格局、三命通会、神峰通考、渊海子平、盲派、千里命稿、金口诀——
+              各持其法，各言其见；共识与分歧，一并呈上。
+            </p>
+            <button
+              onClick={() => {
+                const q = new URLSearchParams({
+                  calendar: chart.input.calendar,
+                  gender: chart.input.gender,
+                  year: String(chart.input.year),
+                  month: String(chart.input.month),
+                  day: String(chart.input.day),
+                  hour: String(chart.input.hour ?? 12),
+                  minute: String(chart.input.minute ?? 0),
+                })
+                window.location.href = `/roundtable?${q.toString()}`
+              }}
+              className="mt-2 rounded-full border border-gold/60 bg-gold/15 px-8 py-3 text-[14px] tracking-[0.12em] text-goldbright transition-colors hover:bg-gold/25"
+            >
+              开圆桌 · 论此盘
+            </button>
+          </div>
+        </div>
+      </section>
+      )}
+
       {/* S5 · AI 详批（深色） */}
       <section ref={detailRef} className="bg-deep2 py-28">
         <AiReadingSection
