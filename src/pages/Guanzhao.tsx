@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useEngine } from "@/hooks/useEngine";
 import { paipanBazi } from "@/engines/client/bazi";
 import { buildChartSummary } from "@/lib/ai-direct";
@@ -12,13 +13,20 @@ export default function GuanzhaoPage() {
     "相由心生，AI 观照参详——以生辰为底色，如月照水，映照当下的你。不下断语，不预言祸福。"
   );
 
+  // URL 带盘（八字页「去观照」跳入）——初始值直接读取
+  const urlInit = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search)
+    : new URLSearchParams()
+  const urlYear = urlInit.get('year')
   const [name, setName] = useState("");
   const [focus, setFocus] = useState("");
-  const [year, setYear] = useState("1990");
-  const [month, setMonth] = useState("6");
-  const [day, setDay] = useState("15");
-  const [hour, setHour] = useState("12");
-  const [gender, setGender] = useState<"male" | "female">("male");
+  const [year, setYear] = useState(urlYear ?? "1990");
+  const [month, setMonth] = useState(urlInit.get('month') ?? "6");
+  const [day, setDay] = useState(urlInit.get('day') ?? "15");
+  const [hour, setHour] = useState(urlInit.get('hour') ?? "12");
+  const [gender, setGender] = useState<"male" | "female">(
+    urlInit.get('gender') === 'female' ? "female" : "male"
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [content, setContent] = useState("");
@@ -67,21 +75,64 @@ export default function GuanzhaoPage() {
     paipan.mutate(payload);
   };
 
-  return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <p className="text-center font-serif text-[26px] font-bold tracking-[0.2em] text-golddim">
-        观 照 见 性
-      </p>
-      <p className="mt-2 text-center text-[13px] leading-relaxed text-inkmuted">
-        相由心生。以生辰为底色，如月照水，映照当下的你——
-        <br />
-        不下断语，不预言祸福，只照见那珍贵的、你自己未必看见的部分。
-      </p>
+  // 从八字页「去观照」跳入：URL 带盘自动排盘（仅首次）
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search)
+    const y = sp.get('year')
+    if (!y) return
+    const mo = Number(sp.get('month')), d = Number(sp.get('day'))
+    if (!mo || !d) return
+    paipan.mutate({
+      calendar: sp.get('calendar') === 'lunar' ? 'lunar' : 'solar',
+      year: Number(y), month: mo, day: d,
+      hour: Number(sp.get('hour') ?? 12), minute: Number(sp.get('minute') ?? 0),
+      gender: sp.get('gender') === 'female' ? 'female' : 'male',
+      useTrueSolarTime: false, dayRollover: 'zichu', title: '观照见性',
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-      <form
-        onSubmit={submit}
-        className="mx-auto mt-8 max-w-xl rounded-2xl border border-golddim/25 bg-silk2 p-6 shadow-card"
-      >
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-deep2">
+      {/* 夜穹呼吸光 */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(520px 320px at 20% 10%, rgba(201,164,92,0.09), transparent 65%)," +
+            "radial-gradient(560px 360px at 82% 86%, rgba(122,88,180,0.11), transparent 65%)",
+          animation: "zifu-breathe 9s ease-in-out infinite",
+        }}
+      />
+
+      <div className="relative z-10 mx-auto max-w-3xl px-4 py-12">
+        <motion.p
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center font-serif text-[28px] font-bold tracking-[0.26em] text-goldbright"
+        >
+          观 照
+        </motion.p>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.9, delay: 0.25 }}
+          className="mt-3 text-center text-[13px] leading-[2] tracking-[0.08em] text-silkmuted"
+        >
+          照见 · 照亮 · 照护
+          <br />
+          看盘里困住你的循环，点一盏灯——不下断语，不预言祸福。
+        </motion.p>
+
+        <motion.form
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.45 }}
+          onSubmit={submit}
+          className="mx-auto mt-10 max-w-xl rounded-2xl border border-golddim/30 bg-silk2/70 p-6 shadow-[0_0_40px_rgba(201,164,92,0.07)] backdrop-blur-sm"
+        >
         <div className="grid grid-cols-2 gap-4">
           <label className="block">
             <span className="text-[11.5px] tracking-[0.14em] text-inkmuted">称谓（可选）</span>
@@ -148,26 +199,39 @@ export default function GuanzhaoPage() {
           {loading ? "点灯中……" : "照 见"}
         </button>
         {error && <p className="mt-3 text-center text-[12.5px] text-red-400">{error}</p>}
-      </form>
+        </motion.form>
 
-      {loading && (
-        <div className="mt-12 text-center">
-          <p className="animate-pulse font-serif text-[15px] tracking-[0.2em] text-golddim">
-            灯已点起 · 月在水中
-          </p>
-        </div>
-      )}
+        {loading && (
+          <div className="mt-12 text-center">
+            <p className="animate-pulse font-serif text-[15px] tracking-[0.2em] text-golddim">
+              灯已点起 · 月在水中
+            </p>
+          </div>
+        )}
 
-      {content && (
-        <div className="mt-10 rounded-2xl border border-golddim/25 bg-silk2 p-8 shadow-card">
-          <p className="whitespace-pre-line text-center font-serif text-[15.5px] leading-[2.1] text-inktext">
-            {content}
-          </p>
-          <p className="mt-6 text-center text-[11px] tracking-[0.2em] text-inkmuted">
-            —— 先生观照 · 相由心生
-          </p>
-        </div>
-      )}
+        {content && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9 }}
+            className="mt-10 rounded-2xl border border-gold/25 bg-silk2/60 p-8 shadow-[0_0_44px_rgba(201,164,92,0.1)] backdrop-blur-sm"
+          >
+            <p className="whitespace-pre-line text-center font-serif text-[15.5px] leading-[2.1] text-silktext">
+              {content}
+            </p>
+            <p className="mt-6 text-center text-[11px] tracking-[0.2em] text-inkmuted">
+              —— 先生观照 · 相由心生
+            </p>
+          </motion.div>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes zifu-breathe {
+          0%, 100% { opacity: 0.55; }
+          50% { opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

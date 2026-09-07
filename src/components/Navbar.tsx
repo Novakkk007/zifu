@@ -5,37 +5,31 @@ import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import BrandLogo from '@/components/BrandLogo'
 
-/** 术数推演菜单：三才分组（天·地·人） */
-const YAN_MENU: { group: '天 · 时运' | '地 · 空间' | '人 · 命理'; items: { to: string; label: string }[] }[] = [
+/** 藏 · 收纳低频（三层·阁——不占门面，深处寻访） */
+const YAN_MENU: { group: '典籍 · 藏' | '术数 · 藏'; items: { to: string; label: string }[] }[] = [
   {
-    group: '人 · 命理',
+    group: '典籍 · 藏',
     items: [
-      { to: '/bazi', label: '八字排盘' },
-      { to: '/bazi/hepan', label: '八字合盘' },
-      { to: '/liuyao', label: '六爻起卦' },
-      { to: '/ziwei', label: '紫微斗数' },
-      { to: '/qizheng', label: '七政四余' },
-      { to: '/daliuren', label: '大六壬' },
+      { to: '/wiki', label: '藏经阁（含五运六气）' },
+      { to: '/daily', label: '今日盘' },
       { to: '/column', label: '先生专栏' },
     ],
   },
   {
-    group: '天 · 时运',
+    group: '术数 · 藏',
     items: [
-      { to: '/daily', label: '每日时令' },
-      { to: '/daily', label: '安寝时令' },
+      { to: '/ziwei', label: '紫微斗数' },
+      { to: '/daliuren', label: '大六壬' },
       { to: '/qimen', label: '奇门遁甲' },
+      { to: '/bazi/hepan', label: '八字合盘' },
+      { to: '/scenario/fengshui', label: '风水参详' },
     ],
-  },
-  {
-    group: '地 · 空间',
-    items: [{ to: '/scenario/fengshui', label: '阳宅风水参详' }],
   },
 ]
 
 const NAV_LINKS = [
-  { to: '/toolkit', label: '百宝袋' },
-  { to: '/daily', label: '每日时令' },
+  { to: '/liuyao', label: '爻一爻' },
+  { to: '/bazi', label: '排盘' },
   { to: '/wiki', label: '藏经阁' },
 ]
 
@@ -131,7 +125,7 @@ export default function Navbar() {
                 }
               }}
             >
-              术数推演
+              藏
               <ChevronDown
                 className={cn('h-3.5 w-3.5 transition-transform', dropOpen && 'rotate-180')}
               />
@@ -140,7 +134,7 @@ export default function Navbar() {
                 <div className="absolute left-1/2 top-full w-40 -translate-x-1/2 animate-in fade-in slide-in-from-top-2 pt-3 duration-150">
                   <div
                     role="menu"
-                    aria-label="术数推演"
+                    aria-label="藏"
                     className="overflow-hidden rounded-xl border border-gold/15 bg-silk shadow-card"
                     onKeyDown={(e) => {
                       // 方向键在菜单项间移动
@@ -258,9 +252,10 @@ export default function Navbar() {
             <nav className="flex flex-1 flex-col items-center gap-1 overflow-y-auto px-8 pb-16 pt-4">
               <div className="my-auto flex w-full flex-col items-center gap-1">
               {[
-                { to: '/hecan', label: '✦ 三术合参' },
-                ...YAN_MENU.flatMap((g) => g.items),
                 ...NAV_LINKS,
+                { to: '/roundtable', label: '论命圆桌' },
+                { to: '/guanzhao', label: '观照' },
+                ...YAN_MENU.flatMap((g) => g.items),
                 { to: '/talks', label: '主创说' },
                 ...(isAuthenticated
                   ? [
