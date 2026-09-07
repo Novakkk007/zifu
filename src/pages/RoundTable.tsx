@@ -12,6 +12,7 @@ import {
   type RoundTableResult,
 } from "@/lib/roundtable";
 import { usePageMeta } from "@/lib/page-meta";
+import RoundTableStage from "@/components/RoundTableStage";
 
 const SEAT_ANGLES = [270, 322, 14, 66, 118, 170, 222]; // 环形均布（从正上起）
 
@@ -41,6 +42,8 @@ export default function RoundTablePage() {
   };
   const [error, setError] = useState("");
   const [result, setResult] = useState<RoundTableResult | null>(null);
+  // 视图：stage=动态演出 / text=静态全文
+  const [viewMode, setViewMode] = useState<'stage' | 'text'>('stage');
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const [summary, setSummary] = useState("");
   // 追问状态：{seatIndex, q, reply, busy}
@@ -81,6 +84,7 @@ export default function RoundTablePage() {
       try {
         const res = await runRoundTable(s, question || undefined, undefined, throttledProgress);
         setResult(parseRoundTable(res.content));
+        setViewMode('stage');
       } catch (e) {
         setError(e instanceof Error ? e.message : "圆桌暂未开席，请稍后再试");
       } finally {
@@ -259,6 +263,34 @@ export default function RoundTablePage() {
 
       {result && (
         <div className="mt-12">
+          {/* 视图切换条 */}
+          <div className="mb-4 flex items-center justify-center gap-3">
+            <button
+              onClick={() => setViewMode('stage')}
+              className={`rounded-full border px-4 py-1.5 text-[12px] tracking-[0.1em] transition-colors ${
+                viewMode === 'stage' ? 'border-gold/60 bg-gold/10 text-goldbright' : 'border-golddim/25 text-inkmuted hover:text-golddim'
+              }`}
+            >
+              演出重演
+            </button>
+            <button
+              onClick={() => setViewMode('text')}
+              className={`rounded-full border px-4 py-1.5 text-[12px] tracking-[0.1em] transition-colors ${
+                viewMode === 'text' ? 'border-gold/60 bg-gold/10 text-goldbright' : 'border-golddim/25 text-inkmuted hover:text-golddim'
+              }`}
+            >
+              查看全文
+            </button>
+          </div>
+
+          {viewMode === 'stage' ? (
+            <RoundTableStage
+              result={result}
+              onFinish={() => setViewMode('text')}
+              onSkip={() => setViewMode('text')}
+            />
+          ) : (
+          <>
           {/* 先生开场（三句好话——先扬后抑） */}
           {result.opening && (
             <div className="mx-auto max-w-2xl rounded-2xl border border-golddim/30 bg-silk2 p-5 text-center shadow-card">
@@ -432,6 +464,8 @@ export default function RoundTablePage() {
           <p className="mt-6 text-center text-[11px] text-inkmuted">
             圆桌各家所论皆传统命理文化的观察视角，仅供文化研习，不作任何决策建议。
           </p>
+          </>
+          )}
         </div>
       )}
     </div>
