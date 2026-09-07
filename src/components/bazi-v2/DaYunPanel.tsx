@@ -3,7 +3,8 @@ import type { BaziChartV2, DayunStep, LiunianInfo } from "@contracts/bazi-core";
 import DirectAiChat from "@/components/DirectAiChat";
 import { buildChartSummary } from "@/components/bazi-v2/api";
 import { cn } from "@/lib/utils"
-import { daYunNotes } from '@contracts/engines/masters-rules/dayun-notes'
+import { daYunNotes, daYunBrief } from '@contracts/engines/masters-rules/dayun-notes'
+import { liuNianBrief } from '@contracts/engines/masters-rules/liunian-notes'
 
 export function liunianWithinStep(
   liunian: LiunianInfo[],
@@ -200,6 +201,9 @@ export default function DaYunPanel({ chart }: { chart: BaziChartV2 }) {
             <p className="font-serif text-[15px] font-bold text-inktext">
               {selected.ganzhi}运 · {selected.startYear}–{selected.endYear}
             </p>
+            <p className="mt-2 text-[12.5px] leading-[1.9] text-inkmuted">
+              {daYunBrief(chart, { ganzhi: selected.ganzhi, startAge: selected.startAge, endAge: selected.endAge })}
+            </p>
             <div
               className="mt-3 flex max-w-full gap-2 overflow-x-auto pb-1"
               aria-label="本步大运所辖流年"
@@ -225,6 +229,33 @@ export default function DaYunPanel({ chart }: { chart: BaziChartV2 }) {
                 </span>
               )}
             </div>
+            {/* 流年简批（每个流年一句人话） */}
+            {selectedLiunian.length > 0 && (
+              <ul className="mt-3 max-h-56 space-y-1.5 overflow-y-auto pr-1">
+                {selectedLiunian.map(year => {
+                  const b = liuNianBrief(
+                    chart,
+                    { ganzhi: selected.ganzhi },
+                    { ganzhi: year.ganzhi, year: year.year },
+                    year.year - (chart.input.year ?? year.year) + 1
+                  )
+                  return (
+                    <li
+                      key={year.year}
+                      className={cn(
+                        "flex items-start gap-2 text-[11.5px] leading-[1.7]",
+                        year.isCurrent ? "text-golddim" : "text-inkmuted"
+                      )}
+                    >
+                      <span className="mt-[3px] shrink-0 font-serif text-[10.5px] tracking-[0.06em] text-inkfaint">
+                        {year.ganzhi}
+                      </span>
+                      <span>{b.brief || '按部就班即是福。'}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
           </div>
 
           <DirectAiChat

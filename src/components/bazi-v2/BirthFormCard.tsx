@@ -316,6 +316,15 @@ export default function BirthFormCard({ value, onChange, loading, error, onSubmi
               const hit = CITIES.find((c) => c.name === v)
               if (hit) onChange({ ...value, city: hit.name, ianaTimezone: suggestTimezone(hit.name) })
             }}
+            onBlur={(e) => {
+              // datalist 点选在部分浏览器不触发 onChange——失焦兜底
+              const v = e.target.value.trim()
+              if (v === '自定义经度…') return
+              if (v && v !== value.city) {
+                const hit = CITIES.find((c) => c.name === v)
+                if (hit) onChange({ ...value, city: hit.name, ianaTimezone: suggestTimezone(hit.name) })
+              }
+            }}
             placeholder="输入城市名搜索，如：杭州、喀什、三亚"
             className="w-full rounded-lg border border-golddim/25 bg-silk px-3 py-2.5 text-[13.5px] text-inktext outline-none transition focus:border-golddim"
           />

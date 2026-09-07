@@ -106,3 +106,31 @@ export function daYunNotes(chart: BaziChartV2, step: { ganzhi: string }): DaYunN
   }
   return notes.slice(0, 3)
 }
+
+/** 大运一句话简批（2026-09-07：标签之上、详批之下——一句人话+岁数+比喻+落点） */
+export function daYunBrief(
+  chart: BaziChartV2,
+  step: { ganzhi: string; stemTenGod?: string; startAge?: number; endAge?: number }
+): string {
+  const notes = daYunNotes(chart, step)
+  const stem = step.ganzhi[0] ?? ''
+  const branch = step.ganzhi[1] ?? ''
+  const swx = STEM_WX[STEMS.indexOf(stem)] ?? 2
+  const bwx = BRANCH_WX[BRANCHES.indexOf(branch)] ?? 2
+  const wxTone: Record<number, string> = {
+    0: '抽枝发芽的十年，适合学新本事、开新局',
+    1: '热热闹闹的十年，人气旺，适合亮相、出头',
+    2: '稳稳当当的十年，适合扎根、置业、攒家底',
+    3: '结实硬朗的十年，适合硬啃骨头、立规矩',
+    4: '流动灵活的十年，适合走动、换轨、见世面',
+  }
+  const ageStr = step.startAge !== undefined && step.endAge !== undefined ? `（${step.startAge}–${step.endAge} 岁）` : ''
+  const base = wxTone[bwx] ?? wxTone[swx]
+  if (notes.length === 0) {
+    return `这十年${ageStr}，${base}。`
+  }
+  const main = notes[0]
+  const adv = main.tone === '慎' ? '宜稳不宜冲，大事缓半步。' : main.tone === '吉' ? '宜顺势而为。' : '平常心即是上策。'
+  const head = main.tag.split('：')[1]?.slice(0, 12) ?? main.tag
+  return `这十年${ageStr}，${base}——${head}，${adv}`
+}
