@@ -1,64 +1,50 @@
 /**
- * 紫府 AI 代理（Pages Functions 版——挂 zifu.pages.dev/api/*，国内稳定可达）
- * workers.dev 域名被 GFW 封锁波动（2026-09-01 事故：圆桌/观照/详批全断）
- * 逻辑同 zifu-ai-proxy Worker；先生 key 存 Pages secret（前端零 key）
- * 端点：POST /api/guest-reading | /api/roundtable | /api/guanzhao；GET /api/stats
+ * Pages Functions AI 代理（zifu.pages.dev/api/*）
+ * 上游 Kimi k2.6（思考模式）。统一流式转发：reasoning 作心跳（防 CF 100s 524）、content 透传。
  */
 const KIMI_URL = 'https://api.moonshot.cn/v1/chat/completions'
 const MODEL = 'kimi-k2.6'
 
-const SYSTEM: Record<string, string> = {
-  'guest-reading':
-    '你是紫府的先生：通晓命理典籍，温和如春风，有分寸，无论如何给访客希望。逐句引经，法度示人。',
-  roundtable:
-    '你是紫府论命圆桌的主持人，通晓各家命理，温厚克制，绝不恐吓、绝不断言必然，始终给人希望与准备。',
-  guanzhao:
-    '你是紫府的先生：通晓命理典籍，温和如春风，有分寸。今夜只做观照，不下断语，不预言祸福。',
-}
-
 interface Env {
-  DEEPSEEK_XIANSHENG_KEY?: string
   KIMI_MR_KEY?: string
-  AI_PROXY_KV?: KVNamespace
+  DEEPSEEK_XIANSHENG_KEY?: string
+  AI_PROXY_KV?: {
+    get: (k: string) => Promise<string | null>
+    put: (k: string, v: string, opts?: { expirationTtl?: number }) => Promise<void>
+  }
 }
 
-function dayKey(): string {
-  return new Date().toISOString().slice(0, 10)
+const cors = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+}
+
+const SYSTEM: Record<string, string> = {
+  'guest-reading': '你是紫府的先生，通晓命理典籍，温和如春风，有分寸，可托付。人话铁律：零术语、结论先行、打比方、给岁数、短句口语。',
+  guanzhao: '你是紫府观照的先生，以照见照亮照护三照之心看盘，温厚克制，绝不断言必然，始终给人希望与准备。',
+  roundtable: '你是紫府论命圆桌的主持人，通晓各家命理，温厚克制，绝不恐吓、绝不断言必然，始终给人希望与准备。',
 }
 
 export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, env } = context
-  const url = new URL(request.url)
-  const cors = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: cors })
   }
-  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors })
-
-  // GET /api/stats
-  if (request.method === 'GET' && url.pathname === '/api/stats') {
-    const d = dayKey()
-    const g = Number((await env.AI_PROXY_KV?.get(`global:${d}`)) ?? 0)
-    const tk = Number((await env.AI_PROXY_KV?.get(`tokens:${d}`)) ?? 0)
-    return new Response(JSON.stringify({ date: d, calls: g, limit: 100, tokens: tk }), {
+  if (request.method !== 'POST') {
+    return new Response(JSON.stringify({ error: '仅支持 POST' }), {
+      status: 405,
       headers: { ...cors, 'Content-Type': 'application/json' },
     })
   }
-  if (request.method !== 'POST') return new Response('not found', { status: 404 })
+  const url = new URL(request.url)
+  const kind = url.pathname.split('/').pop() ?? ''
+  const clientIp = (request.headers.get('cf-connecting-ip') ?? 'unknown').toString()
 
-  // POST /api/<kind>
-  const kind = url.pathname.replace('/api/', '').split('/')[0] as
-    | 'guest-reading'
-    | 'roundtable'
-    | 'guanzhao'
-  if (!SYSTEM[kind]) return new Response('not found', { status: 404 })
-
-  const ip = request.headers.get('CF-Connecting-IP') ?? request.headers.get('X-Forwarded-For')?.split(',')[0] ?? 'unknown'
-  // 限流：单 IP 10/日 + 全局 100/日
-  const d = dayKey()
-  const ipKey = `ip:${d}:${ip}`
-  const gKey = `global:${d}`
+  // 限额：单 IP 10 次/日，全局 100 次/日
+  const today = new Date().toISOString().slice(0, 10)
+  const ipKey = `ip:${today}:${clientIp}`
+  const gKey = `g:${today}`
   if (env.AI_PROXY_KV) {
     const ipCount = Number((await env.AI_PROXY_KV.get(ipKey)) ?? 0)
     const gCount = Number((await env.AI_PROXY_KV.get(gKey)) ?? 0)
@@ -78,7 +64,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     await env.AI_PROXY_KV.put(gKey, String(gCount + 1), { expirationTtl: 86400 })
   }
 
-  let body: { prompt?: string; maxTokens?: number; temperature?: number }
+  let body: { prompt?: string; maxTokens?: number }
   try {
     body = await request.json()
   } catch {
@@ -88,7 +74,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     })
   }
   const prompt = body.prompt ?? ''
-  if (!prompt || prompt.length > 8000) {
+  if (!prompt || prompt.length > 16000) {
     return new Response(JSON.stringify({ error: '内容长度不合法' }), {
       status: 400,
       headers: { ...cors, 'Content-Type': 'application/json' },
@@ -113,11 +99,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       body: JSON.stringify({
         model: MODEL,
         messages: [
-          { role: 'system', content: SYSTEM[kind] },
+          { role: 'system', content: SYSTEM[kind] ?? SYSTEM['guest-reading'] },
           { role: 'user', content: prompt },
         ],
         max_tokens: body.maxTokens ?? 9000,
-        // kimi-k2.6 思考模型不支持 temperature 参数——不传
+        stream: true,
+        // k2.6 思考模式：不传 temperature
       }),
     })
     if (!upstream.ok) {
@@ -127,18 +114,48 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         headers: { ...cors, 'Content-Type': 'application/json' },
       })
     }
-    const data = (await upstream.json()) as {
-      choices?: Array<{ message?: { content?: string } }>
-      usage?: { total_tokens?: number }
+    if (!upstream.body) {
+      return new Response(JSON.stringify({ error: '上游响应为空' }), {
+        status: 502,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      })
     }
-    const content = data.choices?.[0]?.message?.content ?? ''
-    const tokens = data.usage?.total_tokens ?? 0
-    if (env.AI_PROXY_KV) {
-      const tk = Number((await env.AI_PROXY_KV.get(`tokens:${d}`)) ?? 0)
-      await env.AI_PROXY_KV.put(`tokens:${d}`, String(tk + tokens), { expirationTtl: 86400 })
-    }
-    return new Response(JSON.stringify({ content, source: 'zifu-pages-api', model: MODEL, tokens }), {
-      headers: { ...cors, 'Content-Type': 'application/json' },
+
+    // 统一流式：reasoning_content 打 \u0000 前缀作心跳，content 原样透传
+    const encoder = new TextEncoder()
+    const reader = upstream.body.getReader()
+    const stream = new ReadableStream({
+      async pull(controller) {
+        const { done, value } = await reader.read()
+        if (done) {
+          controller.close()
+          return
+        }
+        const chunk = new TextDecoder().decode(value)
+        for (const line of chunk.split('\n')) {
+          if (!line.startsWith('data:')) continue
+          const payload = line.slice(5).trim()
+          if (!payload || payload === '[DONE]') continue
+          try {
+            const j = JSON.parse(payload) as {
+              choices?: Array<{ delta?: { content?: string; reasoning_content?: string } }>
+            }
+            const delta = j.choices?.[0]?.delta
+            if (delta?.reasoning_content) {
+              // 心跳：\u0000R<长度>——前端忽略内容但据此显示「推演中」
+              controller.enqueue(encoder.encode(`\u0000R${delta.reasoning_content.length}`))
+            }
+            if (delta?.content) {
+              controller.enqueue(encoder.encode(delta.content))
+            }
+          } catch {
+            /* 跳过非 JSON 行 */
+          }
+        }
+      },
+    })
+    return new Response(stream, {
+      headers: { ...cors, 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' },
     })
   } catch {
     return new Response(JSON.stringify({ error: '服务暂不可用，请稍后再试' }), {
