@@ -44,7 +44,7 @@ export async function proxyAI(
   return { content: text }
 }
 
-/** 流式读取 + 进度回调（k2.6 思考期无数据=静默，开写后逐块回调） */
+/** 流式读取 + 进度回调（k2.6 思考期 reasoning 心跳被剥离，开写后逐块回调） */
 async function readStream(res: Response, onProgress?: (chars: number) => void): Promise<string> {
   const reader = res.body?.getReader()
   if (!reader) return res.text()
@@ -54,6 +54,9 @@ async function readStream(res: Response, onProgress?: (chars: number) => void): 
     const { done, value } = await reader.read()
     if (done) break
     text += decoder.decode(value, { stream: true })
+    // 剥离 reasoning 心跳（\u0000R<长度>）——不计入正文
+    text = // eslint-disable-next-line no-control-regex
+    text.replace(new RegExp('\\u0000R\\d+', 'g'), '')
     onProgress?.(text.length)
   }
   return text
