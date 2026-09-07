@@ -44,6 +44,8 @@ export default function RoundTablePage() {
   const [result, setResult] = useState<RoundTableResult | null>(null);
   // 视图：stage=动态演出 / text=静态全文
   const [viewMode, setViewMode] = useState<'stage' | 'text'>('stage');
+  // 保留本次页面选择，重演时沿用打字速度。
+  const [typewriterSpeed, setTypewriterSpeed] = useState(34);
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const [summary, setSummary] = useState("");
   // 追问状态：{seatIndex, q, reply, busy}
@@ -288,7 +290,7 @@ export default function RoundTablePage() {
       {result && (
         <div className="mt-12">
           {/* 视图切换条 */}
-          <div className="mb-4 flex items-center justify-center gap-3">
+          <div className="mb-4 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={() => setViewMode('stage')}
               className={`rounded-full border px-4 py-1.5 text-[12px] tracking-[0.1em] transition-colors ${
@@ -305,11 +307,25 @@ export default function RoundTablePage() {
             >
               查看全文
             </button>
+            <label className="flex items-center gap-2 text-[12px] text-inkmuted">
+              打字速度
+              <select
+                value={typewriterSpeed}
+                onChange={(e) => setTypewriterSpeed(Number(e.target.value))}
+                className="rounded-full border border-golddim/30 bg-silk px-3 py-1.5 text-golddim focus-visible:outline focus-visible:outline-golddim"
+              >
+                <option value={68}>舒缓</option>
+                <option value={34}>标准</option>
+                <option value={17}>快速</option>
+                <option value={0}>即时</option>
+              </select>
+            </label>
           </div>
 
           {viewMode === 'stage' ? (
             <RoundTableStage
               result={result}
+              typewriterSpeed={typewriterSpeed}
               onFinish={() => setViewMode('text')}
               onSkip={() => setViewMode('text')}
             />

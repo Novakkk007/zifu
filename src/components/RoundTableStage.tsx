@@ -1,246 +1,187 @@
-/**
+﻿/**
  * 论命圆桌 · 动态演出舞台
- * 演出三幕：先生开场 → 七席入席+逐席发言 → 共识与分歧 → 先生收束
- * 数据：parseRoundTable 结果（回放式演出——结果一到即开演，节奏稳定）
+ * 窄屏按席位纵向演出，桌面保留环坐；阶段与打字共用一个间隔计时器。
  */
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { RoundTableResult } from '@/lib/roundtable'
+import {
+  buildRoundTablePhases,
+  createRoundTablePlayback,
+  DEFAULT_TYPEWRITER_SPEED,
+  PLAYBACK_TICK_MS,
+} from '@/lib/roundtable-playback'
 
 interface StageProps {
   result: RoundTableResult
   onFinish: () => void
   onSkip: () => void
+  /** 每两个字素的间隔毫秒数，0 表示直接显示全文。 */
+  typewriterSpeed?: number
 }
 
-const SEAT_STYLES: Array<{ left?: string; top?: string; right?: string; bottom?: string }> = [
-  { left: '4%', top: '18%' },
-  { left: '0%', top: '50%' },
-  { left: '8%', bottom: '8%' },
-  { right: '8%', bottom: '8%' },
-  { right: '0%', top: '50%' },
-  { right: '4%', top: '18%' },
-  { left: '50%', bottom: '0%' },
+const SEAT_POSITIONS = [
+  { left: '20%', top: '16%' },
+  { left: '12%', top: '46%' },
+  { left: '24%', top: '77%' },
+  { left: '76%', top: '77%' },
+  { left: '88%', top: '46%' },
+  { left: '80%', top: '16%' },
+  { left: '50%', top: '88%' },
 ]
-
 const AVATARS = ['📜', '📚', '🧭', '🌊', '🕯️', '🧧', '🔮']
 
-/** 打字机 hook：文本逐字出现 */
-function useTypewriter(text: string, active: boolean, speed = 34): string {
-  const [shown, setShown] = useState('')
-  useEffect(() => {
-    if (!active) return
-    let i = 0
-    const timer = setInterval(() => {
-      i += 2
-      setShown(text.slice(0, i))
-      if (i >= text.length) clearInterval(timer)
-    }, speed)
-    return () => clearInterval(timer)
-  }, [text, active, speed])
-  return shown
-}
-
-function TypeText({ text, active, speed = 34 }: { text: string; active: boolean; speed?: number }) {
-  const shown = useTypewriter(text, active, speed)
-  return (
-    <span>
-      {shown}
-      {active && shown.length < text.length && <span className="cursor-blink" />}
-    </span>
-  )
-}
-
-export default function RoundTableStage({ result, onFinish, onSkip }: StageProps) {
-  // 演出阶段：0=入席 1=先生开场 2..8=第1..7席 9=共识 10=收束 11=结束
-  const [phase, setPhase] = useState(0)
-  const [finished, setFinished] = useState(false)
+export default function RoundTableStage({ result, onFinish, onSkip, typewriterSpeed = DEFAULT_TYPEWRITER_SPEED }: StageProps) {
+  const phases = useMemo(() => buildRoundTablePhases(result), [result])
+  const [playback, setPlayback] = useState({ result, phase: 0, shown: '', finished: false })
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const settingsRef = useRef({ onFinish, typewriterSpeed })
 
   useEffect(() => {
-    if (finished) return
-    const seats = result.seats.length || 7
-    const phases: Array<{ n: number; dur: number }> = [
-      { n: 1, dur: 1800 }, // 先生开场
-      ...Array.from({ length: seats }, (_, i) => ({ n: 2 + i, dur: 6500 })), // 每席 6.5s（含打字）
-      { n: 9, dur: 7000 }, // 共识
-      { n: 10, dur: 4500 }, // 收束
-    ]
-    let idx = 0
-    timerRef.current = setInterval(() => {
-      idx += 1
-      if (idx >= phases.length) {
-        setPhase(11)
-        setFinished(true)
-        if (timerRef.current) clearInterval(timerRef.current)
-        onFinish()
-      } else {
-        setPhase(phases[idx].n)
-      }
-    }, phases[0].dur)
-    // 首跳用 phases[0].dur 后按当前 phase 的 dur——简化：用统一链
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [result, finished, onFinish])
+    settingsRef.current = { onFinish, typewriterSpeed }
+  }, [onFinish, typewriterSpeed])
 
-  const speaking = phase >= 2 && phase <= 8 ? phase - 2 : -1
+  useEffect(() => {
+    const clock = createRoundTablePlayback(phases)
+    const timer = setInterval(() => {
+      const next = clock.tick(settingsRef.current.typewriterSpeed)
+      setPlayback((previous) => previous.phase === next.phase && previous.shown === next.shown && previous.finished === next.finished
+        ? previous : { result, ...next })
+      if (next.finished) {
+        clearInterval(timer)
+        timerRef.current = null
+        settingsRef.current.onFinish()
+      }
+    }, PLAYBACK_TICK_MS)
+    timerRef.current = timer
+    // 清理本次 effect 创建的计时器，兼容卸载、结果替换和 StrictMode。
+    return () => {
+      clearInterval(timer)
+      if (timerRef.current === timer) timerRef.current = null
+    }
+  }, [phases, result])
+
+  // 新结果从开场前重新演出；父组件普通重渲染或调速不重置阶段。
+  if (playback.result !== result) {
+    setPlayback({ result, phase: 0, shown: '', finished: false })
+    return null
+  }
+  const phase = phases[playback.phase]
+  const speaking = phase.kind === 'seat' ? phase.seatIndex! : -1
+  const hostSpeaking = phase.kind === 'opening' || phase.kind === 'closing'
+  // 异常响应席位超过七个时也使用列表，避免复用环坐坐标导致重叠。
+  const ringLayout = result.seats.length <= SEAT_POSITIONS.length
+  const speech = (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={playback.finished ? 'finished' : playback.phase}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.2 }}
+        className="min-w-0 rounded-xl border border-golddim/30 bg-deep2 px-4 py-4 text-[13.5px] leading-[2] text-silk shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
+      >
+        <p className="mb-1 text-[11px] tracking-[0.14em] text-golddim" role="status">
+          {playback.finished ? '演出结束 · 结果已全部呈现' : phase.title}
+        </p>
+        {!playback.finished && phase.kind !== 'waiting' && (
+          <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">
+            {playback.shown}
+            {playback.shown !== phase.text && <span className="roundtable-cursor" aria-hidden="true" />}
+          </p>
+        )}
+      </motion.div>
+    </AnimatePresence>
+  )
 
   return (
-    <div className="relative">
-      {/* 舞台 */}
-      <div className="relative min-h-[540px] overflow-hidden rounded-2xl border border-gold/20 bg-gradient-to-b from-deep2 to-deep3 px-4 py-6 sm:px-8">
-        {/* 先生主位 */}
-        <motion.div
-          initial={{ opacity: 0, y: -18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="absolute left-1/2 top-3 -translate-x-1/2 text-center"
-        >
-          <div
-            className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full border text-[24px] transition-all duration-500 ${
-              phase === 1 || phase === 10
-                ? 'border-gold shadow-[0_0_28px_rgba(201,164,92,0.5)]'
-                : 'border-golddim/40'
-            } bg-deep3`}
-          >
-            🎓
+    <div className="relative" data-roundtable-stage>
+      <div className="rounded-2xl border border-golddim/20 bg-gradient-to-b from-deep2 to-deep3 px-4 py-6 sm:px-8">
+        <div className={ringLayout ? 'relative md:h-[430px]' : 'relative'}>
+          {/* 定位包裹层与动画层分离，防止动画 transform 覆盖居中偏移。 */}
+          <div className={ringLayout ? 'text-center md:absolute md:left-1/2 md:top-0 md:-translate-x-1/2' : 'text-center'}>
+            <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <div className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full border bg-deep3 text-[24px] transition-shadow ${
+                hostSpeaking ? 'border-gold shadow-[0_0_28px_rgba(201,164,92,0.5)]' : 'border-golddim/40'
+              }`} aria-hidden="true">🎓</div>
+              <p className="mt-1.5 text-[13px] tracking-[0.16em] text-golddim">先生</p>
+            </motion.div>
           </div>
-          <p className="mt-1.5 text-[13px] tracking-[0.16em] text-golddim">先生</p>
-        </motion.div>
 
-        {/* 七席环坐 */}
-        {result.seats.map((seat, i) => (
-          <motion.div
-            key={seat.school}
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: phase >= 2 + i ? 1 : 0, scale: phase >= 2 + i ? 1 : 0.6 }}
-            transition={{ duration: 0.5 }}
-            className={`absolute z-10 w-[104px] text-center transition-opacity duration-500 ${
-              speaking === i ? '' : phase >= 2 + i && speaking !== i ? 'opacity-45' : ''
-            }`}
-            style={{ ...SEAT_STYLES[i % 7], transform: 'translateX(-50%)' }}
-          >
-            <div
-              className={`mx-auto flex h-11 w-11 items-center justify-center rounded-full border text-[19px] transition-all duration-500 ${
-                speaking === i
-                  ? 'border-gold shadow-[0_0_26px_rgba(201,164,92,0.65)]'
-                  : 'border-golddim/40'
-              } bg-deep2`}
-              style={speaking === i ? { animation: 'zifu-pulse 1.6s infinite' } : undefined}
-            >
-              {AVATARS[i % 7]}
+          <div className={`mt-4 ${ringLayout ? 'md:hidden' : ''}`}>
+            {(phase.kind === 'waiting' || phase.kind === 'opening') && speech}
+          </div>
+
+          {/* 移动端用正常文档流，当前发言紧随席位，长文自动撑开。 */}
+          <ol className={`mt-4 space-y-3 ${ringLayout ? 'md:hidden' : ''}`} aria-label="圆桌席位">
+            {result.seats.map((seat, i) => (
+              <motion.li
+                key={`${i}-${seat.school}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+                className="min-w-0 rounded-xl border border-golddim/20 bg-deep2 p-3"
+                aria-current={speaking === i ? 'step' : undefined}
+              >
+                <div className="flex items-center gap-3">
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${speaking === i ? 'border-gold' : 'border-golddim/30'}`} aria-hidden="true">{AVATARS[i % AVATARS.length]}</span>
+                  <div className="min-w-0">
+                    <p className="text-[12px] text-silk [overflow-wrap:anywhere]">第{i + 1}席 · {seat.school}</p>
+                    <p className="text-[11px] text-inkmuted">{speaking === i ? '正在发言' : playback.phase > i + 2 ? '聆听中' : '待入席'}</p>
+                  </div>
+                </div>
+                {speaking === i && <div className="mt-3">{speech}</div>}
+              </motion.li>
+            ))}
+          </ol>
+
+          {ringLayout && (
+            <div className="hidden md:block" aria-hidden="true">
+              {result.seats.map((seat, i) => (
+                <div key={`${i}-${seat.school}`} className="absolute w-[104px] -translate-x-1/2 -translate-y-1/2 text-center" style={SEAT_POSITIONS[i]}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: speaking === i ? 1 : playback.phase >= i + 2 ? 0.6 : 0.3, scale: speaking === i ? 1.05 : 1 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <div className={`mx-auto flex h-11 w-11 items-center justify-center rounded-full border bg-deep2 text-[19px] ${
+                      speaking === i ? 'border-gold shadow-[0_0_26px_rgba(201,164,92,0.65)]' : 'border-golddim/40'
+                    }`}>{AVATARS[i]}</div>
+                    <p className="mt-1 break-words text-[11.5px] leading-tight text-silk" title={seat.school}>{Array.from(seat.school).slice(0, 8).join('')}{Array.from(seat.school).length > 8 ? '…' : ''}</p>
+                    <p className="text-[10px] text-inkmuted">{speaking === i ? '正在发言' : playback.phase > i + 2 ? '聆听中' : '待入席'}</p>
+                  </motion.div>
+                </div>
+              ))}
+              <div className="absolute left-1/2 top-1/2 flex h-32 w-32 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 border-golddim/35 bg-deep3 text-center">
+                <p className="text-[13px] tracking-[0.2em] text-golddim">一盘命局</p>
+                <p className="mt-1.5 text-[10px] text-inkmuted">七席各言其见</p>
+              </div>
             </div>
-            <p className="mt-1 text-[11.5px] leading-tight tracking-[0.04em] text-silkmuted">
-              {seat.school.length > 6 ? seat.school.slice(0, 6) + '…' : seat.school}
-            </p>
-            <p className="text-[9px] tracking-[0.06em] text-inkfaint">
-              {speaking === i ? '正在发言' : phase >= 2 + i ? '聆听中' : '待入席'}
-            </p>
-          </motion.div>
-        ))}
-
-        {/* 中央圆桌 */}
-        <div className="absolute left-1/2 top-1/2 flex h-36 w-36 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 border-golddim/35 bg-deep3/95 text-center">
-          <p className="text-[13px] tracking-[0.2em] text-golddim">一盘命局</p>
-          <p className="mt-1.5 px-3 text-[10px] text-inkfaint">七席各言其见</p>
+          )}
         </div>
 
-        {/* 发言气泡（底部中央——大字号可读） */}
-        <div className="pointer-events-none absolute inset-x-3 bottom-3 z-20 sm:inset-x-8">
-          <AnimatePresence mode="wait">
-            {phase === 0 && (
-              <motion.p
-                key="wait"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-center text-[12px] tracking-[0.1em] text-inkfaint"
-              >
-                结果已到 · 即将开演
-              </motion.p>
-            )}
-            {phase === 1 && (
-              <motion.div
-                key="opening"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                className="mx-auto max-w-[560px] rounded-xl border border-gold/30 bg-deep2/95 px-5 py-4 text-[13.5px] leading-[2] text-silkmuted shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
-              >
-                <p className="mb-1 text-[11px] tracking-[0.18em] text-golddim">先生开场</p>
-                <TypeText text={result.opening} active />
-              </motion.div>
-            )}
-            {phase >= 2 && phase <= 8 && result.seats[phase - 2] && (
-              <motion.div
-                key={`seat-${phase - 2}`}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                className="mx-auto max-w-[560px] rounded-xl border border-gold/30 bg-deep2/95 px-5 py-4 text-[13.5px] leading-[2] text-silkmuted shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
-              >
-                <p className="mb-1 text-[11px] tracking-[0.18em] text-golddim">
-                  第{phase - 1}席 · {result.seats[phase - 2].school}
-                </p>
-                <TypeText text={result.seats[phase - 2].content} active />
-              </motion.div>
-            )}
-            {phase === 9 && (
-              <motion.div
-                key="consensus"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                className="mx-auto max-w-[560px] rounded-xl border border-gold/40 bg-deep2/95 px-5 py-4 text-[13.5px] leading-[2] text-goldbright shadow-[0_8px_30px_rgba(201,164,92,0.15)]"
-              >
-                <p className="mb-1 text-[11px] tracking-[0.18em] text-golddim">共识与分歧</p>
-                <TypeText text={result.consensus} active speed={28} />
-              </motion.div>
-            )}
-            {phase === 10 && (
-              <motion.div
-                key="closing"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                className="mx-auto max-w-[560px] rounded-xl border border-gold/50 bg-gold/[0.08] px-5 py-4 text-center text-[14px] leading-[2.1] text-goldbright"
-              >
-                <p className="mb-1 text-[11px] tracking-[0.18em] text-golddim">先生收束</p>
-                <TypeText text={result.closing} active speed={30} />
-              </motion.div>
-            )}
-            {phase === 11 && (
-              <motion.p
-                key="end"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center text-[12px] tracking-[0.1em] text-inkfaint"
-              >
-                演出结束 · 结果已全部呈现
-              </motion.p>
-            )}
-          </AnimatePresence>
+        {/* 桌面发言区独立占行，不再遮挡下方席位。 */}
+        {ringLayout && <div className="mx-auto mt-4 hidden max-w-[640px] md:block">{speech}</div>}
+        <div className={`mt-4 ${ringLayout ? 'md:hidden' : ''}`}>
+          {(phase.kind === 'consensus' || phase.kind === 'closing' || playback.finished) && speech}
         </div>
       </div>
 
-      {/* 控制条 */}
-      <div className="mt-3 flex items-center justify-center gap-4">
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
         <button
-          onClick={onSkip}
+          type="button"
+          onClick={() => {
+            if (timerRef.current !== null) clearInterval(timerRef.current)
+            timerRef.current = null
+            onSkip()
+          }}
           className="rounded-full border border-golddim/30 px-4 py-1.5 text-[12px] tracking-[0.1em] text-silkmuted transition-colors hover:border-gold/50 hover:text-golddim"
-        >
-          跳过演出 · 看全文
-        </button>
-        {finished && (
-          <span className="text-[11.5px] tracking-[0.08em] text-golddim">「重演」可用查看全文后返回</span>
-        )}
+        >跳过演出 · 看全文</button>
       </div>
-
       <style>{`
-        @keyframes zifu-pulse { 0%,100% { box-shadow: 0 0 16px rgba(201,164,92,0.35); } 50% { box-shadow: 0 0 32px rgba(201,164,92,0.75); } }
-        .cursor-blink { display: inline-block; width: 7px; height: 14px; background: #c9a45c; vertical-align: -2px; animation: zifu-blink 0.9s infinite; }
-        @keyframes zifu-blink { 50% { opacity: 0; } }
+        .roundtable-cursor { display: inline-block; width: 7px; height: 14px; margin-left: 2px; background: #c9a45c; vertical-align: -2px; animation: roundtable-blink 0.9s infinite; }
+        @keyframes roundtable-blink { 50% { opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) { .roundtable-cursor { animation: none; } }
       `}</style>
     </div>
   )
