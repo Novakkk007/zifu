@@ -127,17 +127,18 @@ export interface RoundTableResult {
   closing: string
 }
 
-/** 解析圆桌响应（按席位标记切段，容忍「第1席：」「第 1 席·名」等变体） */
+/** 解析圆桌响应（按席位标记切段，容忍「第1席：」「第 1 席·名」「第一席 · 名」等变体） */
+const SEAT_MARK = '【第\\s*(?:\\d+|[一二三四五六七八九十]+)\\s*席'
 export function parseRoundTable(text: string): RoundTableResult {
   const seats: RoundTableResult['seats'] = []
-  const blocks = text.split(/(?=【第\s*\d+\s*席)/)
+  const blocks = text.split(new RegExp(`(?=${SEAT_MARK})`))
   for (const b of blocks) {
-    const m = b.match(/【第\s*\d+\s*席\s*[·:：]?\s*([^】]+)】\s*([\s\S]*)/)
+    const m = b.match(new RegExp(`${SEAT_MARK}\\s*[·:：]?\\s*([^】]+)】\\s*([\\s\\S]*)`))
     if (m && m[2].trim().length > 0) seats.push({ school: m[1].trim(), content: m[2].trim() })
   }
   // 先生开场（三句好话）
   let opening = ''
-  const om = text.match(/【先生开场】\s*([\s\S]*?)(?=【第\s*\d+\s*席|【共识与分歧】|$)/)
+  const om = text.match(new RegExp(`【先生开场】\\s*([\\s\\S]*?)(?=${SEAT_MARK}|【共识与分歧】|$)`))
   if (om) opening = om[1].trim()
   // 共识与收束
   let consensus = ''
