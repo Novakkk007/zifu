@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
-import { X } from 'lucide-react'
+import { ArrowUpRight, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import PageHero from '@/components/content/PageHero'
 import { usePageMeta } from '@/lib/page-meta'
@@ -152,6 +153,74 @@ function BookCard({ book, onOpen }: { book: Book; onOpen: () => void }) {
   )
 }
 
+/* ---------------- 三馆入口导航卡 ---------------- */
+
+function ThreeHallsNav() {
+  return (
+    <section aria-label="三馆入口" className="relative bg-deep2">
+      <div className="zf-container">
+        <div className="mx-auto max-w-[880px] pb-16 pt-14">
+          <motion.p
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: easeOut }}
+            className="text-center font-sans text-[11.5px] tracking-[0.34em] text-golddim"
+          >
+            三馆入口
+          </motion.p>
+          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
+            {/* ① 五运六气 · 平滑滚动至页内 S2.6 */}
+            <motion.div
+              initial={{ opacity: 0, y: 26 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.06, ease: easeOut }}
+            >
+              <button
+                type="button"
+                onClick={() =>
+                  document.getElementById('wiki-yunqi')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+                className="group flex h-full w-full flex-col rounded-2xl border border-golddim/25 bg-silk2/50 p-7 text-left transition-all duration-300 hover:border-gold/55 hover:bg-silk2/80 hover:shadow-[0_0_36px_rgba(201,164,92,0.18)]"
+              >
+                <p className="font-serif text-[21px] font-bold tracking-[0.18em] text-goldbright">五运六气</p>
+                <p className="mt-3 flex-1 text-[13px] leading-[2] tracking-[0.06em] text-silkmuted">
+                  古人以干支推年度气候节律与养生方向
+                </p>
+                <span className="mt-6 inline-flex self-end text-golddim transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-goldbright">
+                  <ArrowUpRight className="h-4 w-4" aria-hidden />
+                </span>
+              </button>
+            </motion.div>
+
+            {/* ② 今日盘 · 跳转 /daily */}
+            <motion.div
+              initial={{ opacity: 0, y: 26 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.16, ease: easeOut }}
+            >
+              <Link
+                to="/daily"
+                className="group flex h-full w-full flex-col rounded-2xl border border-golddim/25 bg-silk2/50 p-7 transition-all duration-300 hover:border-gold/55 hover:bg-silk2/80 hover:shadow-[0_0_36px_rgba(201,164,92,0.18)]"
+              >
+                <p className="font-serif text-[21px] font-bold tracking-[0.18em] text-goldbright">今日盘</p>
+                <p className="mt-3 flex-1 text-[13px] leading-[2] tracking-[0.06em] text-silkmuted">
+                  每日时令与当日宜忌
+                </p>
+                <span className="mt-6 inline-flex self-end text-golddim transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-goldbright">
+                  <ArrowUpRight className="h-4 w-4" aria-hidden />
+                </span>
+              </Link>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 /* ---------------- 页面 ---------------- */
 
 export default function Wiki() {
@@ -177,6 +246,9 @@ export default function Wiki() {
         pool={HERO_POOL}
         minH="min-h-[38vh]"
       />
+
+      {/* S1.5 · 三馆入口导航卡（五运六气锚点 + 今日盘路由） */}
+      <ThreeHallsNav />
 
       {/* 深 → 浅 过渡 */}
       <div className="zf-fade-to-silk h-[160px]" />
@@ -249,7 +321,7 @@ export default function Wiki() {
       </section>
 
       {/* S2.6 · 五运六气（运气学说通识 + 当年示例） */}
-      <section className="relative bg-silk pb-28 pt-4">
+      <section id="wiki-yunqi" className="relative bg-silk pb-28 pt-4">
         <div className="zf-container">
           <SectionHeading
             eyebrow="Yun Qi"
