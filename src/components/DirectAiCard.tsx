@@ -3,7 +3,7 @@
  * 八字/六爻/紫微等引擎共用：provider 选择 + 密钥保存 + 直连调用 + 结果展示。
  * 数据由调用方以 chartSummary 文本注入（先生人格 prompt 内置）。
  */
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { buildReadingPrompt, aiDirectReading, BUILTIN_AI_KEY, type DirectReadingResult } from '@/lib/ai-direct'
 
 function getStoredKey() {
@@ -43,6 +43,14 @@ export default function DirectAiCard({
   const [savedKey, setSavedKey] = useState(getStoredKey)
   const [busy, setBusy] = useState(false)
   const [chars, setChars] = useState(0)
+  const charsGate = useRef({ last: 0, shown: 0 })
+  const throttledChars = (n: number) => {
+    const now = Date.now()
+    if (now - charsGate.current.last > 700 || n - charsGate.current.shown > 60) {
+      charsGate.current = { last: now, shown: n }
+      setChars(n)
+    }
+  }
   const [result, setResult] = useState<DirectReadingResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -73,7 +81,7 @@ export default function DirectAiCard({
           apiKey: savedKey.trim(),
           readingPrompt,
         },
-        (n) => setChars(n)
+        (n) => throttledChars(n)
       )
       setResult(r)
     } catch (e) {

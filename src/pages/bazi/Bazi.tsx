@@ -18,6 +18,7 @@ import DetailTabs from "@/components/bazi-v2/DetailTabs";
 import LifeChart from "@/components/bazi-v2/LifeChart";
 import AiReadingSection from "@/components/bazi-v2/AiReadingSection";
 import MasterHintsSection from "@/components/bazi-v2/MasterHintsSection";
+import Reveal from "@/components/Reveal";
 import DaYunPanel from "@/components/bazi-v2/DaYunPanel";
 import CoreSummary from "@/components/bazi-v2/CoreSummary";
 import HistorySection from "@/components/bazi-v2/HistorySection";
@@ -229,25 +230,29 @@ export default function Bazi() {
               )}
 
               {/* 首屏结果摘要（四柱卡之前） */}
-              <ChartSummaryStrip chart={chart} />
+              <Reveal>
+                <ChartSummaryStrip chart={chart} />
 
-              {/* 排盘依据 */}
-              <TimeAuditBar chart={chart} />
+                {/* 排盘依据 */}
+                <TimeAuditBar chart={chart} />
 
-              {/* 四柱 + 命身宫 */}
-              {/* 命盘速览（人话版第一屏 + AI 解读主入口） */}
-              <CoreSummary
-                chart={chart}
-                onAiRead={() => handleAiExplain("AI 详批")}
-              />
+                {/* 四柱 + 命身宫 */}
+                {/* 命盘速览（人话版第一屏 + AI 解读主入口） */}
+                <CoreSummary
+                  chart={chart}
+                  onAiRead={() => handleAiExplain("AI 详批")}
+                />
+              </Reveal>
 
-              <PillarsSection chart={chart} />
+              <Reveal delay={0.1}>
+                <PillarsSection chart={chart} />
 
-              {/* 五行分析 */}
-              <WuxingSection chart={chart} />
+                {/* 五行分析 */}
+                <WuxingSection chart={chart} />
 
-              {/* 名家视角（蒸馏规则引擎参详提示） */}
-              <MasterHintsSection chart={chart} />
+                {/* 名家视角（蒸馏规则引擎参详提示） */}
+                <MasterHintsSection chart={chart} />
+              </Reveal>
 
               {/* 十神明细 / 合冲刑害破 / 神煞 / 称骨 */}
               <TenGodsTable chart={chart} />
@@ -321,19 +326,46 @@ export default function Bazi() {
         }}
       />
 
-      {/* S4.5 · 圆桌论命入口（七席同观此盘） */}
+      {/* S4.5 · 先生引路（三卡依序点亮：详批 → 圆桌 → 观照） */}
       {chart && (
-        <section className="bg-deep2 pt-4 pb-10">
-        <div className="zf-container max-w-[880px]">
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-gold/25 bg-gold/[0.06] px-6 py-7 text-center">
-            <p className="font-serif text-[19px] tracking-[0.16em] text-goldbright">
-              七席法脉 · 同观此盘
-            </p>
-            <p className="max-w-[540px] text-[12.5px] leading-[1.9] text-silkmuted">
-              子平格局、三命通会、神峰通考、渊海子平、盲派、千里命稿、金口诀——
-              各持其法，各言其见；共识与分歧，一并呈上。
-            </p>
-            <button
+        <section className="bg-deep2 pt-4 pb-12">
+          <div className="zf-container max-w-[880px] space-y-4">
+            <motion.p
+              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.8 }}
+              className="text-center font-serif text-[15px] tracking-[0.24em] text-golddim"
+            >
+              盘已排好 · 先生引路
+            </motion.p>
+
+            {/* 卡一 · 先生详批（先亮） */}
+            <motion.div
+              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              onClick={() => detailRef.current?.scrollIntoView({ behavior: "smooth" })}
+              className="cursor-pointer rounded-xl border border-gold/30 bg-gold/[0.07] px-6 py-6 transition-all duration-300 hover:border-gold/60 hover:bg-gold/[0.12] hover:shadow-[0_0_30px_rgba(201,164,92,0.15)]"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="font-serif text-[16px] tracking-[0.14em] text-goldbright">壹 · 先生详批</p>
+                  <p className="mt-1.5 text-[12px] leading-[1.9] tracking-[0.05em] text-silkmuted">
+                    先生通盘而讲——性格底色、人生脉络，一段一盏茶。
+                  </p>
+                </div>
+                <span className="shrink-0 font-sans text-[11px] tracking-[0.16em] text-golddim">往下走</span>
+              </div>
+            </motion.div>
+
+            {/* 卡二 · 论命圆桌（次亮） */}
+            <motion.div
+              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.7, delay: 0.45 }}
               onClick={() => {
                 const q = new URLSearchParams({
                   calendar: chart.input.calendar,
@@ -346,13 +378,51 @@ export default function Bazi() {
                 })
                 window.location.href = `/roundtable?${q.toString()}`
               }}
-              className="mt-2 rounded-full border border-gold/60 bg-gold/15 px-8 py-3 text-[14px] tracking-[0.12em] text-goldbright transition-colors hover:bg-gold/25"
+              className="cursor-pointer rounded-xl border border-golddim/30 bg-silk2/60 px-6 py-6 transition-all duration-300 hover:border-gold/55 hover:bg-silk2 hover:shadow-[0_0_28px_rgba(201,164,92,0.12)]"
             >
-              开圆桌 · 论此盘
-            </button>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="font-serif text-[16px] tracking-[0.14em] text-inktext">贰 · 论命圆桌</p>
+                  <p className="mt-1.5 text-[12px] leading-[1.9] tracking-[0.05em] text-inkmuted">
+                    七席法脉同观一盘——各言其见，共识与分歧一并呈上。
+                  </p>
+                </div>
+                <span className="shrink-0 font-sans text-[11px] tracking-[0.16em] text-golddim/90">开圆桌</span>
+              </div>
+            </motion.div>
+
+            {/* 卡三 · 观照（后亮） */}
+            <motion.div
+              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.7, delay: 0.7 }}
+              onClick={() => {
+                const q = new URLSearchParams({
+                  calendar: chart.input.calendar,
+                  gender: chart.input.gender,
+                  year: String(chart.input.year),
+                  month: String(chart.input.month),
+                  day: String(chart.input.day),
+                  hour: String(chart.input.hour ?? 12),
+                  minute: String(chart.input.minute ?? 0),
+                })
+                window.location.href = `/guanzhao?${q.toString()}`
+              }}
+              className="cursor-pointer rounded-xl border border-golddim/25 bg-silk2/40 px-6 py-6 transition-all duration-300 hover:border-gold/50 hover:bg-silk2/70"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="font-serif text-[16px] tracking-[0.14em] text-silkmuted">叁 · 观照</p>
+                  <p className="mt-1.5 text-[12px] leading-[1.9] tracking-[0.05em] text-inkmuted">
+                    照见、照亮、照护——看盘里困住你的循环，点一盏灯。
+                  </p>
+                </div>
+                <span className="shrink-0 font-sans text-[11px] tracking-[0.16em] text-inkmuted">去观照</span>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      </section>
+        </section>
       )}
 
       {/* S5 · AI 详批（深色） */}

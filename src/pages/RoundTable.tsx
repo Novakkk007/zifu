@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useEngine } from "@/hooks/useEngine";
 import { paipanBazi } from "@/engines/client/bazi";
@@ -12,6 +12,7 @@ import {
   type RoundTableResult,
 } from "@/lib/roundtable";
 import { usePageMeta } from "@/lib/page-meta";
+import RoundTableStage from "@/components/RoundTableStage";
 
 const SEAT_ANGLES = [270, 322, 14, 66, 118, 170, 222]; // 环形均布（从正上起）
 
@@ -30,8 +31,21 @@ export default function RoundTablePage() {
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  // 进度节流：流式每块都回调会疯狂闪跳——≥700ms 或 +60 字才更新一次
+  const progressGate = useRef({ last: 0, shown: 0 });
+  const throttledProgress = (n: number) => {
+    const now = Date.now();
+    if (now - progressGate.current.last > 700 || n - progressGate.current.shown > 60) {
+      progressGate.current = { last: now, shown: n };
+      setProgress(n);
+    }
+  };
   const [error, setError] = useState("");
   const [result, setResult] = useState<RoundTableResult | null>(null);
+  // 视图：stage=动态演出 / text=静态全文
+  const [viewMode, setViewMode] = useState<'stage' | 'text'>('stage');
+  // 保留本次页面选择，重演时沿用打字速度。
+  const [typewriterSpeed, setTypewriterSpeed] = useState(34);
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const [summary, setSummary] = useState("");
   // 追问状态：{seatIndex, q, reply, busy}
@@ -70,8 +84,9 @@ export default function RoundTablePage() {
       setProgress(0);
       setError("");
       try {
-        const res = await runRoundTable(s, question || undefined, undefined, (n) => setProgress(n));
+        const res = await runRoundTable(s, question || undefined, undefined, throttledProgress);
         setResult(parseRoundTable(res.content));
+        setViewMode('stage');
       } catch (e) {
         setError(e instanceof Error ? e.message : "圆桌暂未开席，请稍后再试");
       } finally {
@@ -227,20 +242,44 @@ export default function RoundTablePage() {
       </form>
 
       {loading && (
-        <div className="mt-12 text-center">
-          <div className="flex items-center justify-center gap-2">
+        <div className="mt-10">
+          {/* 七席环坐 · 逐个入席（循环动画——思考期氛围） */}
+          <div className="relative mx-auto h-[300px] max-w-[420px] overflow-hidden rounded-2xl border border-golddim/20 bg-silk2/60 sm:h-[330px]">
+            <div className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 border-golddim/40 bg-silk text-center">
+              <span className="text-[11px] tracking-[0.2em] text-inkmuted">候茶</span>
+              <span className="mt-1 font-serif text-[13px] tracking-[0.12em] text-golddim">七席待开</span>
+            </div>
             {ROUNDTABLE_SCHOOLS.map((s, i) => (
-              <span
+              <motion.div
                 key={s.id}
-                className="animate-pulse rounded-full border border-golddim/40 px-3 py-1 font-serif text-[12px] tracking-[0.1em] text-golddim"
-                style={{ animationDelay: `${i * 0.35}s` }}
+                initial={{ opacity: 0, y: 14, scale: 0.7 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: i * 0.45, duration: 0.55 }}
+                className="absolute text-center"
+                style={{
+                  left: `${[8, 2, 14, 68, 82, 78, 42][i]}%`,
+                  top: `${[8, 34, 66, 66, 34, 8, 78][i]}%`,
+                  transform: 'translateX(-50%)',
+                  width: 74,
+                }}
               >
-                {s.name}
-              </span>
+                <span
+                  className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full border text-[15px] transition-shadow ${
+                    progress > 0 && Math.floor(progress / 160) % 7 === i
+                      ? 'border-gold bg-gold/10 shadow-[0_0_20px_rgba(201,164,92,0.6)]'
+                      : 'border-golddim/40 bg-silk'
+                  }`}
+                >
+                  {['📜', '📚', '🧭', '🌊', '🕯️', '🧧', '🔮'][i]}
+                </span>
+                <span className="mt-1 block text-[10.5px] leading-tight tracking-[0.03em] text-inkmuted">
+                  {s.name.length > 5 ? s.name.slice(0, 5) : s.name}
+                </span>
+              </motion.div>
             ))}
           </div>
-          <p className="mt-4 font-serif text-[15px] tracking-[0.2em] text-golddim">七席入座 · 各执其法</p>
-          <p className="mt-3 text-[12.5px] leading-[1.9] text-inkmuted">
+          <p className="mt-4 text-center font-serif text-[15px] tracking-[0.2em] text-golddim">七席入座 · 各执其法</p>
+          <p className="mt-3 text-center text-[12.5px] leading-[1.9] text-inkmuted">
             {progress > 0
               ? `先生已落笔 ${progress} 字——好话不怕慢，先沏杯茶。`
               : '先生正与七席同观一盘，约需一两分钟——好话不怕慢，先沏杯茶。'}
@@ -250,6 +289,48 @@ export default function RoundTablePage() {
 
       {result && (
         <div className="mt-12">
+          {/* 视图切换条 */}
+          <div className="mb-4 flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => setViewMode('stage')}
+              className={`rounded-full border px-4 py-1.5 text-[12px] tracking-[0.1em] transition-colors ${
+                viewMode === 'stage' ? 'border-gold/60 bg-gold/10 text-goldbright' : 'border-golddim/25 text-inkmuted hover:text-golddim'
+              }`}
+            >
+              演出重演
+            </button>
+            <button
+              onClick={() => setViewMode('text')}
+              className={`rounded-full border px-4 py-1.5 text-[12px] tracking-[0.1em] transition-colors ${
+                viewMode === 'text' ? 'border-gold/60 bg-gold/10 text-goldbright' : 'border-golddim/25 text-inkmuted hover:text-golddim'
+              }`}
+            >
+              查看全文
+            </button>
+            <label className="flex items-center gap-2 text-[12px] text-inkmuted">
+              打字速度
+              <select
+                value={typewriterSpeed}
+                onChange={(e) => setTypewriterSpeed(Number(e.target.value))}
+                className="rounded-full border border-golddim/30 bg-silk px-3 py-1.5 text-golddim focus-visible:outline focus-visible:outline-golddim"
+              >
+                <option value={68}>舒缓</option>
+                <option value={34}>标准</option>
+                <option value={17}>快速</option>
+                <option value={0}>即时</option>
+              </select>
+            </label>
+          </div>
+
+          {viewMode === 'stage' ? (
+            <RoundTableStage
+              result={result}
+              typewriterSpeed={typewriterSpeed}
+              onFinish={() => setViewMode('text')}
+              onSkip={() => setViewMode('text')}
+            />
+          ) : (
+          <>
           {/* 先生开场（三句好话——先扬后抑） */}
           {result.opening && (
             <div className="mx-auto max-w-2xl rounded-2xl border border-golddim/30 bg-silk2 p-5 text-center shadow-card">
@@ -423,6 +504,8 @@ export default function RoundTablePage() {
           <p className="mt-6 text-center text-[11px] text-inkmuted">
             圆桌各家所论皆传统命理文化的观察视角，仅供文化研习，不作任何决策建议。
           </p>
+          </>
+          )}
         </div>
       )}
     </div>

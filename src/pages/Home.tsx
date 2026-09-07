@@ -1,879 +1,207 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
+import { motion, useReducedMotion } from "framer-motion";
 import FloatingGlyphs from "@/components/FloatingGlyphs";
-import SectionHeading from "@/components/SectionHeading";
-import FeatureCard from "@/components/FeatureCard";
-import { GhostButton, GoldButton } from "@/components/Buttons";
 import BrandLogo from "@/components/BrandLogo";
-import { usePaymentEnabled } from "@/hooks/usePaymentEnabled";
 import { usePageMeta } from "@/lib/page-meta";
-
-const SiweiDemo = lazy(() => import("@/components/SiweiDemo"));
-const HomeInstallPrompt = lazy(() => import("@/components/HomeInstallPrompt"));
-import CaseInviteCard from '@/components/CaseInviteCard'
 import QuoteRotator from '@/components/QuoteRotator'
 
-const BOOKS = [
-  "周易",
-  "滴天髓",
-  "三命通会",
-  "子平真诠",
-  "穷通宝鉴",
-  "渊海子平",
-  "紫微斗数全书",
-  "果老星宗",
-  "增删卜易",
-  "卜筮正宗",
-  "六壬大全",
-  "烟波钓叟歌",
-];
-
-/** 信任锚点（为什么信紫府）——四言诗版 */
+/** 信任锚点（低调四言） */
 const TRUST_VERSE = [
-  { line: '星移有准', note: '历法 · 算得准' },
-  { line: '字字有根', note: '引文 · 讲得真' },
-  { line: '法度示人', note: '规则 · 不藏私' },
-  { line: '温言照心', note: '关怀 · 留余温' },
+  { line: '星移有准', note: '算得准' },
+  { line: '字字有根', note: '讲得真' },
+  { line: '法度示人', note: '不藏私' },
+  { line: '温言照心', note: '留余温' },
 ];
 
-type HomeEntry = {
-  glyph: string;
-  title: string;
-  desc: string;
-  to: string;
-  tag?: "free" | "flagship" | "overview";
-  flagship?: boolean;
-};
-
-/** 三才 · 天地人（《易经·说卦》分类框架） */
-const THREE_REALMS: {
-  glyph: string;
-  name: string;
-  sub: string;
-  desc: string;
-  items: { to: string; label: string }[];
-}[] = [
-  {
-    glyph: '☰',
-    name: '天 · 时运',
-    sub: 'THE HEAVEN · 天时',
-    desc: '立天之道曰阴与阳。历法、节气、流年大势，皆属天时——何时做何事，顺时而参。',
-    items: [
-      { to: '/daily', label: '每日时令' },
-      { to: '/daily', label: '安寝时令' },
-      { to: '/qimen', label: '奇门时空' },
-      { to: '/scenario/wealth', label: '流年运势' },
-    ],
-  },
-  {
-    glyph: '☷',
-    name: '地 · 空间',
-    sub: 'THE EARTH · 地利',
-    desc: '立地之道曰柔与刚。方位、宅局、环境布局，皆属地利——居处于何处，安宅而参。',
-    items: [
-      { to: '/scenario/fengshui', label: '宅局自查' },
-      { to: '/scenario/fengshui', label: '门主灶参详' },
-      { to: '/scenario/fengshui', label: '公版原文依据' },
-    ],
-  },
-  {
-    glyph: '☴',
-    name: '人 · 命理',
-    sub: 'THE HUMAN · 人和',
-    desc: '立人之道曰仁与义。八字、星盘、人事合参，皆属人和——我是谁、我与谁，明己而参。',
-    items: [
-      { to: '/bazi', label: '八字排盘' },
-      { to: '/ziwei', label: '紫微斗数' },
-      { to: '/liuyao', label: '六爻起卦' },
-      { to: '/daliuren', label: '大六壬' },
-      { to: '/bazi/hepan', label: '合盘合参' },
-    ],
-  },
-];
-
-const SCENARIOS: (HomeEntry & { emoji: string; eyebrow: string })[] = [
-  {
-    glyph: "财",
-    emoji: "💰",
-    eyebrow: "Career & Wealth",
-    title: "事业财富运程",
-    desc: "看看今年事业与财运的走向——选择的时机与方向。",
-    to: "/scenario/wealth",
-  },
-  {
-    glyph: "缘",
-    emoji: "💑",
-    eyebrow: "Love & Marriage",
-    title: "感情婚姻合参",
-    desc: "两个人合不合得来——性格、缘分与相处之道。",
-    to: "/scenario/love",
-  },
-  {
-    glyph: "寝",
-    emoji: "🌙",
-    eyebrow: "Sleep & Almanac",
-    title: "今晚安寝时令",
-    desc: "今日宜忌与安寝提示——跟着节气过好每一天。",
-    to: "/daily",
-  },
-  {
-    glyph: "养",
-    emoji: "🍃",
-    eyebrow: "Health & Wellness",
-    title: "健康体质养生",
-    desc: "从五行旺衰理解体质倾向，获得适合自己的日常养护提示。",
-    to: "/scenario/health",
-  },
-];
-
-const LEAD_TOOLS: HomeEntry[] = [
-  {
-    glyph: "辰",
-    title: "每日时令",
-    desc: "合节气与今日干支，查时令宜忌与日常提示",
-    to: "/daily",
-    tag: "free",
-  },
-  {
-    glyph: "卦",
-    title: "六爻起卦",
-    desc: "铜钱摇卦，依《增删卜易》《卜筮正宗》参详",
-    to: "/liuyao",
-    tag: "free",
-  },
-  {
-    glyph: "奇",
-    title: "奇门参详",
-    desc: "随时起局、锚定用神，依古籍梳理行动策略",
-    to: "/qimen",
-    tag: "free",
-  },
-];
-
-const LEARNING_ENTRIES: HomeEntry[] = [
-  {
-    glyph: "藏",
-    title: "藏经阁",
-    desc: "翻阅十二部公版术数典籍，原文节选皆可追溯",
-    to: "/wiki",
-  },
-  {
-    glyph: "辞",
-    title: "术语词典",
-    desc: "从干支、十神到格局，用通识释义理解古典术语",
-    to: "/wiki",
-  },
-  {
-    glyph: "法",
-    title: "名家方法论",
-    desc: "研读名家分析与教学思路，辨明方法、适用范围与边界",
-    to: "/talks",
-  },
-];
-
-const SECONDARY_ENGINES: HomeEntry[] = [
-  {
-    glyph: "参",
-    title: "三术合参",
-    desc: "八字 × 紫微 × 七政三盘互证，信度分层的旗舰整合参详",
-    to: "/hecan",
-    tag: "overview",
-    flagship: true,
-  },
-  {
-    glyph: "圆",
-    title: "论命圆桌",
-    desc: "子平格局、三命通会、盲派等七大流派同盘论命，共识与分歧一并呈上",
-    to: "/roundtable",
-  },
-  {
-    glyph: "照",
-    title: "观照见性",
-    desc: "相由心生——以生辰为底色，如月照水，映照当下的你",
-    to: "/guanzhao",
-  },
-  {
-    glyph: "命",
-    title: "八字排盘",
-    desc: "录入生辰，依古法起四柱、排大运流年",
-    to: "/bazi",
-    tag: "free",
-  },
-  {
-    glyph: "批",
-    title: "八字详批",
-    desc: "锚定古籍原文，AI 逐柱逐句引经深参",
-    to: "/bazi",
-  },
-  {
-    glyph: "缘",
-    title: "八字合盘",
-    desc: "双盘并置对照，参看五行互补与缘分深浅",
-    to: "/bazi/hepan",
-    tag: "free",
-  },
-  {
-    glyph: "紫",
-    title: "紫微斗数",
-    desc: "十二宫安星，观主星四化与大限流年",
-    to: "/ziwei",
-    tag: "free",
-  },
-  {
-    glyph: "星",
-    title: "七政四余",
-    desc: "果老星宗恒星制，以二十八宿推先天禀赋",
-    to: "/qizheng",
-    tag: "free",
-  },
-  {
-    glyph: "壬",
-    title: "大六壬",
-    desc: "月将加时成课，三传定事之始中末",
-    to: "/daliuren",
-    tag: "free",
-  },
-  {
-    glyph: "宝",
-    title: "百宝袋",
-    desc: "寻时定盘 · 随身小工具集，陆续上新",
-    to: "/toolkit",
-    tag: "free",
-  },
-];
-
-/** 将纯文本标题拆成单字 span（供字级入场动画） */
-function splitChars(el: HTMLElement) {
-  const text = el.textContent ?? "";
-  el.textContent = "";
-  const frag = document.createDocumentFragment();
-  for (const ch of text) {
-    const s = document.createElement("span");
-    s.className = "gs-char inline-block will-change-transform";
-    s.textContent = ch === " " ? " " : ch;
-    frag.appendChild(s);
-  }
-  el.appendChild(frag);
-}
-
-/** 预拆分单字（用于含内联样式的标题，跳过 splitChars） */
-function Chars({ text, className }: { text: string; className?: string }) {
-  return (
-    <>
-      {Array.from(text).map((ch, i) => (
-        <span
-          key={i}
-          className={`gs-char inline-block will-change-transform ${className ?? ""}`}
-        >
-          {ch === " " ? " " : ch}
-        </span>
-      ))}
-    </>
-  );
-}
-
-/** 交互演示位于长首页折叠线下，仅在接近视口时下载。 */
-function DeferredSiweiDemo() {
-  const anchorRef = useRef<HTMLDivElement>(null);
-  const [shouldLoad, setShouldLoad] = useState(false);
-
-  useEffect(() => {
-    const anchor = anchorRef.current;
-    if (!anchor || typeof IntersectionObserver === "undefined") {
-      setShouldLoad(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        setShouldLoad(true);
-        observer.disconnect();
-      },
-      { rootMargin: "600px 0px" },
-    );
-    observer.observe(anchor);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div ref={anchorRef} className="min-h-[320px]">
-      {shouldLoad && (
-        <Suspense fallback={<div className="h-[320px]" aria-hidden />}>
-          <SiweiDemo />
-        </Suspense>
-      )}
-    </div>
-  );
-}
-
-/** PWA 引导位于页底，接近视口时再下载其 JSX 与图标。 */
-function DeferredHomeInstallPrompt() {
-  const anchorRef = useRef<HTMLDivElement>(null);
-  const [shouldLoad, setShouldLoad] = useState(false);
-
-  useEffect(() => {
-    const anchor = anchorRef.current;
-    if (!anchor || typeof IntersectionObserver === "undefined") {
-      setShouldLoad(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        setShouldLoad(true);
-        observer.disconnect();
-      },
-      { rootMargin: "600px 0px" },
-    );
-    observer.observe(anchor);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div ref={anchorRef} className="min-h-[500px] bg-deep">
-      {shouldLoad && (
-        <Suspense fallback={null}>
-          <HomeInstallPrompt />
-        </Suspense>
-      )}
-    </div>
-  );
-}
-
+/**
+ * 紫府 · 一层「门」
+ * 进门只三样：一句本心、两个入口、先生一句话。
+ * 其余一切，藏于深处。
+ */
 export default function Home() {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const paymentEnabled = usePaymentEnabled();
-
   usePageMeta(
-    "紫府 · 以古人之智 照今日之心",
-    "紫府以《周易》《滴天髓》《三命通会》等公版典籍原文为根，AI 逐句引经参详——星移有准，字字有根，法度示人，温言照心。",
+    "紫府 · 以古人之智照今日之心",
+    "凡事爻一爻，看盘照一生。紫府——AI 命理道场，先生在此。"
   );
+  const reduce = useReducedMotion();
+  const [entered, setEntered] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const root = rootRef.current;
-    if (
-      !root ||
-      typeof IntersectionObserver === "undefined" ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      return;
-    }
-
-    root.querySelectorAll<HTMLElement>(".gs-chars").forEach(el => {
-      if (el.dataset.split !== "done") {
-        splitChars(el);
-        el.dataset.split = "done";
-      }
-      el.querySelectorAll<HTMLElement>(".gs-char").forEach((char, index) => {
-        char.style.setProperty("--zf-char-delay", `${index * 45}ms`);
-      });
-    });
-
-    const targets = Array.from(
-      root.querySelectorAll<HTMLElement>(
-        ".gs-chars, .gs-reveal, .gs-marquee, .gs-cta-btn, .gs-app-icon",
-      ),
-    );
-    targets.forEach(target => target.classList.add("zf-reveal-pending"));
-
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add("zf-in-view");
-          observer.unobserve(entry.target);
-        });
-      },
-      { rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
-    );
-    targets.forEach(target => observer.observe(target));
-    return () => observer.disconnect();
+    timerRef.current = setTimeout(() => setEntered(true), 120);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) };
   }, []);
 
   return (
-    <div ref={rootRef}>
-      {/* ===== S2 · Hero ===== */}
-      <section
-        className="relative flex min-h-[100dvh] flex-col overflow-hidden"
+    <div className="relative min-h-screen overflow-hidden bg-deep2">
+      <FloatingGlyphs />
+
+      {/* 夜穹呼吸光（隐约美的底色——缓慢明暗的金色光晕） */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0"
         style={{
           background:
-            "linear-gradient(to bottom, rgb(var(--deep-2)) 0%, rgb(var(--deep)) 100%)",
+            "radial-gradient(560px 340px at 18% 12%, rgba(201,164,92,0.10), transparent 65%)," +
+            "radial-gradient(620px 380px at 84% 88%, rgba(122,88,180,0.12), transparent 65%)," +
+            "radial-gradient(420px 260px at 55% 45%, rgba(201,164,92,0.05), transparent 70%)",
+          animation: "zifu-breathe 9s ease-in-out infinite",
         }}
-      >
-        {/* 金箔纹理叠层（10% 透明，纵向渐隐遮罩） */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.12]"
-          style={{
-            backgroundImage: "url(/assets/gold-foil.webp)",
-            backgroundSize: "512px 512px",
-            maskImage:
-              "radial-gradient(ellipse 90% 75% at 50% 42%, black 30%, transparent 78%)",
-            WebkitMaskImage:
-              "radial-gradient(ellipse 90% 75% at 50% 42%, black 30%, transparent 78%)",
-          }}
-        />
+      />
+      {/* 漂移光斑（两点，极慢） */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute z-0 h-64 w-64 rounded-full"
+        style={{
+          left: "8%", top: "22%",
+          background: "radial-gradient(circle, rgba(201,164,92,0.14), transparent 70%)",
+          filter: "blur(30px)",
+          animation: "zifu-drift-a 26s ease-in-out infinite",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute z-0 h-72 w-72 rounded-full"
+        style={{
+          right: "6%", bottom: "16%",
+          background: "radial-gradient(circle, rgba(160,120,220,0.13), transparent 70%)",
+          filter: "blur(34px)",
+          animation: "zifu-drift-b 32s ease-in-out infinite",
+        }}
+      />
 
-        {/* 漂浮字场（深区稍亮，纯 CSS 动画） */}
-        <div className="absolute inset-[-10%]">
-          <FloatingGlyphs count={20} onDeep className="bottom-[42%]" />
-          <FloatingGlyphs count={28} onDeep className="top-[46%]" />
-        </div>
-
-        {/* 品牌水印 */}
-        <BrandLogo
-          variant="mark"
-          theme="indigo"
-          size={320}
-          title=""
-          aria-hidden
-          className="animate-spin-slow pointer-events-none absolute -bottom-10 -right-10 w-[320px] opacity-[0.1]"
-        />
-
-        {/* 品牌区：文档流布局，顶部留导航余量（80px），向下自然排列。
-            任何窗口高度都不裁剪、不遮挡（原 absolute+bottom 锚定在矮视口
-            上沿越界压住导航——版面事故根因） */}
-        <div className="relative z-10 mt-[80px] flex flex-col items-center px-4 pb-20 text-center sm:px-6">
-          <span className="inline-block">
-            <span className="inline-block sm:hidden">
-              <BrandLogo variant="mark" size={64} />
-            </span>
-            <span className="hidden sm:inline-block">
-              <BrandLogo variant="mark" size={132} />
-            </span>
-          </span>
-          <h1 className="mt-3 flex items-baseline font-serif text-[clamp(56px,17vw,148px)] font-black leading-[1.05] sm:mt-5">
-            <span className="inline-block text-silktext">
-              紫
-            </span>
-            <span className="inline-block text-goldbright">
-              府
-            </span>
+      <div className="zf-container relative z-10 flex min-h-screen flex-col items-center justify-center py-20">
+        {/* 门额 */}
+        <motion.div
+          initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16 }}
+          animate={{ opacity: entered ? 1 : 0, y: entered ? 0 : 16 }}
+          transition={{ duration: 0.9 }}
+          className="text-center"
+        >
+          <BrandLogo variant="mark" size={34} className="mx-auto" />
+          <h1 className="mt-6 font-serif text-[30px] font-bold leading-[1.6] tracking-[0.18em] text-inktext sm:text-[36px]">
+            以古人之智
+            <span className="mx-3 text-golddim">·</span>
+            照今日之心
           </h1>
-          <p className="mt-2 font-latin text-[13px] font-medium uppercase text-silkmuted">
-            Zifu Palace
+          <p className="mt-5 font-serif text-[13.5px] leading-[2.1] tracking-[0.1em] text-inkmuted">
+            问一事，摇一卦；想看清这一生，排一盘。
+            <br className="sm:hidden" />
+            先生不吆喝，只在这里。
           </p>
-          <div className="mt-7 flex max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2">
-            <span className="h-px w-10 shrink-0 bg-gold/40" />
-            <span className="break-keep font-serif text-[16px] font-semibold tracking-[0.22em] text-goldbright">
-              以古人之智 · 照今日之心
-            </span>
-            <span className="h-px w-10 shrink-0 bg-gold/40" />
-          </div>
-          <p className="mt-5 w-full break-words px-1 font-sans text-[13px] font-light leading-[1.95] text-silktext sm:text-[15.5px]">
-            <span className="block">以《周易》《滴天髓》《三命通会》等典籍原文为基</span>
-            <span className="block">AI 逐句引经参详，让流传千年的智慧</span>
-            <span className="block">成为关照自己的方式</span>
-          </p>
-          <div className="mt-9 flex flex-col items-center gap-4 sm:flex-row">
-            <span className="inline-block">
-              <GoldButton to="/bazi">找先生看看</GoldButton>
-            </span>
-            <span className="inline-block">
-              <GhostButton to="/liuyao">遇事不决 · 问一卦</GhostButton>
-            </span>
-          </div>
-        </div>
+        </motion.div>
 
-        {/* 底部滚动提示 */}
-        <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2.5">
-          <span className="animate-float-hint block h-10 w-px origin-top bg-gold/60" />
-          <span className="text-[12px] tracking-[0.24em] text-silkmuted">
-            向下参看
-          </span>
-        </div>
-      </section>
-
-      {/* S2.3 · 先生的话（金句轮播——人味） */}
-      <section className="relative bg-deep2 py-8">
-        <div className="zf-container">
+        {/* 先生的话 */}
+        <motion.div
+          initial={reduce ? { opacity: 0 } : { opacity: 0 }}
+          animate={{ opacity: entered ? 1 : 0 }}
+          transition={{ duration: 1.2, delay: 0.5 }}
+          className="mt-8"
+        >
           <QuoteRotator />
-        </div>
-      </section>
+        </motion.div>
 
-      {/* ===== S2.4 · 三问速通（问句代替术语——零门槛第一门） ===== */}
-      <section className="relative bg-deep2 pt-2">
-        <div className="zf-container">
-          <p className="text-center font-sans text-[11px] tracking-[0.3em] text-silkmuted/70">
-            不知道从哪开始？问一句就行——
-          </p>
-          <div className="mt-4 flex flex-wrap items-stretch justify-center gap-3">
-            {[
-              { q: "我今年怎么样？", a: "排八字看运势", to: "/bazi" },
-              { q: "我们合适吗？", a: "缘分合盘", to: "/bazi/hepan" },
-              { q: "心里有事，拿不定主意", a: "问一卦", to: "/liuyao" },
-              { q: "心里乱，想静一静", a: "先生观照", to: "/guanzhao" },
-            ].map((item) => (
-              <Link
-                key={item.q}
-                to={item.to}
-                className="gs-reveal group flex items-center gap-3 rounded-full border border-gold/25 bg-deep/60 px-5 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/70 hover:bg-deep"
-              >
-                <span className="font-serif text-[14.5px] font-medium tracking-[0.06em] text-silktext transition-colors group-hover:text-goldbright">
-                  「{item.q}」
-                </span>
-                <span className="text-[11.5px] tracking-[0.1em] text-golddim">
-                  → {item.a}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== S2.5 · 先生在此（人味入口——小白也能懂） ===== */}
-      <section className="relative border-t border-gold/10 bg-deep2 py-16 sm:py-20">
-        <div className="zf-container">
-          <div className="text-center">
-            <p className="font-latin text-[11px] font-medium uppercase tracking-[0.32em] text-gold">
-              THE MASTER IS HERE
-            </p>
-            <h2 className="mt-3 font-serif text-[clamp(24px,3.2vw,34px)] font-bold tracking-[0.1em] text-silktext">
-              先生在此
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl text-[13.5px] leading-[1.9] text-silkmuted">
-              紫府不是冷冰冰的工具——先生就坐在堂上。问八字、照心性、观全局，都可以找先生。
-            </p>
-          </div>
-          <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4">
-            {[
-              {
-                glyph: "批",
-                title: "先生详批",
-                desc: "逐句引经，深参你的命盘",
-                to: "/bazi",
-              },
-              {
-                glyph: "照",
-                title: "先生观照",
-                desc: "不下断语，只映照当下的你",
-                to: "/guanzhao",
-              },
-              {
-                glyph: "圆",
-                title: "先生圆桌",
-                desc: "七派同观一盘，共识与分歧并呈",
-                to: "/roundtable",
-              },
-              {
-                glyph: "笔",
-                title: "先生专栏",
-                desc: "闲时随笔，医病药平常时节",
-                to: "/column",
-              },
-            ].map((m) => (
-              <Link
-                key={m.title}
-                to={m.to}
-                className="gs-reveal group rounded-xl border border-gold/15 bg-deep/70 px-5 py-6 text-center transition-all duration-300 hover:-translate-y-1 hover:border-gold/55 hover:bg-deep"
-              >
-                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-gold/40 font-serif text-[20px] font-black text-goldbright">
-                  {m.glyph}
-                </span>
-                <h3 className="mt-4 font-serif text-[16px] font-bold tracking-[0.08em] text-silktext transition-colors group-hover:text-goldbright">
-                  {m.title}
-                </h3>
-                <p className="mt-2 text-[12px] leading-[1.7] text-silkmuted">{m.desc}</p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== S2b · 为什么信紫府（信任锚点） ===== */}
-      <section className="bg-silk py-20">
-        <div className="zf-container">
-          <div className="mx-auto flex max-w-[860px] flex-wrap items-stretch justify-center gap-x-10 gap-y-6">
-            {TRUST_VERSE.map((v, i) => (
-              <div key={v.line} className="flex items-center gap-10">
-                <div className="text-center">
-                  <p className="font-serif text-[30px] font-black tracking-[0.18em] text-inktext sm:text-[34px]">
-                    {v.line}
-                  </p>
-                  <p className="mt-2 text-[11.5px] tracking-[0.14em] text-inkmuted">{v.note}</p>
-                </div>
-                {i < TRUST_VERSE.length - 1 && (
-                  <span className="hidden h-8 w-px bg-golddim/30 sm:block" aria-hidden />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== S7 · 次级引擎入口 ===== */}
-      <section className="border-t border-gold/10 bg-deep2 pb-28">
-        <div className="zf-container">
-          <div className="flex flex-col gap-3 border-b border-gold/15 pb-7 pt-10 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="font-latin text-[11px] font-medium uppercase tracking-[0.32em] text-gold">
-                GET STARTED
-              </p>
-              <h2 className="mt-3 font-serif text-[25px] font-bold tracking-[0.1em] text-silktext">
-                从这里开始
-              </h2>
-            </div>
-            <p className="text-[13px] leading-relaxed text-silkmuted">
-              想算什么，直接点——全部免费体验，无需注册
-            </p>
-          </div>
-          <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-4">
-            {SECONDARY_ENGINES.map(engine => (
-              <Link
-                key={engine.title}
-                to={engine.to}
-                className="gs-reveal group flex items-center gap-3 rounded-lg border border-gold/10 bg-deep/65 px-4 py-4 transition-all duration-300 hover:border-gold/45 hover:bg-deep"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-gold/30 font-serif text-[17px] font-bold text-goldbright">
-                  {engine.glyph}
-                </span>
-                <span className="min-w-0 font-serif text-[14px] font-semibold tracking-[0.05em] text-silktext transition-colors group-hover:text-goldbright sm:text-[15px]">
-                  {engine.title}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== S3 · 场景入口 ===== */}
-      <section className="relative overflow-hidden bg-deep2 py-24 sm:py-28">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage: "url(/assets/gold-foil.webp)",
-            backgroundSize: "512px 512px",
-          }}
-        />
-        <div className="relative zf-container">
-          <SectionHeading
-            dark
-            eyebrow="WHAT DO YOU WANT TO KNOW"
-            title="此刻，你想知道什么"
-            sub="从你最关心的事出发——事业、感情、健康、起居"
-          />
-          <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2">
-            {SCENARIOS.map(scenario => (
-              <Link
-                key={scenario.to}
-                to={scenario.to}
-                className="gs-reveal group relative min-h-[230px] overflow-hidden rounded-2xl border border-gold/35 bg-deep p-7 transition-all duration-500 hover:-translate-y-1 hover:border-gold/80 hover:shadow-[0_20px_55px_-28px_rgba(228,198,106,0.65)] sm:p-9"
-              >
-                <div
-                  aria-hidden
-                  className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                  style={{
-                    background:
-                      "radial-gradient(circle at 100% 0%, rgb(var(--gold) / 0.22), transparent 48%), linear-gradient(135deg, transparent 30%, rgb(var(--gold) / 0.08))",
-                  }}
-                />
-                <span className="absolute right-5 top-3 select-none text-[70px] opacity-[0.09] grayscale transition-all duration-500 group-hover:scale-110 group-hover:opacity-20 group-hover:grayscale-0 sm:right-8 sm:text-[92px]">
-                  {scenario.emoji}
-                </span>
-                <div className="relative flex h-full flex-col items-start">
-                  <p className="font-latin text-[11px] font-medium uppercase tracking-[0.3em] text-gold">
-                    {scenario.eyebrow}
-                  </p>
-                  <div className="mt-7 flex items-center gap-4">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-gold/45 font-serif text-[23px] font-black text-goldbright">
-                      {scenario.glyph}
-                    </span>
-                    <h2 className="font-serif text-[clamp(24px,3vw,34px)] font-bold tracking-[0.08em] text-silktext">
-                      {scenario.title}
-                    </h2>
-                  </div>
-                  <p className="mt-5 max-w-xl text-[14px] leading-[1.9] text-silkmuted">
-                    {scenario.desc}
-                  </p>
-                  <span className="zf-link-more mt-6 inline-flex items-center gap-1 text-[13px] font-medium tracking-[0.12em] text-goldbright">
-                    去看看 <span className="zf-arrow">→</span>
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== S4 · 古籍跑马灯 ===== */}
-      <section className="gs-marquee border-y border-[rgba(199,162,58,0.18)] bg-deep py-8">
-        <p className="text-center font-serif text-[15px] font-semibold tracking-[0.24em] text-goldbright">
-          典籍为据 · 句句可溯
-        </p>
-        <div className="zf-marquee mt-5 overflow-hidden">
-          <div className="zf-marquee-track flex w-max items-center whitespace-nowrap">
-            {[0, 1].map(dup => (
-              <div
-                key={dup}
-                aria-hidden={dup === 1}
-                className="flex items-center"
-              >
-                {BOOKS.map(b => (
-                  <span key={`${dup}-${b}`} className="flex items-center">
-                    <span className="px-5 font-serif text-[17px] text-golddim">
-                      《{b}》
-                    </span>
-                    <span className="text-silkmuted">·</span>
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== S3b · 三才 · 天地人 ===== */}
-      <section className="bg-silk py-24 sm:py-28">
-        <div className="zf-container">
-          <SectionHeading
-            eyebrow="Three Realms"
-            title="三才 · 天地人"
-            sub="立天之道曰阴与阳，立地之道曰柔与刚，立人之道曰仁与义 ——《易经·说卦》"
-          />
-          <div className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-3">
-            {THREE_REALMS.map(realm => (
-              <div
-                key={realm.name}
-                className="rounded-2xl border border-golddim/20 bg-white/50 p-7"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-serif text-[26px] font-black text-goldbright">{realm.glyph}</span>
-                  <div>
-                    <h3 className="font-serif text-[20px] font-bold tracking-[0.1em] text-inktext">
-                      {realm.name}
-                    </h3>
-                    <p className="mt-0.5 text-[11.5px] tracking-[0.14em] text-inkmuted">{realm.sub}</p>
-                  </div>
-                </div>
-                <p className="mt-4 text-[13px] leading-[1.9] text-inkmuted">{realm.desc}</p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {realm.items.map(item => (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      className="rounded-full border border-golddim/30 px-3.5 py-1.5 text-[12px] tracking-[0.08em] text-inktext transition-colors hover:border-goldbright hover:text-goldbright"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== S3c · 命例对拍征集（社区生态 D） ===== */}
-      <CaseInviteCard />
-
-      {/* ===== S5 · 引流工具 ===== */}
-      <section className="bg-deep py-24 sm:py-28">
-        <div className="zf-container">
-          <SectionHeading
-            dark
-            eyebrow="Free Tools"
-            title="先从一件小事开始"
-            sub="三个免费工具，无需订阅；随用随走，句句以传统典籍为据"
-          />
-          <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-3">
-            {LEAD_TOOLS.map(tool => (
-              <FeatureCard
-                key={tool.to}
-                dark
-                {...tool}
-                className="min-h-[245px] border-gold/30"
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== S6 · 学习入口 ===== */}
-      <section className="bg-deep2 py-24 sm:py-28">
-        <div className="zf-container">
-          <SectionHeading
-            dark
-            eyebrow="Study & Sources"
-            title="循着出处，读懂古法"
-            sub="从典籍原文、术语释义到方法脉络，建立自己的理解"
-          />
-          <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-3">
-            {LEARNING_ENTRIES.map(entry => (
-              <FeatureCard key={entry.title} dark {...entry} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 深 → 浅 过渡带 */}
-      <div className="zf-fade-to-silk h-[180px]" />
-
-      {/* ===== S6 · 四维交互演示 ===== */}
-      <section className="relative bg-silk py-32">
-        <div className="zf-paper-grain pointer-events-none absolute inset-0 opacity-[0.03]" />
-        <div className="relative mx-auto w-full max-w-[860px] px-6 md:px-10">
-          <SectionHeading
-            title="四 维 交 互"
-            sub={
-              <>
-                <span className="block font-serif text-[18px] font-semibold tracking-[0.14em] text-golddim">
-                  两种人格 × 两种深度
-                </span>
-                <span className="mt-2 block text-[14px] text-inkmuted">
-                  同一张盘，两种讲法——点下方按钮，现场感受
-                </span>
-              </>
-            }
-          />
-          <div className="mt-14">
-            <DeferredSiweiDemo />
-          </div>
-          <div className="gs-reveal mt-10 text-center">
-            <Link
-              to="/bazi"
-              className="zf-link-more text-[15px] font-medium tracking-[0.1em] text-golddim"
-            >
-              免费排一张自己的盘试试 <span className="zf-arrow">→</span>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ===== S7 · 注册 CTA ===== */}
-      <section className="relative bg-silk py-24">
-        <div className="zf-paper-grain pointer-events-none absolute inset-0 opacity-[0.03]" />
-        <div className="relative zf-container flex flex-col items-center text-center">
-          <h2
-            data-split="done"
-            className="gs-chars font-serif text-[clamp(26px,3.6vw,42px)] font-bold leading-snug tracking-[0.12em] text-inktext"
+        {/* 两个入口 */}
+        <motion.div
+          initial={reduce ? { opacity: 0 } : { opacity: 0, y: 22 }}
+          animate={{ opacity: entered ? 1 : 0, y: entered ? 0 : 22 }}
+          transition={{ duration: 0.9, delay: 0.9 }}
+          className="mt-12 grid w-full max-w-[720px] grid-cols-1 gap-5 sm:grid-cols-5"
+        >
+          {/* 主入口 · 六爻 */}
+          <Link
+            to="/liuyao"
+            className="group relative overflow-hidden rounded-2xl border border-gold/45 bg-gold/[0.07] px-7 py-9 text-center transition-all duration-300 hover:border-gold hover:bg-gold/[0.13] hover:shadow-[0_0_44px_rgba(201,164,92,0.18)] sm:col-span-3"
+            style={{ animation: "zifu-card-in 1.1s ease-out 1.2s both" }}
           >
-            <Chars text="无需注册" />
-            <Chars text="即刻参详" />
-          </h2>
-          <p className="gs-reveal mt-4 text-[14px] tracking-[0.08em] text-inkmuted">
-            {paymentEnabled
-              ? "按次计费，无订阅；充值额外赠 15%"
-              : "游客模式全功能可用 · AI 参详即时体验 · 更多服务陆续开放"}
-          </p>
-          <div className="gs-cta-btn mt-10">
-            <GoldButton
-              to="/bazi"
-              className="animate-gold-breathe px-12 py-4 text-[16px]"
-            >
-              开始排盘
-            </GoldButton>
-          </div>
-        </div>
-      </section>
+            <span className="pointer-events-none absolute -right-6 -top-6 font-serif text-[92px] leading-none text-gold/[0.07] transition-transform duration-500 group-hover:scale-110">☰</span>
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 h-px"
+              style={{
+                background: "linear-gradient(90deg, transparent, rgba(201,164,92,0.75), transparent)",
+                backgroundSize: "200% 100%",
+                animation: "zifu-sweep 4.5s linear infinite",
+              }}
+            />
+            <p className="font-serif text-[26px] font-bold tracking-[0.22em] text-goldbright">凡事爻一爻</p>
+            <p className="mt-4 text-[12.5px] leading-[2] tracking-[0.08em] text-silkmuted">
+              默想所问之事，掷一枚铜钱
+              <br />
+              不问生辰，两步到卦
+            </p>
+            <p className="mt-5 font-sans text-[11.5px] tracking-[0.2em] text-golddim transition-colors group-hover:text-goldbright">
+              起 一 卦
+            </p>
+          </Link>
 
-      {/* 浅 → 深 过渡带 */}
-      <div className="zf-fade-to-deep h-[200px]" />
+          {/* 次入口 · 八字 */}
+          <Link
+            to="/bazi"
+            className="group relative overflow-hidden rounded-2xl border border-golddim/30 bg-silk2/50 px-7 py-9 text-center transition-all duration-300 hover:border-gold/55 hover:bg-silk2/80 hover:shadow-[0_0_36px_rgba(201,164,92,0.12)] sm:col-span-2"
+            style={{ animation: "zifu-card-in 1.1s ease-out 1.5s both" }}
+          >
+            <span className="pointer-events-none absolute -right-4 -top-4 font-serif text-[72px] leading-none text-gold/[0.06] transition-transform duration-500 group-hover:scale-110">☵</span>
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 h-px"
+              style={{
+                background: "linear-gradient(90deg, transparent, rgba(201,164,92,0.5), transparent)",
+                backgroundSize: "200% 100%",
+                animation: "zifu-sweep 7s linear infinite",
+              }}
+            />
+            <p className="font-serif text-[20px] font-bold tracking-[0.18em] text-inktext">看这一生</p>
+            <p className="mt-4 text-[12px] leading-[2] tracking-[0.08em] text-inkmuted">
+              排一盘，照见底色与来路
+            </p>
+            <p className="mt-5 font-sans text-[11.5px] tracking-[0.2em] text-golddim/80 transition-colors group-hover:text-golddim">
+              排 盘
+            </p>
+          </Link>
+        </motion.div>
 
-      {/* ===== S8 · PWA 引导（接近视口时按需加载） ===== */}
-      <DeferredHomeInstallPrompt />
+        {/* 信任四言（低调收底） */}
+        <motion.div
+          initial={reduce ? { opacity: 0 } : { opacity: 0 }}
+          animate={{ opacity: entered ? 1 : 0 }}
+          transition={{ duration: 1.4, delay: 1.5 }}
+          className="mt-16 flex flex-wrap items-center justify-center gap-x-8 gap-y-3"
+        >
+          {TRUST_VERSE.map((v) => (
+            <span key={v.line} className="flex items-baseline gap-2 font-serif">
+              <span className="text-[14px] tracking-[0.2em] text-inkmuted">{v.line}</span>
+              <span className="text-[10px] tracking-[0.14em] text-inkfaint">{v.note}</span>
+            </span>
+          ))}
+        </motion.div>
+      </div>
+
+      <style>{`
+        @keyframes zifu-breathe {
+          0%, 100% { opacity: 0.55; }
+          50% { opacity: 1; }
+        }
+        @keyframes zifu-drift-a {
+          0%, 100% { transform: translate(0, 0); }
+          33% { transform: translate(46px, -30px); }
+          66% { transform: translate(-24px, 22px); }
+        }
+        @keyframes zifu-drift-b {
+          0%, 100% { transform: translate(0, 0); }
+          33% { transform: translate(-52px, 26px); }
+          66% { transform: translate(28px, -34px); }
+        }
+        @keyframes zifu-sweep {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        @keyframes zifu-card-in {
+          from { opacity: 0; transform: translateY(18px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
