@@ -240,20 +240,44 @@ export default function RoundTablePage() {
       </form>
 
       {loading && (
-        <div className="mt-12 text-center">
-          <div className="flex items-center justify-center gap-2">
+        <div className="mt-10">
+          {/* 七席环坐 · 逐个入席（循环动画——思考期氛围） */}
+          <div className="relative mx-auto h-[300px] max-w-[420px] overflow-hidden rounded-2xl border border-golddim/20 bg-silk2/60 sm:h-[330px]">
+            <div className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 border-golddim/40 bg-silk text-center">
+              <span className="text-[11px] tracking-[0.2em] text-inkmuted">候茶</span>
+              <span className="mt-1 font-serif text-[13px] tracking-[0.12em] text-golddim">七席待开</span>
+            </div>
             {ROUNDTABLE_SCHOOLS.map((s, i) => (
-              <span
+              <motion.div
                 key={s.id}
-                className="animate-pulse rounded-full border border-golddim/40 px-3 py-1 font-serif text-[12px] tracking-[0.1em] text-golddim"
-                style={{ animationDelay: `${i * 0.35}s` }}
+                initial={{ opacity: 0, y: 14, scale: 0.7 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: i * 0.45, duration: 0.55 }}
+                className="absolute text-center"
+                style={{
+                  left: `${[8, 2, 14, 68, 82, 78, 42][i]}%`,
+                  top: `${[8, 34, 66, 66, 34, 8, 78][i]}%`,
+                  transform: 'translateX(-50%)',
+                  width: 74,
+                }}
               >
-                {s.name}
-              </span>
+                <span
+                  className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full border text-[15px] transition-shadow ${
+                    progress > 0 && Math.floor(progress / 160) % 7 === i
+                      ? 'border-gold bg-gold/10 shadow-[0_0_20px_rgba(201,164,92,0.6)]'
+                      : 'border-golddim/40 bg-silk'
+                  }`}
+                >
+                  {['📜', '📚', '🧭', '🌊', '🕯️', '🧧', '🔮'][i]}
+                </span>
+                <span className="mt-1 block text-[10.5px] leading-tight tracking-[0.03em] text-inkmuted">
+                  {s.name.length > 5 ? s.name.slice(0, 5) : s.name}
+                </span>
+              </motion.div>
             ))}
           </div>
-          <p className="mt-4 font-serif text-[15px] tracking-[0.2em] text-golddim">七席入座 · 各执其法</p>
-          <p className="mt-3 text-[12.5px] leading-[1.9] text-inkmuted">
+          <p className="mt-4 text-center font-serif text-[15px] tracking-[0.2em] text-golddim">七席入座 · 各执其法</p>
+          <p className="mt-3 text-center text-[12.5px] leading-[1.9] text-inkmuted">
             {progress > 0
               ? `先生已落笔 ${progress} 字——好话不怕慢，先沏杯茶。`
               : '先生正与七席同观一盘，约需一两分钟——好话不怕慢，先沏杯茶。'}
