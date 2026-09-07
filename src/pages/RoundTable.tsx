@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useEngine } from "@/hooks/useEngine";
 import { paipanBazi } from "@/engines/client/bazi";
@@ -30,6 +30,15 @@ export default function RoundTablePage() {
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  // 进度节流：流式每块都回调会疯狂闪跳——≥700ms 或 +60 字才更新一次
+  const progressGate = useRef({ last: 0, shown: 0 });
+  const throttledProgress = (n: number) => {
+    const now = Date.now();
+    if (now - progressGate.current.last > 700 || n - progressGate.current.shown > 60) {
+      progressGate.current = { last: now, shown: n };
+      setProgress(n);
+    }
+  };
   const [error, setError] = useState("");
   const [result, setResult] = useState<RoundTableResult | null>(null);
   const [mobileExpanded, setMobileExpanded] = useState(false);
@@ -70,7 +79,7 @@ export default function RoundTablePage() {
       setProgress(0);
       setError("");
       try {
-        const res = await runRoundTable(s, question || undefined, undefined, (n) => setProgress(n));
+        const res = await runRoundTable(s, question || undefined, undefined, throttledProgress);
         setResult(parseRoundTable(res.content));
       } catch (e) {
         setError(e instanceof Error ? e.message : "圆桌暂未开席，请稍后再试");
