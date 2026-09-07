@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useEngine } from "@/hooks/useEngine";
 import { paipanBazi } from "@/engines/client/bazi";
@@ -36,6 +36,29 @@ export default function RoundTablePage() {
   const [summary, setSummary] = useState("");
   // 追问状态：{seatIndex, q, reply, busy}
   const [followUp, setFollowUp] = useState<Record<number, { q: string; reply: string; busy: boolean }>>({});
+
+  // 从八字页「开圆桌」跳入：URL 带盘自动排盘+开席（仅首次）
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search)
+    const y = sp.get('year')
+    if (!y) return
+    const mo = Number(sp.get('month')), d = Number(sp.get('day'))
+    const h = Number(sp.get('hour') ?? 12), min = Number(sp.get('minute') ?? 0)
+    if (!mo || !d) return
+    setSolar(sp.get('calendar') !== 'lunar')
+    setGender(sp.get('gender') === 'female' ? 'female' : 'male')
+    setYear(y)
+    setMonth(String(mo))
+    setDay(String(d))
+    setHour(String(h))
+    paipan.mutate({
+      calendar: sp.get('calendar') === 'lunar' ? 'lunar' : 'solar',
+      year: Number(y), month: mo, day: d, hour: h, minute: min,
+      gender: sp.get('gender') === 'female' ? 'female' : 'male',
+      useTrueSolarTime: false, dayRollover: 'zichu', title: '论命圆桌',
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const paipan = useEngine(paipanBazi, {
     onSuccess: async (data) => {
