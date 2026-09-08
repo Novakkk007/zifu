@@ -157,7 +157,18 @@ export default function RoundTablePage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
+    <div className="relative min-h-screen overflow-hidden bg-deep2">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(560px 340px at 15% 8%, rgba(201,164,92,0.09), transparent 65%)," +
+            "radial-gradient(600px 380px at 86% 90%, rgba(122,88,180,0.1), transparent 65%)",
+          animation: "zifu-breathe 9s ease-in-out infinite",
+        }}
+      />
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-10">
       <p className="text-center font-serif text-[26px] font-bold tracking-[0.14em] text-golddim">
         论 命 圆 桌
       </p>
@@ -169,10 +180,10 @@ export default function RoundTablePage() {
 
       <form
         onSubmit={submit}
-        className="mx-auto mt-8 max-w-xl rounded-2xl border border-golddim/25 bg-silk2 p-6 shadow-card"
+        className="mx-auto mt-8 max-w-xl rounded-2xl border border-golddim/30 bg-silk2/70 p-6 shadow-[0_0_40px_rgba(201,164,92,0.08)] backdrop-blur-sm"
       >
         <div className="mt-5 grid grid-cols-2 gap-2">
-          <div className="flex gap-1 rounded-lg bg-silk p-1">
+          <div className="flex gap-1 rounded-lg bg-deep3/80 p-1">
             {[
               { k: true, t: "公历" },
               { k: false, t: "农历" },
@@ -189,7 +200,7 @@ export default function RoundTablePage() {
               </button>
             ))}
           </div>
-          <div className="flex gap-1 rounded-lg bg-silk p-1">
+          <div className="flex gap-1 rounded-lg bg-deep3/80 p-1">
             {[
               { k: "male", t: "男命" },
               { k: "female", t: "女命" },
@@ -220,7 +231,7 @@ export default function RoundTablePage() {
                 value={f.v}
                 onChange={(e) => f.set(e.target.value)}
                 placeholder={f.ph}
-                className="mt-1 w-full rounded-lg border border-golddim/20 bg-silk px-3 py-2 text-center text-[15px] font-bold text-inktext outline-none focus:border-golddim"
+                className="mt-1 w-full rounded-lg border border-golddim/25 bg-deep3/70 px-3 py-2 text-center text-[15px] font-bold text-inktext outline-none focus:border-golddim"
               />
             </label>
           ))}
@@ -229,7 +240,7 @@ export default function RoundTablePage() {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="想请圆桌特别留意什么？（可选，如：事业、感情、今年运势）"
-          className="mt-4 w-full rounded-lg border border-golddim/20 bg-silk px-3 py-2.5 text-[13px] text-inktext outline-none focus:border-golddim"
+          className="mt-4 w-full rounded-lg border border-golddim/25 bg-deep3/70 px-3 py-2.5 text-[13px] text-inktext outline-none focus:border-golddim"
         />
         <button
           type="submit"
@@ -508,6 +519,14 @@ export default function RoundTablePage() {
           )}
         </div>
       )}
+      </div>
+
+      <style>{`
+        @keyframes zifu-breathe {
+          0%, 100% { opacity: 0.55; }
+          50% { opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

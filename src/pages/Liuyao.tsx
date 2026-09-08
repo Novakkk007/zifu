@@ -248,8 +248,8 @@ export default function Liuyao() {
         </p>
       </div>
 
-      {/* S2 · 摇卦交互区（浅色） */}
-      <section className="relative overflow-hidden bg-silk py-20 md:py-28">
+      {/* S2 · 摇卦交互区（夜穹） */}
+      <section className="relative overflow-hidden bg-deep2 py-20 md:py-28">
         <div className="zf-container">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -299,9 +299,9 @@ export default function Liuyao() {
         </div>
       </section>
 
-      {/* S3 · 卦象结果（浅色） */}
+      {/* S3 · 卦象结果（夜穹） */}
       {done && (
-        <section ref={resultRef} className="scroll-mt-16 bg-silk pb-24 md:pb-32">
+        <section ref={resultRef} className="scroll-mt-16 bg-deep2 pb-24 md:pb-32">
           <div className="zf-container">
             {castData ? (
               <>
