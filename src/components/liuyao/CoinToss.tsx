@@ -28,7 +28,7 @@ function safeVibrate(ms: number) {
 }
 
 /** 八卦罗盘：铜钱幕后天盘（常时缓转，摇卦时加速 + 漩涡） */
-function BaguaRing({ tossing }: { tossing: boolean }) {
+function BaguaRing({ tossing, spin }: { tossing: boolean; spin: number }) {
   return (
     <div
       aria-hidden
@@ -78,6 +78,24 @@ function BaguaRing({ tossing }: { tossing: boolean }) {
               </span>
             </span>
           ))}
+          {spin > 0 && (
+            <span key={`flash-${spin}`} className="absolute inset-0">
+              {TRIGRAMS.map((t, i) => (
+                <span key={t} className="absolute inset-0" style={{ transform: `rotate(${i * 45}deg)` }}>
+                  <motion.span
+                    aria-hidden
+                    className="absolute left-1/2 top-[-11px] -translate-x-1/2 font-serif text-[20px] leading-none text-[#FFF6D8]"
+                    style={{ textShadow: '0 0 16px rgb(var(--gold-bright) / 0.95), 0 0 4px rgb(255 246 216 / 0.8)' }}
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    animate={{ opacity: [0, 1, 0], scale: [0.7, 1.4, 1.05] }}
+                    transition={{ duration: 0.55, delay: 0.78 + i * 0.045, times: [0, 0.3, 1] }}
+                  >
+                    {t}
+                  </motion.span>
+                </span>
+              ))}
+            </span>
+          )}
         </div>
       </motion.div>
     </div>
@@ -102,7 +120,17 @@ function Coin({
   const wobble = (spin % 3) * 4
   const delay = index * 0.05
   const faceCls =
-    'absolute inset-0 flex items-center justify-center rounded-full border border-golddim/60 [backface-visibility:hidden] [background:radial-gradient(circle_at_33%_28%,rgb(var(--gold-bright))_0%,rgb(var(--gold))_50%,rgb(var(--gold-dim))_100%)] shadow-[inset_0_2px_5px_rgba(255,255,255,0.4),inset_0_-4px_9px_rgba(0,0,0,0.35),0_12px_22px_-8px_rgba(0,0,0,0.6)]'
+    'absolute inset-0 flex items-center justify-center rounded-full border border-golddim/70 [backface-visibility:hidden] [background:radial-gradient(circle_at_33%_28%,rgb(var(--gold-bright))_0%,rgb(var(--gold))_46%,rgb(var(--gold-dim))_78%,rgb(var(--gold-dim))_100%)] shadow-[inset_0_2px_6px_rgba(255,255,255,0.45),inset_0_-5px_10px_rgba(0,0,0,0.4),inset_0_0_0_3px_rgb(var(--gold-dim)/0.5),0_12px_22px_-8px_rgba(0,0,0,0.6)]'
+  const rim = (
+    <>
+      <span aria-hidden className="absolute inset-[6px] rounded-full border border-[#F7E7AA]/55" />
+      <span aria-hidden className="absolute inset-[10px] rounded-full shadow-[inset_0_1px_3px_rgba(0,0,0,0.28)]" />
+      <span
+        aria-hidden
+        className="absolute left-1/2 top-1/2 h-[40px] w-[40px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-golddim/45 shadow-[inset_0_1px_2px_rgba(0,0,0,0.18)]"
+      />
+    </>
+  )
   const hole = (
     <span className="block h-[27px] w-[27px] rounded-[5px] border border-golddim/70 bg-silk shadow-[inset_0_2px_5px_rgba(0,0,0,0.35)]" />
   )
@@ -124,6 +152,14 @@ function Coin({
         animate={{ opacity: tossing ? 1 : 0 }}
         transition={{ duration: 0.3 }}
       />
+      {/* 落定呼吸金辉 */}
+      <motion.div
+        aria-hidden
+        className="absolute -inset-2 rounded-full"
+        style={{ background: 'radial-gradient(circle, rgb(var(--gold-bright) / 0.4) 0%, transparent 66%)' }}
+        animate={!tossing && spin > 0 ? { opacity: [0, 0.42, 0] } : { opacity: 0 }}
+        transition={!tossing && spin > 0 ? { duration: 3.4, repeat: Infinity, delay: index * 0.35 } : { duration: 0.3 }}
+      />
       {/* 落地影 */}
       <motion.div
         aria-hidden
@@ -143,25 +179,27 @@ function Coin({
           tossing
             ? {
                 rotateY: rotY,
-                rotateX: [0, (260 + wobble) * dir, 620 + wobble, 720],
-                rotateZ: [0, -8 * dir, 6 * dir, 0],
-                y: [0, -48 - index * 6 - wobble, -6, 0],
-                scale: [1, 1.13, 0.96, 1],
+                rotateX: [0, (250 + wobble) * dir, 540 + wobble, 650 + wobble, 720],
+                rotateZ: [0, -8 * dir, 5 * dir, -2 * dir, index * 1.6 - 1.6],
+                y: [0, -50 - index * 5 - wobble, -4, -11, 0],
+                scale: [1, 1.13, 0.97, 1.02, 1],
               }
-            : { rotateY: rotY, y: 0, scale: 1, rotateZ: 0 }
+            : { rotateY: rotY, y: 0, scale: 1, rotateZ: index * 1.6 - 1.6 }
         }
         transition={{
           duration: tossing ? 0.95 : 0.32,
           delay: tossing ? delay : 0,
           ease: [0.2, 0.75, 0.35, 1],
-          times: [0, 0.45, 0.82, 1],
+          times: [0, 0.45, 0.72, 0.85, 1],
         }}
       >
         <div className={faceCls}>
+          {rim}
           {mark('字')}
           {hole}
         </div>
         <div className={faceCls} style={{ transform: 'rotateY(180deg)' }}>
+          {rim}
           {mark('背')}
           {hole}
         </div>
@@ -297,7 +335,7 @@ export default function CoinToss({ tosses, coins, spin, tossing, onToss, onReset
       <div className="flex flex-col items-center">
         {/* 舞台：天盘 + 铜钱 + 冲击层 */}
         <div className="relative px-1 py-2">
-          <BaguaRing tossing={tossing} />
+          <BaguaRing tossing={tossing} spin={spin} />
           <motion.div
             className="relative z-10 flex items-center gap-4 sm:gap-6"
             animate={tossing ? { x: [0, 0, -5, 5, -3, 3, 0] } : { x: 0 }}
@@ -350,12 +388,12 @@ export default function CoinToss({ tosses, coins, spin, tossing, onToss, onReset
               <span
                 key={i}
                 className={cn(
-                  'h-2 w-2 rounded-full transition-colors duration-300',
+                  'h-2.5 w-2.5 rounded-full transition-colors duration-300',
                                     i < tosses.length
-                                      ? 'bg-goldbright'
+                                      ? 'bg-goldbright shadow-[0_0_8px_rgb(var(--gold-bright)/0.65)]'
                                       : i === tosses.length && !done
-                                        ? 'animate-dot-breathe bg-goldbright/70'
-                                        : 'bg-silk-muted/40',
+                                        ? 'animate-dot-breathe bg-goldbright/75'
+                                        : 'bg-silk-muted/50',
                 )}
               />
             ))}
