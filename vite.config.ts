@@ -7,6 +7,7 @@ import { inspectAttr } from 'plugin-inspect-react-code'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/zifu/",
   plugins: [
     // 非 /api/ 路径交给 vite（前端）；但 /healthz、/readyz、OAuth 回调须走 hono，
     // 保证 dev 与生产探针行为一致（生产由 boot.ts 直接服务）。
@@ -29,3 +30,4 @@ export default defineConfig({
     emptyOutDir: true,
   },
 });
+base: "/zifu/"

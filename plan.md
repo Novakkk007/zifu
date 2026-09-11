@@ -11,6 +11,13 @@
 - [ ] /bazi 页面重写：服务端驱动 + 人生轨迹图/五行生克/十神明细/专业细盘/称骨/神煞 + AI live-fallback 明示
 - [ ] 文档对齐（README/.env.example/docs/api-routes.md）
 
+## 问剑体系 · 语音对战（训练线，2026-09-10 启动）
+- [x] 问剑体系框架：`docs/duel/`（七步赛制 / 战绩册 / 答卷格式 / 战前基线）
+- [x] 语音对战台 v0.1：`scripts/voice-duel.py`（本地 ASR + 命理术语纠错 + 紫府人格 + 语音朗读）
+- [ ] v0.2：常驻服务（launchd）+ 桌面一键开关 → 随时可打
+- [ ] 通话直连（虚拟声卡）→ 老师电话直入对打
+- [ ] 首战实战 → 战报 + 经验卡 ≥3 → 内核 bump（复战验证吸收）
+
 ## 后续
 - [ ] 灵签计费与支付（orders/wallet_accounts/wallet_ledger/payment_events + 幂等）
 - [ ] 六爻服务端随机源 / 紫微真实安星 / 真实星历服务（七政/天体图）
