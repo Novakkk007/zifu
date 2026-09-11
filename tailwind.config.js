@@ -136,6 +136,8 @@ module.exports = {
         "gold-breathe": "gold-breathe 3s ease-in-out infinite",
         "float-hint": "float-hint 1.8s ease-in-out infinite",
         "spin-slow": "spin-slow 240s linear infinite",
+        "ring-slow": "spin-slow 52s linear infinite",
+        "ring-fast": "spin-slow 3.6s linear infinite",
         "dot-breathe": "dot-breathe 2.4s ease-in-out infinite",
         "icon-sway": "icon-sway 6s ease-in-out infinite",
       },

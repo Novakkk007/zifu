@@ -152,7 +152,7 @@ export default function Liuyao() {
         coinsRef.current = [...coinsRef.current, ...triple]
         setTosses((prev) => [...prev, value])
         setTossing(false)
-      }, 950)
+      }, 1100)
     } catch {
       setTossing(false)
     }
