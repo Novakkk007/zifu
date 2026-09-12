@@ -3,9 +3,10 @@
  * 世界观：华山之巅，七大门派各踞一峰守关。问剑者自三流始，连胜登阶，可会尽天下高手。
  * 三模式：打擂闯关（主线）· 同盘对断（竞技）· 论道斗法（沉浸）
  */
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
+import JianluArena from '@/components/JianluArena'
 import { usePageMeta } from '@/lib/page-meta'
 import { loadRecord, rankOf, nextRank, RANKS, type JianluMode } from '@/lib/jianlu'
 
@@ -32,15 +33,15 @@ export default function JianluPage() {
   )
   const reduce = useReducedMotion()
   const record = useMemo(() => loadRecord(), [])
-  const r = record
+  const [r, setR] = useState(record)
+  const [arena, setArena] = useState(false)
   const rank = rankOf(r)
   const next = nextRank(r)
   const winRate = r.total > 0 ? Math.round((r.wins / r.total) * 100) : 0
 
   const play = (mode: JianluMode) => {
-    // P0 骨架：三模式入口就位，闯关 P1 接上——先提示
     if (mode === 'arena') {
-      alert('打擂闯关即将开擂——今晚就位。先观剑庐，段位榜已开。')
+      setArena(true)
     } else {
       alert('此模式正在锻造中——先以闯关为主线。')
     }
@@ -61,6 +62,10 @@ export default function JianluPage() {
       />
 
       <div className="relative z-10 mx-auto max-w-4xl px-4 py-14">
+        {arena ? (
+          <JianluArena record={r} onRecordChange={setR} onExit={() => setArena(false)} />
+        ) : (
+          <>
         {/* 剑庐门额 */}
         <motion.div
           initial={reduce ? { opacity: 0 } : { opacity: 0, y: 18 }}
@@ -179,6 +184,8 @@ export default function JianluPage() {
         <p className="mt-12 text-center text-[10.5px] tracking-[0.2em] text-inkfaint">
           问剑乃文化研习之戏——断命之准，不系于胜负；照人之心，方为剑道。
         </p>
+          </>
+        )}
       </div>
 
       <style>{`
