@@ -20,10 +20,10 @@ const GATES = [
   { name: '金口诀', peak: '口诀峰', glyph: '🔮', desc: '立课如风，当下见机' },
 ]
 
-const MODES: Array<{ key: JianluMode; title: string; sub: string; desc: string; badge: string }> = [
-  { key: 'arena', title: '打擂闯关', sub: '主线 · 金标裁判', desc: '七大门派各守一关，每关三题断命要点——连过七关，登顶华山。', badge: '闯' },
-  { key: 'duel', title: '同盘对断', sub: '竞技 · 高手过招', desc: '系统出一盘，你与门派高手同台对断，金标定胜负——胜负留榜。', badge: '断' },
-  { key: 'debate', title: '论道斗法', sub: '沉浸 · 三回合攻防', desc: '与门派高手当面论命，三回合问答——被问倒即败，问倒对方即胜。', badge: '论' },
+const MODES: Array<{ key: JianluMode; title: string; sub: string; desc: string; badge: string; ready: boolean }> = [
+  { key: 'arena', title: '打擂闯关', sub: '主线 · 金标裁判', desc: '七大门派各守一关，每关三题断命要点——连过七关，登顶华山。', badge: '闯', ready: true },
+  { key: 'duel', title: '同盘对断', sub: '竞技 · 高手过招', desc: '系统出一盘，你与门派高手同台对断，金标定胜负——胜负留榜。', badge: '断', ready: false },
+  { key: 'debate', title: '论道斗法', sub: '沉浸 · 三回合攻防', desc: '与门派高手当面论命，三回合问答——被问倒即败，问倒对方即胜。', badge: '论', ready: false },
 ]
 
 export default function JianluPage() {
@@ -39,11 +39,10 @@ export default function JianluPage() {
   const next = nextRank(r)
   const winRate = r.total > 0 ? Math.round((r.wins / r.total) * 100) : 0
 
-  const play = (mode: JianluMode) => {
+  const play = (mode: JianluMode, ready: boolean) => {
+    if (!ready) return
     if (mode === 'arena') {
       setArena(true)
-    } else {
-      alert('此模式正在锻造中——先以闯关为主线。')
     }
   }
 
@@ -135,8 +134,13 @@ export default function JianluPage() {
               initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.6 + i * 0.15 }}
-              onClick={() => play(m.key)}
-              className="group relative overflow-hidden rounded-2xl border border-golddim/28 bg-silk2/55 px-6 py-7 text-left transition-all duration-300 hover:border-gold/55 hover:bg-silk2/85 hover:shadow-[0_0_34px_rgba(201,164,92,0.14)]"
+              onClick={() => play(m.key, m.ready)}
+              disabled={!m.ready}
+              className={`group relative overflow-hidden rounded-2xl border px-6 py-7 text-left transition-all duration-300 ${
+                m.ready
+                  ? 'border-golddim/28 bg-silk2/55 hover:border-gold/55 hover:bg-silk2/85 hover:shadow-[0_0_34px_rgba(201,164,92,0.14)]'
+                  : 'cursor-default border-golddim/15 bg-silk2/30'
+              }`}
             >
               <span className="pointer-events-none absolute -right-3 -top-4 font-serif text-[76px] leading-none text-gold/[0.06]">
                 {m.badge}
@@ -144,8 +148,8 @@ export default function JianluPage() {
               <p className="font-serif text-[20px] font-bold tracking-[0.14em] text-inktext">{m.title}</p>
               <p className="mt-1 text-[10.5px] tracking-[0.2em] text-golddim">{m.sub}</p>
               <p className="mt-3 text-[12px] leading-[1.95] tracking-[0.04em] text-inkmuted">{m.desc}</p>
-              <p className="mt-4 font-sans text-[11px] tracking-[0.2em] text-golddim/90 transition-colors group-hover:text-goldbright">
-                请 战
+              <p className={`mt-4 font-sans text-[11px] tracking-[0.2em] transition-colors ${m.ready ? 'text-golddim/90 group-hover:text-goldbright' : 'text-inkfaint'}`}>
+                {m.ready ? '请 战' : '锻造中 · 不日开锋'}
               </p>
             </motion.button>
           ))}
