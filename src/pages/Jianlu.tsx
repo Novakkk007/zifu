@@ -7,6 +7,7 @@ import { useMemo, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
 import JianluArena from '@/components/JianluArena'
+import JianluDuel from '@/components/JianluDuel'
 import { usePageMeta } from '@/lib/page-meta'
 import { loadRecord, rankOf, nextRank, RANKS, type JianluMode } from '@/lib/jianlu'
 
@@ -22,7 +23,7 @@ const GATES = [
 
 const MODES: Array<{ key: JianluMode; title: string; sub: string; desc: string; badge: string; ready: boolean }> = [
   { key: 'arena', title: '打擂闯关', sub: '主线 · 金标裁判', desc: '七大门派各守一关，每关三题断命要点——连过七关，登顶华山。', badge: '闯', ready: true },
-  { key: 'duel', title: '同盘对断', sub: '竞技 · 高手过招', desc: '系统出一盘，你与门派高手同台对断，金标定胜负——胜负留榜。', badge: '断', ready: false },
+  { key: 'duel', title: '同盘对断', sub: '竞技 · 高手过招', desc: '系统出一盘，你与门派高手同台对断，金标定胜负——胜负留榜。', badge: '断', ready: true },
   { key: 'debate', title: '论道斗法', sub: '沉浸 · 三回合攻防', desc: '与门派高手当面论命，三回合问答——被问倒即败，问倒对方即胜。', badge: '论', ready: false },
 ]
 
@@ -35,6 +36,7 @@ export default function JianluPage() {
   const record = useMemo(() => loadRecord(), [])
   const [r, setR] = useState(record)
   const [arena, setArena] = useState(false)
+  const [duel, setDuel] = useState(false)
   const rank = rankOf(r)
   const next = nextRank(r)
   const winRate = r.total > 0 ? Math.round((r.wins / r.total) * 100) : 0
@@ -43,6 +45,11 @@ export default function JianluPage() {
     if (!ready) return
     if (mode === 'arena') {
       setArena(true)
+      setDuel(false)
+    }
+    if (mode === 'duel') {
+      setDuel(true)
+      setArena(false)
     }
   }
 
@@ -63,6 +70,8 @@ export default function JianluPage() {
       <div className="relative z-10 mx-auto max-w-4xl px-4 py-14">
         {arena ? (
           <JianluArena record={r} onRecordChange={setR} onExit={() => setArena(false)} />
+        ) : duel ? (
+          <JianluDuel record={r} onRecordChange={setR} onExit={() => setDuel(false)} />
         ) : (
           <>
         {/* 剑庐门额 */}
