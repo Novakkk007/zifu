@@ -31,6 +31,7 @@ const YAN_MENU: { group: '典籍 · 藏' | '术数 · 藏'; items: { to: string;
 const NAV_LINKS = [
   { to: '/liuyao', label: '爻一爻' },
   { to: '/bazi', label: '排盘' },
+  { to: '/jianlu', label: '问剑' },
   { to: '/wiki', label: '藏经阁' },
 ]
 
