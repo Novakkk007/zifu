@@ -225,10 +225,10 @@ export default function Ziwei() {
         </div>
       </section>
 
-      <div className="zf-fade-to-deep h-40 rotate-180" />
+      <div className="zf-fade-to-deep h-24 rotate-180 md:h-40" />
 
       {/* S2 · 生辰表单（浅色） */}
-      <section className="bg-silk py-20 md:py-28">
+      <section className="bg-silk py-14 md:py-28">
         <div className="zf-container">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -241,7 +241,7 @@ export default function Ziwei() {
               title="录入生辰"
               sub="输入出生信息，先生为你排紫微——看十二宫格局与人生十二面向"
             />
-            <div className="mx-auto mt-12 max-w-2xl rounded-xl border border-golddim/20 bg-silk2/50 p-4 sm:p-8">
+            <div className="mx-auto mt-8 max-w-2xl rounded-xl border border-golddim/20 bg-silk2/50 p-4 sm:mt-12 sm:p-8">
               <div className="grid gap-5 sm:grid-cols-2">
                 <FormInput
                   id="zw-name"
