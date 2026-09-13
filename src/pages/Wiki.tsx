@@ -186,7 +186,7 @@ function ThreeHallsNav() {
               >
                 <p className="font-serif text-[21px] font-bold tracking-[0.18em] text-goldbright">藏经阁</p>
                 <p className="mt-3 flex-1 text-[13px] leading-[2] tracking-[0.06em] text-silkmuted">
-                  十二部公版典籍 · 典藏电子书
+                  十九部公版典籍 · 典藏电子书
                 </p>
                 <span className="mt-6 inline-flex self-end text-golddim transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-goldbright">
                   <ArrowUpRight className="h-4 w-4" aria-hidden />

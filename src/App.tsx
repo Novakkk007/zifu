@@ -29,7 +29,6 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const Account = lazy(() => import("@/pages/Account"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Login = lazy(() => import("@/pages/Login"));
-const FengshuiScenario = lazy(() => import("@/pages/scenario/FengshuiScenario"));
 const WealthScenario = lazy(() => import("@/pages/scenario/WealthScenario"));
 const LoveScenario = lazy(() => import("@/pages/scenario/LoveScenario"));
 const HealthScenario = lazy(() => import("@/pages/scenario/HealthScenario"));
@@ -64,10 +63,6 @@ export default function App() {
           <Route
             path="/scenario/health"
             element={<HealthScenario />}
-          />
-          <Route
-            path="/scenario/fengshui"
-            element={<FengshuiScenario />}
           />
           <Route path="/toolkit" element={<Toolkit />} />
           <Route path="/wiki" element={<Wiki />} />

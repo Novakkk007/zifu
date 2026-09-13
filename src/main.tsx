@@ -6,6 +6,7 @@ import '@fontsource/noto-serif-sc/700.css'
 import '@fontsource/noto-sans-sc/400.css'
 import '@fontsource/noto-sans-sc/500.css'
 import './index.css'
+import { MotionConfig } from 'framer-motion'
 import { TRPCProvider } from "@/providers/trpc"
 import ErrorBoundary from '@/components/ErrorBoundary'
 import App from './App.tsx'
@@ -33,10 +34,12 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <TRPCProvider>
-        <App />
-      </TRPCProvider>
-    </BrowserRouter>
+    <MotionConfig reducedMotion="user">
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <TRPCProvider>
+          <App />
+        </TRPCProvider>
+      </BrowserRouter>
+    </MotionConfig>
   </ErrorBoundary>,
 )

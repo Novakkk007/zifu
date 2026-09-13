@@ -13,7 +13,7 @@ export default function PageTransition({ children }: { children: ReactNode }) {
   return (
     <motion.div
       key={location.pathname}
-      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 10 }}
+      initial={reduce ? false : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32, ease: 'easeOut' }}
     >

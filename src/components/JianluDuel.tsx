@@ -3,10 +3,10 @@
  * 流程：随机抽盘 → 门派高手亮断 → 你先断（倒计时悬念）→ 同台亮答案 → 金标判胜负
  * 对手 AI 偶尔「看走眼」（25%）——制造悬念与胜机
  */
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { ARENA_GATES, type ArenaQuestion } from '@contracts/engines/jianlu/arena-questions'
-import { addWin, loadRecord, saveRecord } from '@/lib/jianlu'
+import { addLoss, addWin, loadRecord, saveRecord } from '@/lib/jianlu'
 
 interface JianluDuelProps {
   record: ReturnType<typeof loadRecord>
@@ -34,11 +34,20 @@ export default function JianluDuel({ record, onRecordChange, onExit }: JianluDue
   const [duel, setDuel] = useState<DuelState | null>(null)
   const [result, setResult] = useState<'win' | 'draw' | 'lose' | null>(null)
   const [thinking, setThinking] = useState(false)
+  const revealTimer = useRef<number | null>(null)
+  useEffect(() => () => {
+    if (revealTimer.current !== null) window.clearTimeout(revealTimer.current)
+  }, [])
 
   const randomDuel = (): DuelState => {
-    const g = ARENA_GATES[Math.floor(Math.random() * ARENA_GATES.length)]
-    const q = g.questions[Math.floor(Math.random() * g.questions.length)]
-    const aiMiss = Math.random() < 0.25
+    const rnd = () => {
+      const a = new Uint32Array(1)
+      crypto.getRandomValues(a)
+      return a[0] / 2 ** 32
+    }
+    const g = ARENA_GATES[Math.floor(rnd() * ARENA_GATES.length)]
+    const q = g.questions[Math.floor(rnd() * g.questions.length)]
+    const aiMiss = rnd() < 0.25
     return {
       q,
       gateName: g.name,
@@ -52,6 +61,10 @@ export default function JianluDuel({ record, onRecordChange, onExit }: JianluDue
   }
 
   const start = () => {
+    if (revealTimer.current !== null) {
+      window.clearTimeout(revealTimer.current)
+      revealTimer.current = null
+    }
     setDuel(randomDuel())
     setResult(null)
     setThinking(true)
@@ -72,10 +85,12 @@ export default function JianluDuel({ record, onRecordChange, onExit }: JianluDue
     else res = 'lose'
 
     setResult(res)
-    setTimeout(() => setDuel((prev) => (prev ? { ...prev, revealed: true } : prev)), 700)
+    revealTimer.current = window.setTimeout(() => {
+      revealTimer.current = null
+      setDuel((prev) => (prev && prev.picked !== null ? { ...prev, revealed: true } : prev))
+    }, 700)
 
-    const r = addWin(record, 'duel')
-    const updated = res === 'win' || res === 'draw' ? r : { ...record, total: record.total + 1 }
+    const updated = res === 'win' || res === 'draw' ? addWin(record, 'duel') : addLoss(record)
     saveRecord(updated)
     onRecordChange(updated)
   }

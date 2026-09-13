@@ -5,7 +5,7 @@ describe("classic texts", () => {
   it("loads the complete 47-chapter Zi Ping Zhen Quan text", () => {
     const text = getClassicText("ziping");
 
-    expect(CLASSIC_TEXTS).toHaveLength(1);
+    expect(CLASSIC_TEXTS).toHaveLength(2);
     expect(text?.chapters).toHaveLength(47);
     expect(text?.chapters[0]?.title).toBe("一、论十干十二支");
     expect(text?.chapters.at(-1)?.title).toBe("四十七、论杂格");
@@ -16,6 +16,17 @@ describe("classic texts", () => {
       )
     ).toBe(295);
     expect(text?.chapters.every(chapter => chapter.paragraphs.length > 0)).toBe(
+      true
+    );
+  });
+
+  it("loads the Qiong Tong Bao Jian complete text", () => {
+    const text = getClassicText("qiongtong");
+
+    expect(text).toBeDefined();
+    expect(text!.chapters.length).toBeGreaterThanOrEqual(4);
+    expect(text!.chapters.some(c => c.title.includes("论十干"))).toBe(true);
+    expect(text!.chapters.every(chapter => chapter.paragraphs.length > 0)).toBe(
       true
     );
   });

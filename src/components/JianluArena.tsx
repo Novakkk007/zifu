@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { ARENA_GATES } from '@contracts/engines/jianlu/arena-questions'
 import { enableSound, sndRight, sndVictory, sndWrong, soundEnabled } from '@/lib/jianlu-sound'
-import { addWin, loadRecord, saveRecord } from '@/lib/jianlu'
+import { addLoss, addWin, loadRecord, saveRecord } from '@/lib/jianlu'
 
 interface ArenaViewProps {
   record: ReturnType<typeof loadRecord>
@@ -57,7 +57,7 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
         saveRecord(updated)
         onRecordChange(updated)
       } else {
-        saveRecord(record)
+        saveRecord(addLoss(record))
       }
     }
   }

@@ -23,8 +23,8 @@ const GATES = [
 ]
 
 const MODES: Array<{ key: JianluMode; title: string; sub: string; desc: string; badge: string; ready: boolean; Glyph: typeof Swords }> = [
-  { key: 'arena', title: '打擂闯关', sub: '主线 · 金标裁判', desc: '七大门派各守一关，每关三题断命要点——连过七关，登顶华山。', badge: '闯', Glyph: Swords, ready: true },
-  { key: 'duel', title: '同盘对断', sub: '竞技 · 高手过招', desc: '系统出一盘，你与门派高手同台对断，金标定胜负——胜负留榜。', badge: '断', Glyph: Eye, ready: true },
+  { key: 'arena', title: '打擂闯关', sub: '主线 · 照章判分', desc: '七大门派各守一关，每关三题断命要点——连过七关，登顶华山。', badge: '闯', Glyph: Swords, ready: true },
+  { key: 'duel', title: '同盘对断', sub: '竞技 · 高手过招', desc: '系统出一盘，你与门派高手同台对断，照章判分——战绩留档。', badge: '断', Glyph: Eye, ready: true },
   { key: 'debate', title: '论道斗法', sub: '沉浸 · 三回合攻防', desc: '与门派高手当面论命，三回合问答——被问倒即败，问倒对方即胜。', badge: '论', Glyph: Sparkles, ready: false },
 ]
 
@@ -109,15 +109,17 @@ export default function JianluPage() {
             <span>连胜 <b className="text-golddim">{r.streak}</b></span>
           </div>
           {next && (
-            <p className="mt-4 text-[11px] tracking-[0.1em] text-inkmuted">
-              再胜 {next.minWins - r.wins} 场 → 晋升「{next.name}」
+            <p className="mt-4 text-[12px] tracking-[0.1em] text-inkmuted">
+              {next.needGates !== undefined && r.gatesCleared < next.needGates
+                ? `再破七峰（${r.gatesCleared}/7）且累计胜 ${next.minWins} 场 → 晋升「${next.name}」`
+                : `再胜 ${Math.max(0, next.minWins - r.wins)} 场 → 晋升「${next.name}」`}
             </p>
           )}
         </motion.div>
 
         {/* 段位阶梯 */}
         <motion.div
-          initial={reduce ? { opacity: 0 } : { opacity: 0 }}
+          initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.45 }}
           className="mt-8 flex items-center justify-center gap-2 overflow-x-auto px-2 pb-1"
@@ -184,24 +186,24 @@ export default function JianluPage() {
                       ? 'border-gold/55 bg-gradient-to-b from-gold/[0.12] to-gold/[0.04]'
                       : state === 'next'
                         ? 'border-gold/70 bg-gradient-to-b from-gold/[0.16] to-gold/[0.06] shadow-[0_0_26px_rgba(201,164,92,0.18)]'
-                        : 'border-golddim/25 bg-silk2/60'
+                        : 'border-golddim/30 bg-deep3/80'
                   }`}
                 >
                   <g.Glyph
                     className={`mx-auto h-5 w-5 ${
-                      state === 'locked' ? 'text-silkmuted/70' : 'text-goldbright'
+                      state === 'locked' ? 'text-silkmuted' : 'text-goldbright'
                     }`}
                     strokeWidth={1.5}
                   />
-                  <p className={`mt-2 text-[11.5px] leading-tight tracking-[0.04em] ${
-                    state === 'locked' ? 'text-silkmuted' : 'text-silktext'
+                  <p className={`mt-2 text-[12px] leading-tight tracking-[0.04em] ${
+                    state === 'locked' ? 'text-silktext' : 'text-silktext'
                   }`}>{g.name}</p>
                   <p className={`mt-1.5 text-[11px] tracking-[0.14em] ${
                     state === 'cleared'
                       ? 'text-golddim'
                       : state === 'next'
                         ? 'font-serif font-bold text-goldbright'
-                        : 'text-inkfaint'
+                        : 'text-silkmuted'
                   }`}>
                     {state === 'cleared' ? '已破' : state === 'next' ? '下一战' : '未至'}
                   </p>
