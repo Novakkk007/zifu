@@ -13,6 +13,7 @@ import RankUpOverlay from '@/components/RankUpOverlay'
 import { usePageMeta } from '@/lib/page-meta'
 import { loadRecord, rankOf, nextRank, RANKS, type JianluMode, type RankLevel } from '@/lib/jianlu'
 import { ACHIEVEMENTS, answerDaily, dailyQuestion, insightTitle, loadInsight, todayKey, unlockedCount } from '@/lib/jianlu-meta'
+import { ARENA_GATES } from '@contracts/engines/jianlu/arena-questions'
 
 const GATES = [
   { name: '子平格局派', peak: '藏剑峰', Glyph: ScrollText, desc: '格局立论，纲举目张' },
