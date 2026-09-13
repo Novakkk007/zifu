@@ -8,6 +8,7 @@ import { ARENA_GATES } from '@contracts/engines/jianlu/arena-questions'
 import { enableSound, sndRight, sndVictory, sndWrong, soundEnabled } from '@/lib/jianlu-sound'
 import { addLoss, addWin, loadRecord, saveRecord } from '@/lib/jianlu'
 import { JianluReportButton } from '@/components/JianluReport'
+import { ALL_PEAKS_CLEARED, dialogueOf } from '@/data/jianlu-dialogue'
 
 interface ArenaViewProps {
   record: ReturnType<typeof loadRecord>
@@ -29,6 +30,8 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
 
   const gate = ARENA_GATES[gateIdx]
   const q = gate.questions[qIdx]
+  /** 本关守关人台词（开场挑衅 / 惜败安慰 / 胜后敬重） */
+  const dlg = dialogueOf(gate.name)
 
   const pick = (i: number) => {
     if (picked !== null) return
@@ -106,6 +109,15 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
               连断 {combo} 题
             </span>
           )}
+        </p>
+      </div>
+
+      {/* 守关人开场台词 */}
+      <div className="mt-4 rounded-xl border border-golddim/20 bg-deep3/50 px-4 py-3">
+        <p className="text-[13px] leading-[1.9] tracking-[0.04em] text-silkmuted">
+          <span className="font-serif tracking-[0.08em] text-golddim">{gate.name} · 守关人</span>
+          <span className="mx-1.5 text-golddim/50">｜</span>
+          {dlg.opening}
         </p>
       </div>
 
@@ -213,6 +225,14 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
               ? `三题答对 ${right} 题——${gate.peak}已破，胜场 +1。`
               : `三题答对 ${right} 题——过关需至少两题。再练练，剑无一日成。`}
           </p>
+          {/* 守关人台词：胜后敬重 / 惜败安慰 */}
+          <div className="mx-auto mt-4 max-w-md rounded-xl border border-gold/25 bg-deep3/60 px-4 py-3 text-left">
+            <p className="text-[13px] leading-[1.9] tracking-[0.04em] text-silktext">
+              <span className="font-serif tracking-[0.08em] text-golddim">{gate.name}</span>
+              <span className="mx-1.5 text-golddim/50">｜</span>
+              {passed ? dlg.respect : dlg.comfort}
+            </p>
+          </div>
           <div className="mt-6 flex items-center justify-center gap-4">
             {passed && gateIdx + 1 < ARENA_GATES.length ? (
               <button
@@ -222,8 +242,8 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
                 登下一峰 · {ARENA_GATES[gateIdx + 1].name}
               </button>
             ) : passed && gateIdx + 1 >= ARENA_GATES.length ? (
-              <p className="font-serif text-[15px] tracking-[0.14em] text-goldbright">
-                华山七峰尽破——天下问剑者，你是第一人。
+              <p className="max-w-[400px] font-serif text-[15px] leading-[1.9] tracking-[0.14em] text-goldbright">
+                {ALL_PEAKS_CLEARED}
               </p>
             ) : (
               <button

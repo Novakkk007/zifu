@@ -8,6 +8,7 @@ import { BookOpen, Compass, Eye, Fan, ScrollText, Sparkles, Swords, Waves } from
 import { motion, useReducedMotion } from 'framer-motion'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
 import JianluArena from '@/components/JianluArena'
+import JianluBoard from '@/components/JianluBoard'
 import JianluDuel from '@/components/JianluDuel'
 import RankUpOverlay from '@/components/RankUpOverlay'
 import { JianluReportButton } from '@/components/JianluReport'
@@ -15,6 +16,7 @@ import { usePageMeta } from '@/lib/page-meta'
 import { loadRecord, rankOf, nextRank, RANKS, type JianluMode, type RankLevel } from '@/lib/jianlu'
 import { ACHIEVEMENTS, answerDaily, dailyQuestion, insightTitle, loadInsight, todayKey, unlockedCount } from '@/lib/jianlu-meta'
 import { ARENA_GATES } from '@contracts/engines/jianlu/arena-questions'
+import { JIANLU_OPENING } from '@/data/jianlu-dialogue'
 
 const GATES = [
   { name: '子平格局派', peak: '藏剑峰', Glyph: ScrollText, desc: '格局立论，纲举目张' },
@@ -109,6 +111,11 @@ export default function JianluPage() {
             <br />
             天下问剑者，自三流始——连胜登阶，可会尽天下高手。
           </p>
+          <div className="mx-auto mt-6 max-w-xl rounded-xl border border-golddim/25 bg-silk2/40 px-6 py-4">
+            <p className="font-serif text-[13.5px] leading-[2.1] tracking-[0.06em] text-silktext">
+              {JIANLU_OPENING}
+            </p>
+          </div>
         </motion.div>
 
         {/* 段位卡 */}
@@ -207,6 +214,16 @@ export default function JianluPage() {
               )
             })}
           </div>
+        </motion.div>
+
+        {/* 华山榜（三层榜 · 假名制 · 默认不上榜 · 诚实声明） */}
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.55 }}
+          className="mt-10"
+        >
+          <JianluBoard record={r} />
         </motion.div>
 
         {/* 今日研剑（悟性轴——每日一题） */}

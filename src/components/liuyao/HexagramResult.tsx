@@ -5,6 +5,7 @@ import YaoLine from '@/components/liuyao/YaoLine'
 import type { Toss } from '@/components/liuyao/logic'
 import type { EngineResult, HexagramData, LiuyaoChart } from '@/components/liuyao/api'
 import { cn } from '@/lib/utils'
+import { GUACI_PLAIN } from '@contracts/liuyao/guaci-plain'
 
 /** 单卦卡：六爻图形 + 卦名 + 上下卦/卦宫小注 */
 function HexagramCard({
@@ -240,6 +241,14 @@ export default function HexagramResult({
         <footer className="mt-5 text-[12.5px] tracking-[0.1em] text-inkmuted">
           ——《周易》{bian ? ` 之《${bian.name}》` : ''} · 互卦《{chart.huGua.name}》
         </footer>
+        {GUACI_PLAIN[ben.name] && (
+          <div className="mt-5 rounded-xl border border-golddim/20 bg-gold/[0.05] px-5 py-4">
+            <p className="text-[12px] tracking-[0.24em] text-golddim">先生白话</p>
+            <p className="mt-2 text-[14px] leading-[2.05] tracking-[0.03em] text-silktext">
+              {GUACI_PLAIN[ben.name]}
+            </p>
+          </div>
+        )}
       </motion.div>
 
       {/* meta badge：版本 / 流派 / precision */}
