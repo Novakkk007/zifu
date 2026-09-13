@@ -6,6 +6,7 @@
 能力闭环：听（麦克风+VAD）→ 懂（funasr 本地转写+术语纠错）→ 想（对话模型，紫府人格+盘面注入）→ 说（系统朗读）
 
 定位：docs/duel/README.md「语音链路」节的参考实现（Mac 环境）；其他平台需替换 ASR/TTS 组件。
+赛制范围：语音工作台适用于七步赛第 4–6 步；双盲立断与书面密封需提前经 docs/duel/answers/ 目录另行完成。
 依赖：funasr、sounddevice、numpy、requests；macOS（say/afplay）。
 环境变量：DEEPSEEK_API_KEY（必填）· DEEPSEEK_BASE_URL（OpenAI 兼容接口，默认 https://api.deepseek.com）
          ZIFU_VOICE_MODEL（默认 deepseek-flash）· ZIFU_PAIPAN_JSON（盘面 JSON 路径，默认 /tmp/zifu_paipan_demo.json）
@@ -132,7 +133,7 @@ HOT = ("乾造 坤造 日主 日元 月令 提纲 得令 得地 得势 通根 �
        "天乙贵人 文昌 驿马 桃花 华盖 将星 羊刃 禄神 天德 月德 孤辰 寡宿 伤官配印 伤官见官 食神制杀 "
        "财官相生 官印相生 杀印相生 枭神夺食 比劫夺财 木火通明 金水相生 取用")
 FIX = {"前灶": "乾造", "日烛": "日主", "的令": "得令", "图鉴": "通根", "月铃": "月令",
-       "殉空": "旬空", "洋刃": "羊刃", "七沙": "七杀", "商官": "伤官", "师神": "食神"}
+       "殉空": "空亡", "旬空": "空亡", "洋刃": "羊刃", "七沙": "七杀", "商官": "伤官", "师神": "食神"}
 
 def get_asr():
     global _ASR
@@ -148,6 +149,14 @@ def transcribe(wav_path):
     for k, v in FIX.items():
         text = text.replace(k, v)
     return text
+
+
+def transcribe_audio(audio):
+    # 独立临时目录避免 mktemp 竞态；成功、空转写或异常时均清理 WAV。
+    with tempfile.TemporaryDirectory(prefix="zifu-voice-") as tmpdir:
+        wav_path = os.path.join(tmpdir, "audio.wav")
+        save_wav(audio, wav_path)
+        return transcribe(wav_path)
 
 # ---------------- 对话大脑 ----------------
 def chat(messages, temperature=0.7):
@@ -225,9 +234,7 @@ def run_once(args):
         print("[!] 未检测到语音（麦克风权限/环境安静/超时）", flush=True)
         sys.exit(2)
     audio = normalize_gain(audio)
-    tmp = tempfile.mktemp(suffix=".wav")
-    save_wav(audio, tmp)
-    t = transcribe(tmp)
+    t = transcribe_audio(audio)
     print(f"[ASR] {t}", flush=True)
     if not t:
         print("[!] 转写为空", flush=True)
@@ -245,24 +252,29 @@ def run_auto(args):
     while True:
         try:
             audio = record_segment(start_timeout=args.timeout, silence=1.5)
+            if audio is None:
+                print("[mic] 这段没听到，继续等...", flush=True)
+                continue
+            audio = normalize_gain(audio)
+            t = transcribe_audio(audio)
+            print(f"[对方] {t}", flush=True)
+            if not t:
+                continue
+            # 最近 9 轮完整对话 + 本轮（共 10 轮），始终保留 system。
+            # 请求成功后再提交本轮，避免异常留下未配对的 user 消息。
+            messages = [history[0], *history[1:][-18:], {"role": "user", "content": t}]
+            reply = chat(messages)
+            history = [*messages, {"role": "assistant", "content": reply}]
+            print(f"[紫府] {reply}", flush=True)
+            speak(reply)
+            archive(t, reply)
         except KeyboardInterrupt:
             break
-        if audio is None:
-            print("[mic] 这段没听到，继续等...", flush=True)
+        except Exception as e:
+            # 单轮边界：涵盖 requests.RequestException、RuntimeError
+            # 及 ASR 后端各类异常；不吞掉 Ctrl-C / SystemExit。
+            print(f"[!] 本轮失败（{type(e).__name__}）：{e}；继续监听", flush=True)
             continue
-        audio = normalize_gain(audio)
-        tmp = tempfile.mktemp(suffix=".wav")
-        save_wav(audio, tmp)
-        t = transcribe(tmp)
-        print(f"[对方] {t}", flush=True)
-        if not t:
-            continue
-        history.append({"role": "user", "content": t})
-        reply = chat(history)
-        history.append({"role": "assistant", "content": reply})
-        print(f"[紫府] {reply}", flush=True)
-        speak(reply)
-        archive(t, reply)
 
 def main():
     ap = argparse.ArgumentParser()
@@ -272,8 +284,14 @@ def main():
     ap.add_argument("--timeout", type=float, default=120.0, help="等待语音出现的最长秒数")
     args = ap.parse_args()
     print("[sys] 预热语音识别模型（首次约 20s，之后瞬时）...", flush=True)
-    get_asr()
-    print("[sys] 模型就绪，开始监听", flush=True)
+    try:
+        get_asr()
+    except Exception as e:
+        if args.once:
+            raise
+        print(f"[!] ASR 预热失败（{type(e).__name__}）：{e}；将在录音后重试", flush=True)
+    else:
+        print("[sys] 模型就绪，开始监听", flush=True)
     if args.once:
         run_once(args)
     else:
