@@ -81,7 +81,7 @@ export default function RoundTableStage({ result, onFinish, onSkip, typewriterSp
         transition={{ duration: 0.2 }}
         className="min-w-0 rounded-xl border border-golddim/30 bg-deep2 px-4 py-4 text-[13.5px] leading-[2] text-silk shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
       >
-        <p className="mb-1 text-[11px] tracking-[0.14em] text-golddim" role="status">
+        <p className="mb-1 text-[12px] tracking-[0.14em] text-golddim" role="status">
           {playback.finished ? '演出结束 · 结果已全部呈现' : phase.title}
         </p>
         {!playback.finished && phase.kind !== 'waiting' && (
@@ -127,7 +127,7 @@ export default function RoundTableStage({ result, onFinish, onSkip, typewriterSp
                   <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${speaking === i ? 'border-gold' : 'border-golddim/30'}`} aria-hidden="true">{AVATARS[i % AVATARS.length]}</span>
                   <div className="min-w-0">
                     <p className="text-[12px] text-silk [overflow-wrap:anywhere]">第{i + 1}席 · {seat.school}</p>
-                    <p className="text-[11px] text-inkmuted">{speaking === i ? '正在发言' : playback.phase > i + 2 ? '聆听中' : '待入席'}</p>
+                    <p className="text-[12px] text-inkmuted">{speaking === i ? '正在发言' : playback.phase > i + 2 ? '聆听中' : '待入席'}</p>
                   </div>
                 </div>
                 {speaking === i && <div className="mt-3">{speech}</div>}
@@ -147,14 +147,14 @@ export default function RoundTableStage({ result, onFinish, onSkip, typewriterSp
                     <div className={`mx-auto flex h-11 w-11 items-center justify-center rounded-full border bg-deep2 text-[19px] ${
                       speaking === i ? 'border-gold shadow-[0_0_26px_rgba(201,164,92,0.65)]' : 'border-golddim/40'
                     }`}>{AVATARS[i]}</div>
-                    <p className="mt-1 break-words text-[11.5px] leading-tight text-silk" title={seat.school}>{Array.from(seat.school).slice(0, 8).join('')}{Array.from(seat.school).length > 8 ? '…' : ''}</p>
-                    <p className="text-[10px] text-inkmuted">{speaking === i ? '正在发言' : playback.phase > i + 2 ? '聆听中' : '待入席'}</p>
+                    <p className="mt-1 break-words text-[12px] leading-tight text-silk" title={seat.school}>{Array.from(seat.school).slice(0, 8).join('')}{Array.from(seat.school).length > 8 ? '…' : ''}</p>
+                    <p className="text-[12px] text-inkmuted">{speaking === i ? '正在发言' : playback.phase > i + 2 ? '聆听中' : '待入席'}</p>
                   </motion.div>
                 </div>
               ))}
               <div className="absolute left-1/2 top-1/2 flex h-32 w-32 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 border-golddim/35 bg-deep3 text-center">
                 <p className="text-[13px] tracking-[0.2em] text-golddim">一盘命局</p>
-                <p className="mt-1.5 text-[10px] text-inkmuted">七席各言其见</p>
+                <p className="mt-1.5 text-[12px] text-inkmuted">七席各言其见</p>
               </div>
             </div>
           )}

@@ -186,7 +186,7 @@ export default function FengshuiScenario() {
       <div className="relative zf-container max-w-[880px]">
         {/* 页头 */}
         <header className="text-center">
-          <p className="font-latin text-[11px] font-medium uppercase tracking-[0.3em] text-golddim">
+          <p className="font-latin text-[12px] font-medium uppercase tracking-[0.3em] text-golddim">
             Dwelling &amp; Space
           </p>
           <h1 className="mt-2 font-serif text-[30px] font-black tracking-[0.12em] text-silktext">
@@ -204,7 +204,7 @@ export default function FengshuiScenario() {
             <p className="font-serif text-[16px] font-bold tracking-[0.08em] text-inktext">
               户型图参谋 · 罗盘定位
             </p>
-            <span className="rounded-full border border-golddim/40 px-3 py-1 text-[11px] text-inkmuted">
+            <span className="rounded-full border border-golddim/40 px-3 py-1 text-[12px] text-inkmuted">
               图仅本机处理 · 不上传
             </span>
           </div>
@@ -253,7 +253,7 @@ export default function FengshuiScenario() {
                   <span className="mr-2 font-serif text-golddim">{String(i + 1).padStart(2, '0')}</span>
                   {q.label}
                 </p>
-                <p className="mt-1 text-[11.5px] text-inkmuted">{q.hint}</p>
+                <p className="mt-1 text-[12px] text-inkmuted">{q.hint}</p>
                 <div className="mt-2.5 flex flex-wrap gap-2">
                   {q.kind === 'select' &&
                     q.options?.map((opt) => (
@@ -339,7 +339,7 @@ export default function FengshuiScenario() {
             >
               生成环境检查提示
             </button>
-            <p className="text-[11px] text-inkmuted">已答 {answeredCount}/{QUESTIONS.length} 问 · 全部可跳过</p>
+            <p className="text-[12px] text-inkmuted">已答 {answeredCount}/{QUESTIONS.length} 问 · 全部可跳过</p>
           </div>
         </section>
 
@@ -353,7 +353,7 @@ export default function FengshuiScenario() {
           >
             <div className="flex items-center justify-between">
               <h2 className="font-serif text-[18px] font-bold tracking-[0.1em] text-silktext">环境检查提示</h2>
-              <span className="rounded-full border border-golddim/40 px-3 py-1 text-[11px] tracking-[0.1em] text-golddim">
+              <span className="rounded-full border border-golddim/40 px-3 py-1 text-[12px] tracking-[0.1em] text-golddim">
                 {hints.length} 项 · 文化参详 · 非吉凶结论
               </span>
             </div>
@@ -367,17 +367,17 @@ export default function FengshuiScenario() {
                 {hints.map((h) => (
                   <li key={h.ruleId} className="rounded-lg border border-golddim/15 bg-black/20 p-4">
                     <div className="flex items-center gap-2">
-                      <span className="rounded bg-gold/15 px-2 py-0.5 font-mono text-[10.5px] tracking-[0.08em] text-goldbright">
+                      <span className="rounded bg-gold/15 px-2 py-0.5 font-mono text-[12px] tracking-[0.08em] text-goldbright">
                         {h.ruleId}
                       </span>
                       <span
-                        className={`rounded px-2 py-0.5 text-[10.5px] font-semibold ${
+                        className={`rounded px-2 py-0.5 text-[12px] font-semibold ${
                           h.verdict === '凶' ? 'bg-red-900/40 text-red-200' : 'bg-amber-800/35 text-amber-100'
                         }`}
                       >
                         检查状态 · {h.verdict}
                       </span>
-                      <span className="text-[11px] text-silkmuted">{h.source.sourceWork}</span>
+                      <span className="text-[12px] text-silkmuted">{h.source.sourceWork}</span>
                     </div>
                     <p className="mt-2 text-[13.5px] leading-[1.9] text-silktext/90">{h.message}</p>
                     <p className="mt-2 text-[12.5px] leading-[1.85] text-silkmuted">

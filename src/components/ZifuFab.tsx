@@ -87,7 +87,7 @@ export default function ZifuFab() {
                 />
                 <span
                   className={cn(
-                    'font-serif text-[11px] tracking-[0.1em]',
+                    'font-serif text-[12px] tracking-[0.1em]',
                     theme === t.id ? 'text-goldbright' : 'text-silkmuted',
                   )}
                 >

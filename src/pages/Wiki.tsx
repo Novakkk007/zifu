@@ -111,9 +111,24 @@ function BookDrawer({ book, onClose }: { book: Book | null; onClose: () => void 
   )
 }
 
-/* ---------------- 书目卡 ---------------- */
+/* ---------------- 五色书封（书架陈列） ---------------- */
+
+/** 五类书封暗雅色阶：易占/子平/星命/三式/择日（命理归黛蓝、紫微归绛紫） */
+const COVER_THEMES: Record<string, { bg: string; char: string }> = {
+  易占: { bg: '#1D3D45', char: '易' }, // 玄青
+  子平: { bg: '#2A3A55', char: '平' }, // 黛蓝
+  命理: { bg: '#2A3A55', char: '命' }, // 子平真诠（命理）归黛蓝
+  星命: { bg: '#3B2E4E', char: '星' }, // 绛紫
+  紫微: { bg: '#3B2E4E', char: '紫' }, // 紫微斗数全书归绛紫
+  三式: { bg: '#2C4038', char: '式' }, // 黛绿
+  择日: { bg: '#4A322E', char: '择' }, // 绛赭
+}
+
+const COVER_FALLBACK: { bg: string; char: string } = { bg: '#26262E', char: '藏' } // 墨玄
 
 function BookCard({ book, onOpen }: { book: Book; onOpen: () => void }) {
+  const theme = COVER_THEMES[book.category] ?? COVER_FALLBACK
+
   return (
     <motion.div
       layout
@@ -121,43 +136,83 @@ function BookCard({ book, onOpen }: { book: Book; onOpen: () => void }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ type: 'spring', stiffness: 220, damping: 26 }}
-      className="group flex gap-5 rounded-xl border border-golddim/25 bg-silk2 p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-gold/60 hover:shadow-card"
     >
-      {/* 左：信息 */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="w-fit rounded-sm border border-golddim/40 px-1.5 py-0.5 font-serif text-[11px] tracking-[0.2em] text-golddim">
-          {book.category}
-        </span>
-        <p className="mt-3 font-sans text-[12.5px] tracking-[0.12em] text-inkmuted">
-          {book.dynasty} · {book.author}
-        </p>
-        <p className="mt-2 flex-1 text-[13.5px] leading-[1.9] text-inkmuted">{book.intro}</p>
-        <button
-          type="button"
-          onClick={onOpen}
-          className="zf-link-more mt-4 inline-flex w-fit items-center gap-1 text-[13.5px] font-medium tracking-[0.08em] text-golddim"
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={`翻阅《${book.title}》节选`}
+        title={book.intro}
+        className="group relative block w-full rounded-[6px] text-left outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-silk"
+      >
+        {/* 书页厚度（左缘，hover 显露加厚，伪 3D 书页感） */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-[6px] top-[10px] bottom-[14px] w-[3px] rounded-l-[3px] opacity-80 transition-all duration-300 ease-out group-hover:w-[6px] group-hover:opacity-100"
+          style={{
+            background: 'linear-gradient(to bottom, #f1e7d0 0%, #e6d8b6 40%, #d9c79e 75%, #c9b488 100%)',
+          }}
         >
-          翻阅节选 <span className="zf-arrow">→</span>
-        </button>
-      </div>
-      {/* 右：竖排书名（线装书脊式） */}
-      <div className="flex w-[52px] shrink-0 items-start justify-center rounded-md border border-gold/30 bg-silk py-4">
-        <span
-          className="font-serif text-[22px] font-bold leading-[1.35] tracking-[0.15em] text-inktext"
-          style={{ writingMode: 'vertical-rl' }}
+          <div className="absolute inset-0 rounded-l-[3px] bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_3px,rgba(110,90,50,0.4)_3px,rgba(110,90,50,0.4)_4px)] opacity-60" />
+        </div>
+
+        {/* 书封（3:4） */}
+        <div
+          style={{ backgroundColor: theme.bg }}
+          className="relative aspect-[3/4] overflow-hidden rounded-[6px] border border-golddim/40 shadow-[0_14px_26px_-16px_rgba(24,16,58,0.5)] transition-all duration-300 ease-out group-hover:-translate-y-1 group-hover:border-gold/80 group-hover:shadow-[0_18px_40px_-12px_rgba(201,164,92,0.14),0_14px_30px_-14px_rgba(24,16,58,0.4)]"
         >
-          {book.title}
-        </span>
-      </div>
+          {/* 布面光泽 */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.07] via-transparent to-black/25" />
+          {/* 双线饰框 */}
+          <div aria-hidden className="pointer-events-none absolute inset-2 rounded-[3px] border border-gold/20" />
+          <div aria-hidden className="pointer-events-none absolute inset-3.5 rounded-[2px] border border-gold/10" />
+          {/* 左缘（书脊侧）微光 */}
+          <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-gradient-to-r from-white/10 to-transparent" />
+
+          <div className="relative z-10 flex h-full flex-col p-4">
+            {/* 顶：分类字标 + 分类名 */}
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-gold/45 bg-white/[0.04] font-serif text-[14px] text-goldbright/90">
+                {theme.char}
+              </span>
+              <span className="truncate font-sans text-[12px] tracking-[0.3em] text-silkmuted/90">{book.category}</span>
+            </div>
+            <div className="mt-2.5 h-px shrink-0 bg-gradient-to-r from-gold/45 via-gold/20 to-transparent" />
+
+            {/* 中：书名（移动端横排居中，sm+ 竖排居中） */}
+            <div className="flex min-h-0 flex-1 items-center justify-center py-2">
+              <span className="line-clamp-2 text-center font-serif text-[16px] font-bold leading-[1.7] tracking-[0.24em] text-goldbright/95 sm:line-clamp-none sm:text-[clamp(13px,0.8vw+9px,19px)] sm:leading-[1.35] sm:tracking-[0.16em] sm:[writing-mode:vertical-rl]">
+                {book.title}
+              </span>
+            </div>
+
+            {/* 底：朝代作者 + 紫府印「紫府藏」 */}
+            <div className="flex items-end justify-between gap-2">
+              <div className="min-w-0">
+                <p className="truncate font-sans text-[12px] leading-[1.6] tracking-[0.06em] text-silkmuted/85">
+                  {book.dynasty}
+                </p>
+                <p className="truncate font-sans text-[12px] leading-[1.6] tracking-[0.06em] text-silkmuted/70">
+                  {book.author}
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center justify-center border border-gold/45 bg-white/[0.03] px-1 py-0.5 transition-colors duration-300 group-hover:border-goldbright/80">
+                <span className="font-serif text-[12px] leading-[1.3] tracking-[0.1em] text-goldbright/85 [writing-mode:vertical-rl]">
+                  紫府藏
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </button>
     </motion.div>
   )
 }
 
-/* ---------------- 三馆入口导航卡 ---------------- */
+/* ---------------- 宝 · 术 · 藏经阁导航卡 ---------------- */
 
 function ThreeHallsNav() {
   return (
-    <section aria-label="三馆入口" className="relative bg-deep2">
+    <section aria-label="宝 · 术 · 藏经阁" className="relative bg-deep2">
       <div className="zf-container">
         <div className="mx-auto max-w-[880px] pb-16 pt-14">
           <motion.p
@@ -165,12 +220,12 @@ function ThreeHallsNav() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease: easeOut }}
-            className="text-center font-sans text-[11.5px] tracking-[0.34em] text-golddim"
+            className="text-center font-sans text-[12px] tracking-[0.34em] text-golddim"
           >
-            三馆入口
+            宝 · 术 · 藏经阁
           </motion.p>
-          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
-            {/* ① 五运六气 · 平滑滚动至页内 S2.6 */}
+          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
+            {/* ① 藏经阁 · 典藏电子书 → 页内书目 */}
             <motion.div
               initial={{ opacity: 0, y: 26 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -180,13 +235,13 @@ function ThreeHallsNav() {
               <button
                 type="button"
                 onClick={() =>
-                  document.getElementById('wiki-yunqi')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  document.getElementById('wiki-books')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                 }
                 className="group flex h-full w-full flex-col rounded-2xl border border-golddim/25 bg-silk2/50 p-7 text-left transition-all duration-300 hover:border-gold/55 hover:bg-silk2/80 hover:shadow-[0_0_36px_rgba(201,164,92,0.18)]"
               >
-                <p className="font-serif text-[21px] font-bold tracking-[0.18em] text-goldbright">五运六气</p>
+                <p className="font-serif text-[21px] font-bold tracking-[0.18em] text-goldbright">藏经阁</p>
                 <p className="mt-3 flex-1 text-[13px] leading-[2] tracking-[0.06em] text-silkmuted">
-                  古人以干支推年度气候节律与养生方向
+                  十九部公版典籍 · 典藏电子书
                 </p>
                 <span className="mt-6 inline-flex self-end text-golddim transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-goldbright">
                   <ArrowUpRight className="h-4 w-4" aria-hidden />
@@ -194,20 +249,44 @@ function ThreeHallsNav() {
               </button>
             </motion.div>
 
-            {/* ② 今日盘 · 跳转 /daily */}
+            {/* ② 术 · 五运六气 → 页内 S2.6 */}
             <motion.div
               initial={{ opacity: 0, y: 26 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.16, ease: easeOut }}
             >
+              <button
+                type="button"
+                onClick={() =>
+                  document.getElementById('wiki-yunqi')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+                className="group flex h-full w-full flex-col rounded-2xl border border-golddim/25 bg-silk2/50 p-7 text-left transition-all duration-300 hover:border-gold/55 hover:bg-silk2/80 hover:shadow-[0_0_36px_rgba(201,164,92,0.18)]"
+              >
+                <p className="font-serif text-[21px] font-bold tracking-[0.18em] text-goldbright">术</p>
+                <p className="mt-3 flex-1 text-[13px] leading-[2] tracking-[0.06em] text-silkmuted">
+                  五运六气——干支推年度气候节律与养生方向
+                </p>
+                <span className="mt-6 inline-flex self-end text-golddim transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-goldbright">
+                  <ArrowUpRight className="h-4 w-4" aria-hidden />
+                </span>
+              </button>
+            </motion.div>
+
+            {/* ③ 宝 · 百宝袋 → /toolkit */}
+            <motion.div
+              initial={{ opacity: 0, y: 26 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.26, ease: easeOut }}
+            >
               <Link
-                to="/daily"
+                to="/toolkit"
                 className="group flex h-full w-full flex-col rounded-2xl border border-golddim/25 bg-silk2/50 p-7 transition-all duration-300 hover:border-gold/55 hover:bg-silk2/80 hover:shadow-[0_0_36px_rgba(201,164,92,0.18)]"
               >
-                <p className="font-serif text-[21px] font-bold tracking-[0.18em] text-goldbright">今日盘</p>
+                <p className="font-serif text-[21px] font-bold tracking-[0.18em] text-goldbright">宝</p>
                 <p className="mt-3 flex-1 text-[13px] leading-[2] tracking-[0.06em] text-silkmuted">
-                  每日时令与当日宜忌
+                  百宝袋——顺手的小工具与收藏
                 </p>
                 <span className="mt-6 inline-flex self-end text-golddim transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-goldbright">
                   <ArrowUpRight className="h-4 w-4" aria-hidden />
@@ -228,8 +307,8 @@ export default function Wiki() {
   const [opened, setOpened] = useState<Book | null>(null)
 
   usePageMeta(
-    '藏经阁 · 紫府',
-    '紫府藏经阁——汇聚《周易》《滴天髓》《三命通会》等十二部公版术数典籍原文节选，句有出处、可溯源查阅。',
+    '藏宝阁 · 紫府',
+    '紫府藏宝阁——宝·术·藏经阁三分：典藏电子书（公版典籍原文节选）、术数参详、百宝袋，句有出处、可溯源查阅。',
   )
 
   const list = useMemo(() => (cat === '全部' ? BOOKS : BOOKS.filter((b) => b.category === cat)), [cat])
@@ -238,23 +317,23 @@ export default function Wiki() {
     <div>
       {/* S1 · PageHero */}
       <PageHero
-        breadcrumb="藏经阁"
-        glyph="藏"
-        title="藏经阁"
-        latin="Sutra Library"
-        subtitle="紫府参详所据之典籍，皆在此阁——句有出处，方敢落笔"
+        breadcrumb="藏宝阁"
+        glyph="宝"
+        title="藏宝阁"
+        latin="Treasure Library"
+        subtitle="宝 · 术 · 藏经阁，三分一阁——典藏电子书在此，句有出处，方敢落笔"
         pool={HERO_POOL}
         minH="min-h-[38vh]"
       />
 
-      {/* S1.5 · 三馆入口导航卡（五运六气锚点 + 今日盘路由） */}
+      {/* S1.5 · 宝 · 术 · 藏经阁导航卡（五运六气锚点 + 今日盘路由） */}
       <ThreeHallsNav />
 
       {/* 深 → 浅 过渡 */}
       <div className="zf-fade-to-silk h-[160px]" />
 
       {/* S2 · 类别筛选 + 书目网格 */}
-      <section className="relative bg-silk pb-28 pt-16">
+      <section id="wiki-books" className="relative bg-silk pb-28 pt-16 scroll-mt-16">
         <div className="zf-paper-grain pointer-events-none absolute inset-0 opacity-[0.03]" />
         <div className="relative zf-container">
           <SectionHeading
@@ -290,13 +369,22 @@ export default function Wiki() {
             })}
           </div>
 
-          <motion.div layout className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <motion.div
+            layout
+            className="mt-12 grid grid-cols-2 gap-x-4 gap-y-9 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+          >
             <AnimatePresence mode="popLayout">
               {list.map((book) => (
                 <BookCard key={book.id} book={book} onOpen={() => setOpened(book)} />
               ))}
             </AnimatePresence>
           </motion.div>
+
+          {/* 书架板（装饰基线） */}
+          <div
+            aria-hidden
+            className="mx-auto mt-4 h-[3px] w-full max-w-[1000px] rounded-full bg-gradient-to-r from-golddim/0 via-golddim/45 to-golddim/0"
+          />
         </div>
       </section>
 

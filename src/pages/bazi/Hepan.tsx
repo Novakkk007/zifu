@@ -64,7 +64,7 @@ function MiniPillar({
         isDay ? 'border-gold/60' : 'border-golddim/25',
       )}
     >
-      <p className="text-[11px] tracking-[0.16em] text-inkmuted">
+      <p className="text-[12px] tracking-[0.16em] text-inkmuted">
         {label}
         {isDay && <span className="ml-1 text-golddim">日主</span>}
       </p>
@@ -331,7 +331,7 @@ export default function Hepan() {
                         <div className="mb-1.5 flex items-baseline justify-between">
                           <span className="text-[13px] tracking-[0.1em] text-inkmuted">
                             {d.name}
-                            <span className="ml-1.5 text-[11px] text-inkmuted/60">
+                            <span className="ml-1.5 text-[12px] text-inkmuted/60">
                               权重 {Math.round(d.weight * 100)}%
                             </span>
                           </span>
@@ -356,7 +356,7 @@ export default function Hepan() {
                       {displayScore}
                     </span>
                     <div>
-                      <p className="text-[11px] tracking-[0.16em] text-inkmuted">总评 · 五维加权</p>
+                      <p className="text-[12px] tracking-[0.16em] text-inkmuted">总评 · 五维加权</p>
                       <p className="mt-1 font-serif text-[16px] font-bold tracking-[0.08em] text-inktext">
                         {verdictOf(overall)}
                       </p>
@@ -389,7 +389,7 @@ export default function Hepan() {
                         </li>
                       ))}
                     </ul>
-                    <p className="mt-3 border-t border-golddim/15 pt-2.5 text-[11.5px] leading-[1.8] text-inkmuted">
+                    <p className="mt-3 border-t border-golddim/15 pt-2.5 text-[12px] leading-[1.8] text-inkmuted">
                       依据：{d.basis}
                     </p>
                   </motion.div>

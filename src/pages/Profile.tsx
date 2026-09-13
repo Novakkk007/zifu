@@ -175,7 +175,7 @@ export default function Profile() {
     <div className="bg-silk pb-24 pt-14 md:pt-20">
       <div className="zf-container flex flex-col gap-8">
         <header>
-          <p className="font-latin text-[11px] font-medium tracking-[0.3em] text-golddim">
+          <p className="font-latin text-[12px] font-medium tracking-[0.3em] text-golddim">
             PROFILE
           </p>
           <h1 className="mt-1 font-serif text-[30px] font-black tracking-[0.1em] text-inktext">
@@ -186,7 +186,7 @@ export default function Profile() {
               🍃 当前为游客模式：收藏与历史保存在当前设备浏览器，无需注册即可使用。
               更换设备后数据不互通。
             </p>
-            <span className="shrink-0 rounded-full border border-golddim/40 px-4 py-1.5 text-[11.5px] tracking-[0.1em] text-golddim">
+            <span className="shrink-0 rounded-full border border-golddim/40 px-4 py-1.5 text-[12px] tracking-[0.1em] text-golddim">
               账号数据暂存本地 · 云同步与更多服务陆续开放
             </span>
           </div>

@@ -77,13 +77,13 @@ export default function FloorPlanEditor({
             清除
           </button>
         )}
-        <span className="ml-1 text-[11px] text-silkmuted">
+        <span className="ml-1 text-[12px] text-silkmuted">
           标注：{Object.values(MARK_LABEL).map((m) => (
             <button
               key={m.label}
               type="button"
               onClick={() => setActiveType(m.label === '大门' ? 'door' : m.label === '主卧' ? 'master' : 'kitchen')}
-              className={`ml-1.5 rounded-full border px-3 py-0.5 text-[11.5px] ${
+              className={`ml-1.5 rounded-full border px-3 py-0.5 text-[12px] ${
                 MARK_LABEL[activeType].label === m.label
                   ? 'border-goldbright bg-gold/15 text-goldbright'
                   : 'border-golddim/30 text-silkmuted'
@@ -118,7 +118,7 @@ export default function FloorPlanEditor({
                       </span>
                     </span>
                   ) : (
-                    <span className="absolute bottom-0.5 right-1 text-[9px] text-silkmuted opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="absolute bottom-0.5 right-1 text-[12px] text-silkmuted opacity-0 transition-opacity group-hover:opacity-100">
                       {name}
                     </span>
                   )}
@@ -137,7 +137,7 @@ export default function FloorPlanEditor({
           <span className="mt-2 text-[13px] text-silkmuted">
             点击上传户型图（拍照或相册均可）
           </span>
-          <span className="mt-1 text-[11px] text-silkmuted/70">
+          <span className="mt-1 text-[12px] text-silkmuted/70">
             图片仅在本机处理，不上传服务器
           </span>
         </button>
@@ -149,7 +149,7 @@ export default function FloorPlanEditor({
           {marks.map((m, i) => (
             <span
               key={i}
-              className="rounded-full border border-golddim/30 bg-black/20 px-3 py-1 text-[11.5px] text-silktext"
+              className="rounded-full border border-golddim/30 bg-black/20 px-3 py-1 text-[12px] text-silktext"
             >
               {MARK_LABEL[m.type].label} → {CELL_NAMES[m.cell]}宫
               <button

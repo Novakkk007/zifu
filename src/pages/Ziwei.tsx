@@ -489,17 +489,17 @@ export default function Ziwei() {
                               )}
                             >
                               {current && (
-                                <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-gold px-2 py-px font-serif text-[10px] font-bold text-deep3">
+                                <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-gold px-2 py-px font-serif text-[12px] font-bold text-deep3">
                                   当前
                                 </span>
                               )}
                               <p className="font-serif text-[14px] font-bold tracking-[0.1em] text-silktext">
                                 {s.palaceName}
                               </p>
-                              <p className="mt-1 text-[11px] tracking-[0.06em] text-silkmuted">
+                              <p className="mt-1 text-[12px] tracking-[0.06em] text-silkmuted">
                                 {s.startAge}–{s.endAge} 岁
                               </p>
-                              <p className="text-[10.5px] text-silkmuted/70">
+                              <p className="text-[12px] text-silkmuted/70">
                                 {s.ganzhi}宫
                               </p>
                             </motion.button>

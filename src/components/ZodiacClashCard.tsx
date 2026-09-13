@@ -23,7 +23,7 @@ export default function ZodiacClashCard({ dayBranchIdx }: { dayBranchIdx: number
     <div className="rounded-xl border border-golddim/25 bg-deep p-6">
       <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <p className="font-latin text-[11px] font-medium uppercase tracking-[0.3em] text-golddim">
+          <p className="font-latin text-[12px] font-medium uppercase tracking-[0.3em] text-golddim">
             Personal Check
           </p>
           <h3 className="mt-1 font-serif text-[17px] font-bold tracking-[0.08em] text-silktext">

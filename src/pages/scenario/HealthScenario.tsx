@@ -73,7 +73,7 @@ export default function HealthScenario() {
       <FloatingGlyphs count={18} onDeep />
       <div className="relative zf-container max-w-[880px]">
         <header className="text-center">
-          <p className="font-latin text-[11px] font-medium uppercase tracking-[0.3em] text-golddim">
+          <p className="font-latin text-[12px] font-medium uppercase tracking-[0.3em] text-golddim">
             Health &amp; Wellness
           </p>
           <h1 className="mt-2 font-serif text-[30px] font-black tracking-[0.12em] text-silktext">
@@ -143,11 +143,11 @@ export default function HealthScenario() {
               <p className="mt-3 text-[13.5px] leading-[1.9] text-inkmuted">{advice.traits}</p>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="rounded-lg border border-golddim/15 bg-silk p-4">
-                  <p className="text-[11px] tracking-[0.2em] text-golddim">四时参详</p>
+                  <p className="text-[12px] tracking-[0.2em] text-golddim">四时参详</p>
                   <p className="mt-1.5 text-[13px] leading-[1.9] text-inktext">{advice.season}</p>
                 </div>
                 <div className="rounded-lg border border-golddim/15 bg-silk p-4">
-                  <p className="text-[11px] tracking-[0.2em] text-golddim">传统养生提示</p>
+                  <p className="text-[12px] tracking-[0.2em] text-golddim">传统养生提示</p>
                   <p className="mt-1.5 text-[13px] leading-[1.9] text-inktext">{advice.care}</p>
                 </div>
               </div>

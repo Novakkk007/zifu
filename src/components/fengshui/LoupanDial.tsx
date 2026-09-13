@@ -130,7 +130,7 @@ export default function LoupanDial({ degrees, onChange, compact }: LoupanProps) 
           </button>
         ))}
       </div>
-      <p className="mt-2 max-w-[260px] text-center text-[11px] leading-[1.7] text-silkmuted">
+      <p className="mt-2 max-w-[260px] text-center text-[12px] leading-[1.7] text-silkmuted">
         手机端可用系统罗盘测量大门朝向（正对门口方向），拖动本盘对齐即可
       </p>
     </div>

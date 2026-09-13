@@ -46,7 +46,7 @@ function PrecisionBadge({ precision }: { precision: ArtPrecision }) {
   }
   const m = meta[precision]
   return (
-    <span className={`rounded-full border px-2 py-px font-sans text-[10.5px] tracking-[0.14em] ${m.cls}`}>
+    <span className={`rounded-full border px-2 py-px font-sans text-[12px] tracking-[0.14em] ${m.cls}`}>
       {m.label}
     </span>
   )
@@ -231,14 +231,14 @@ export default function HecanForm() {
                     className="rounded-xl border border-gold/15 bg-deep2/70 p-5"
                   >
                     <div className="flex items-center justify-between">
-                      <p className="font-latin text-[11px] uppercase tracking-[0.3em] text-gold">
+                      <p className="font-latin text-[12px] uppercase tracking-[0.3em] text-gold">
                         {art.art}
                       </p>
                       <PrecisionBadge precision={art.precision} />
                     </div>
                     <h4 className="mt-1 font-serif text-[16px] font-bold text-silktext">
                       {art.artName}
-                      <span className="ml-2 font-sans text-[11px] font-normal tracking-[0.08em] text-silkmuted">
+                      <span className="ml-2 font-sans text-[12px] font-normal tracking-[0.08em] text-silkmuted">
                         {art.ruleVariant}
                       </span>
                     </h4>
@@ -247,7 +247,7 @@ export default function HecanForm() {
                         {[chart.pillars.year.ganzhi, chart.pillars.month.ganzhi, chart.pillars.day.ganzhi, chart.pillars.hour?.ganzhi ?? '—'].map(
                           (p, pi) => (
                             <div key={PILLAR_LABELS[pi]} className="flex flex-col items-center gap-1.5">
-                              <span className="text-[10px] tracking-[0.2em] text-silkmuted">
+                              <span className="text-[12px] tracking-[0.2em] text-silkmuted">
                                 {PILLAR_LABELS[pi]}
                               </span>
                               <span className="flex flex-col rounded-md border border-gold/25 px-2 py-1.5 font-serif text-[18px] font-bold leading-[1.4] text-goldbright">

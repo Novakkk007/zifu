@@ -149,7 +149,7 @@ function GanzhiTool() {
                 key={p.label}
                 className="flex w-[92px] flex-col items-center rounded-xl border border-golddim/25 bg-silk2 py-4"
               >
-                <span className="font-sans text-[11px] tracking-[0.24em] text-inkmuted">{p.label}</span>
+                <span className="font-sans text-[12px] tracking-[0.24em] text-inkmuted">{p.label}</span>
                 <span className="mt-2 font-serif text-[24px] font-black text-golddim">{p.value}</span>
               </div>
             ))}

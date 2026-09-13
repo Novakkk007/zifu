@@ -63,13 +63,13 @@ function ProportionBar({ chart }: { chart: BaziChartV2 }) {
               {WUXING_ICONS[w]} {w}
             </p>
             <p className="text-[12px] text-inktext">{chart.wuxing.count[w].toFixed(2)}</p>
-            <p className="text-[11px] text-inkmuted">
+            <p className="text-[12px] text-inkmuted">
               {((chart.wuxing.count[w] / total) * 100).toFixed(0)}%
             </p>
           </div>
         ))}
       </div>
-      <p className="mt-3 text-[11.5px] leading-[1.8] text-inkmuted">
+      <p className="mt-3 text-[12px] leading-[1.8] text-inkmuted">
         计数权重：天干 1.0；藏干 本气 0.6 / 中气 0.25 / 余气 0.15（权重公开，见旺衰模型说明）。
         {chart.wuxing.missing.length > 0 ? (
           <span className="text-[#B04A3A]"> 盘中缺{chart.wuxing.missing.join('、')}。</span>
@@ -209,7 +209,7 @@ function ShengKeRing({ chart }: { chart: BaziChartV2 }) {
         })}
       </svg>
       {/* 图例（双编码说明） */}
-      <div className="mt-2 space-y-1.5 text-[11.5px] leading-[1.8] text-inkmuted">
+      <div className="mt-2 space-y-1.5 text-[12px] leading-[1.8] text-inkmuted">
         <p>
           <span className="font-medium text-inktext">读法：</span>
           外环箭头 = 相生（木→火→土→金→水→木）；内弦箭头 = 相克（木→土→水→火→金→木）。
@@ -248,11 +248,11 @@ function SourceSplit({ chart }: { chart: BaziChartV2 }) {
     stemPart[p.stemWuxing] += 1
     for (const h of p.hiddenStems) hiddenPart[h.wuxing][h.role] += W[h.role]
   }
-  const th = 'px-3 py-2 text-left text-[11.5px] font-medium tracking-[0.08em] text-golddim'
+  const th = 'px-3 py-2 text-left text-[12px] font-medium tracking-[0.08em] text-golddim'
   const td = 'px-3 py-2 text-[12.5px] text-inktext'
   return (
     <div>
-      <p className="border-b border-golddim/15 px-3 py-2 text-[11px] tracking-[0.08em] text-inkmuted sm:hidden">
+      <p className="border-b border-golddim/15 px-3 py-2 text-[12px] tracking-[0.08em] text-inkmuted sm:hidden">
         左右滑动查看完整表格 →
       </p>
       <div className="overflow-x-auto overscroll-x-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
@@ -297,7 +297,7 @@ function SubScore({ label, value, max, delay }: { label: string; value: number; 
         <span className="text-[12.5px] tracking-[0.08em] text-inkmuted">{label}</span>
         <span className="font-serif text-[14px] font-bold text-inktext">
           {value}
-          <span className="ml-0.5 text-[11px] font-normal text-inkmuted">/ {max}</span>
+          <span className="ml-0.5 text-[12px] font-normal text-inkmuted">/ {max}</span>
         </span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-silk">
@@ -331,11 +331,11 @@ function StrengthCard({ chart }: { chart: BaziChartV2 }) {
         <SubScore label="得地（支中根气）" value={s.dedi} max={30} delay={0.1} />
         <SubScore label="得势（干透帮扶）" value={s.deshi} max={30} delay={0.2} />
       </div>
-      <p className="mt-5 border-t border-golddim/15 pt-3 text-[11.5px] leading-[1.8] text-inkmuted">
+      <p className="mt-5 border-t border-golddim/15 pt-3 text-[12px] leading-[1.8] text-inkmuted">
         {s.model}
       </p>
-      <p className="mt-2 text-[11.5px] leading-[1.8] text-inkmuted">{s.confidence}</p>
-      <p className="mt-2 text-[11.5px] font-medium leading-[1.8] text-golddim">{s.disclaimer}</p>
+      <p className="mt-2 text-[12px] leading-[1.8] text-inkmuted">{s.confidence}</p>
+      <p className="mt-2 text-[12px] font-medium leading-[1.8] text-golddim">{s.disclaimer}</p>
     </div>
   )
 }
@@ -384,7 +384,7 @@ function YongShenCard({ chart }: { chart: BaziChartV2 }) {
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-[11.5px] font-medium leading-[1.8] text-golddim">{y.disclaimer}</p>
+      <p className="mt-3 text-[12px] font-medium leading-[1.8] text-golddim">{y.disclaimer}</p>
     </div>
   )
 }

@@ -71,7 +71,7 @@ function HexagramMeaning({
           {hexagramSymbol(hex.id)}
         </span>
         <div className="min-w-0">
-          <p className="text-[11px] font-medium tracking-[0.28em] text-inkmuted">
+          <p className="text-[12px] font-medium tracking-[0.28em] text-inkmuted">
             {kind}
           </p>
           <h3 className="mt-1 font-serif text-[22px] font-bold tracking-[0.1em] text-inktext sm:text-[26px]">
@@ -103,7 +103,7 @@ function RelationsOverview({ chart }: { chart: LiuyaoChart }) {
         <h3 className="font-serif text-[17px] font-semibold tracking-[0.12em] text-inktext">
           六亲 · 世应
         </h3>
-        <p className="text-[11.5px] leading-relaxed text-inkmuted">
+        <p className="text-[12px] leading-relaxed text-inkmuted">
           由上爻至初爻；六亲以本卦宫五行推定
         </p>
       </div>
@@ -120,7 +120,7 @@ function RelationsOverview({ chart }: { chart: LiuyaoChart }) {
                   : "border-golddim/15 bg-silk2/60"
             )}
           >
-            <span className="w-8 shrink-0 text-[11.5px] text-inkmuted">
+            <span className="w-8 shrink-0 text-[12px] text-inkmuted">
               {yao.name}
             </span>
             <span className="min-w-0 flex-1 truncate font-serif text-[13.5px] text-inktext">
@@ -133,7 +133,7 @@ function RelationsOverview({ chart }: { chart: LiuyaoChart }) {
               </span>
             )}
             {yao.moving && (
-              <span className="shrink-0 text-[11px] font-medium text-golddim">
+              <span className="shrink-0 text-[12px] font-medium text-golddim">
                 动
               </span>
             )}
@@ -205,7 +205,7 @@ export default function GuaciPanel({ chart }: { chart: LiuyaoChart }) {
             aria-hidden
           />
         </button>
-        <p className="mt-3 text-[11.5px] leading-relaxed text-inkmuted">
+        <p className="mt-3 text-[12px] leading-relaxed text-inkmuted">
           先生讲卦仅作传统文化参详，不作具体事件断言。
         </p>
       </div>

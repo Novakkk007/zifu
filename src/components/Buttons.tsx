@@ -147,7 +147,7 @@ export function TagPill({ variant, className }: TagPillProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 font-sans text-[11px] font-medium tracking-[0.1em]',
+        'inline-flex items-center rounded-full px-2.5 py-0.5 font-sans text-[12px] font-medium tracking-[0.1em]',
         variant === 'flagship'
           ? 'text-[#0B3B39] [background:linear-gradient(135deg,rgb(var(--gold-bright)),rgb(var(--gold)))]'
           : 'border border-gold/50 text-goldbright',

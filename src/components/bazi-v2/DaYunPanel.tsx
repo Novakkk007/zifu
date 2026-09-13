@@ -68,7 +68,7 @@ export default function DaYunPanel({ chart }: { chart: BaziChartV2 }) {
       <div className="border-b border-golddim/20 px-4 py-5 sm:px-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-golddim">
+            <p className="text-[12px] font-medium uppercase tracking-[0.2em] text-golddim">
               Luck Timeline
             </p>
             <h2
@@ -86,7 +86,7 @@ export default function DaYunPanel({ chart }: { chart: BaziChartV2 }) {
       </div>
 
       <div className="px-3 py-5 sm:px-5">
-        <p className="mb-3 px-1 text-[11px] tracking-[0.08em] text-inkmuted sm:hidden">
+        <p className="mb-3 px-1 text-[12px] tracking-[0.08em] text-inkmuted sm:hidden">
           左右滑动查看十步大运 →
         </p>
         <div
@@ -155,7 +155,7 @@ export default function DaYunPanel({ chart }: { chart: BaziChartV2 }) {
                     </span>
                     <span
                       className={cn(
-                        "mt-3 text-[11.5px]",
+                        "mt-3 text-[12px]",
                         active ? "text-silkmuted" : "text-inkmuted"
                       )}
                     >
@@ -163,14 +163,14 @@ export default function DaYunPanel({ chart }: { chart: BaziChartV2 }) {
                     </span>
                     <span
                       className={cn(
-                        "mt-1 text-[11.5px]",
+                        "mt-1 text-[12px]",
                         active ? "text-silkmuted" : "text-inkmuted"
                       )}
                     >
                       {step.startAge}–{step.endAge} 岁
                     </span>
                     {step.isCurrent && (
-                      <span className="mt-2 rounded-full border border-gold/60 px-2 py-0.5 text-[10px] tracking-[0.1em] text-golddim">
+                      <span className="mt-2 rounded-full border border-gold/60 px-2 py-0.5 text-[12px] tracking-[0.1em] text-golddim">
                         当前大运
                       </span>
                     )}
@@ -179,7 +179,7 @@ export default function DaYunPanel({ chart }: { chart: BaziChartV2 }) {
                         key={n.tag}
                         title={n.detail}
                         className={cn(
-                          "mt-1.5 max-w-full rounded px-1.5 py-0.5 text-[10px] leading-[1.5]",
+                          "mt-1.5 max-w-full rounded px-1.5 py-0.5 text-[12px] leading-[1.5]",
                           n.tone === '慎' ? "bg-[#7a2e2e]/15 text-[#c96a5a]" : "bg-gold/10 text-golddim",
                           active && "bg-black/20"
                         )}
@@ -213,7 +213,7 @@ export default function DaYunPanel({ chart }: { chart: BaziChartV2 }) {
                   <span
                     key={year.year}
                     className={cn(
-                      "shrink-0 rounded-full border px-3 py-1 text-[11.5px]",
+                      "shrink-0 rounded-full border px-3 py-1 text-[12px]",
                       year.isCurrent
                         ? "border-gold bg-gold/10 font-medium text-golddim"
                         : "border-golddim/25 text-inkmuted"
@@ -243,11 +243,11 @@ export default function DaYunPanel({ chart }: { chart: BaziChartV2 }) {
                     <li
                       key={year.year}
                       className={cn(
-                        "flex items-start gap-2 text-[11.5px] leading-[1.7]",
+                        "flex items-start gap-2 text-[12px] leading-[1.7]",
                         year.isCurrent ? "text-golddim" : "text-inkmuted"
                       )}
                     >
-                      <span className="mt-[3px] shrink-0 font-serif text-[10.5px] tracking-[0.06em] text-inkfaint">
+                      <span className="mt-[3px] shrink-0 font-serif text-[12px] tracking-[0.06em] text-inkfaint">
                         {year.ganzhi}
                       </span>
                       <span>{b.brief || '按部就班即是福。'}</span>

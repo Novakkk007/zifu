@@ -198,7 +198,7 @@ function DayunTab({ chart }: { chart: BaziChartV2 }) {
               <td className={`${tdCls} font-serif text-[15px] font-bold`}>
                 {s.ganzhi}
                 {s.isCurrent && (
-                  <span className="ml-2 rounded-full border border-gold/60 px-2 py-0.5 text-[10.5px] font-sans font-medium tracking-[0.1em] text-golddim">
+                  <span className="ml-2 rounded-full border border-gold/60 px-2 py-0.5 text-[12px] font-sans font-medium tracking-[0.1em] text-golddim">
                     当前大运
                   </span>
                 )}
@@ -247,7 +247,7 @@ function LiunianTab({ chart }: { chart: BaziChartV2 }) {
                 <td className={tdCls}>
                   {l.year}
                   {l.isCurrent && (
-                    <span className="ml-2 rounded-full border border-gold/60 px-2 py-0.5 text-[10.5px] tracking-[0.1em] text-golddim">
+                    <span className="ml-2 rounded-full border border-gold/60 px-2 py-0.5 text-[12px] tracking-[0.1em] text-golddim">
                       当前流年
                     </span>
                   )}
@@ -287,7 +287,7 @@ export default function DetailTabs({ chart }: { chart: BaziChartV2 }) {
           </button>
         ))}
       </div>
-      <p className="border-b border-golddim/15 px-4 py-2 text-[11px] tracking-[0.08em] text-inkmuted sm:hidden">
+      <p className="border-b border-golddim/15 px-4 py-2 text-[12px] tracking-[0.08em] text-inkmuted sm:hidden">
         左右滑动查看完整表格 →
       </p>
       <div className="overflow-x-auto overscroll-x-contain p-3 sm:p-4" style={{ WebkitOverflowScrolling: 'touch' }}>

@@ -185,7 +185,7 @@ export function GanzhiTool() {
                 key={p.label}
                 className="flex w-[92px] flex-col items-center rounded-xl border border-golddim/25 bg-silk2 py-4"
               >
-                <span className="font-sans text-[11px] tracking-[0.24em] text-inkmuted">{p.label}</span>
+                <span className="font-sans text-[12px] tracking-[0.24em] text-inkmuted">{p.label}</span>
                 <span className="mt-2 font-serif text-[24px] font-black text-golddim">{p.value}</span>
               </div>
             ))}
@@ -262,7 +262,7 @@ export function LodgeTool() {
             <p className="mt-2 max-w-[420px] text-center font-sans text-[13.5px] leading-[1.95] text-inkmuted">
               {LODGE_NOTES[lodge]}
             </p>
-            <p className="mt-3 font-sans text-[11.5px] tracking-[0.08em] text-inkmuted/70">
+            <p className="mt-3 font-sans text-[12px] tracking-[0.08em] text-inkmuted/70">
               值日星宿按 28 宿逐日循环推排（mock 宿性短评，供文化体验）
             </p>
           </div>
@@ -359,7 +359,7 @@ export function QianTool() {
               className="mt-7 w-full max-w-[420px] rounded-xl border border-golddim/30 bg-silk2 p-7 text-center"
             >
               <div className="flex items-center justify-center gap-3">
-                <span className="rounded-full border border-gold/50 px-3 py-0.5 font-sans text-[11px] font-medium tracking-[0.14em] text-golddim">
+                <span className="rounded-full border border-gold/50 px-3 py-0.5 font-sans text-[12px] font-medium tracking-[0.14em] text-golddim">
                   {drawn.sign.grade}
                 </span>
                 <span className="font-serif text-[20px] font-bold tracking-[0.14em] text-inktext">
@@ -377,7 +377,7 @@ export function QianTool() {
               <p className="mt-4 font-sans text-[13px] leading-[1.9] text-inkmuted">
                 简注：{drawn.sign.note}
               </p>
-              <p className="mt-3 font-sans text-[11px] tracking-[0.06em] text-inkmuted/70">
+              <p className="mt-3 font-sans text-[12px] tracking-[0.06em] text-inkmuted/70">
                 观音灵签通行本 · CSPRNG 均匀抽取 · 每日一签 · 仅供文化体验
               </p>
             </motion.div>
@@ -466,7 +466,7 @@ export function WuxingTool() {
                       style={{ backgroundColor: WUXING_SWATCH[target] }}
                     />
                     <span className="mt-1.5 font-serif text-[16px] font-bold text-inktext">{target}</span>
-                    <span className="mt-0.5 text-center font-sans text-[10.5px] leading-tight text-inkmuted">
+                    <span className="mt-0.5 text-center font-sans text-[12px] leading-tight text-inkmuted">
                       {r.label}
                     </span>
                   </div>
@@ -488,11 +488,11 @@ export function WuxingTool() {
                   >
                     {el}
                   </span>
-                  <span className="text-[11px] text-golddim/70">{i === WUXING_ORDER.length - 1 ? '↺' : '→'}</span>
+                  <span className="text-[12px] text-golddim/70">{i === WUXING_ORDER.length - 1 ? '↺' : '→'}</span>
                 </span>
               ))}
             </div>
-            <p className="mt-2 font-sans text-[11.5px] tracking-[0.08em] text-inkmuted/70">
+            <p className="mt-2 font-sans text-[12px] tracking-[0.08em] text-inkmuted/70">
               外圈为相生之序：木生火、火生土、土生金、金生水、水生木
             </p>
           </div>

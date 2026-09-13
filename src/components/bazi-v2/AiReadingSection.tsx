@@ -134,10 +134,10 @@ function RelatedBooksSection({ chart }: { chart: BaziChartV2 }) {
             <p className="font-serif text-[15px] font-bold tracking-[0.08em] text-goldbright">
               《{b.title}》
             </p>
-            <p className="mt-1.5 text-[11.5px] leading-[1.7] text-silkmuted">
+            <p className="mt-1.5 text-[12px] leading-[1.7] text-silkmuted">
               {b.dynasty} · {b.author}
             </p>
-            <p className="mt-1 line-clamp-2 text-[11.5px] leading-[1.7] text-silkmuted/80">
+            <p className="mt-1 line-clamp-2 text-[12px] leading-[1.7] text-silkmuted/80">
               {b.intro}
             </p>
           </Link>
@@ -150,14 +150,14 @@ function RelatedBooksSection({ chart }: { chart: BaziChartV2 }) {
 function SourceBadge({ result }: { result: ReadingResponse }) {
   if (result.source === 'live') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-goldbright">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-[12px] font-medium tracking-[0.12em] text-goldbright">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-goldbright" />
         live · 模型 {result.model ?? '未知'} · 消耗 1 灵签
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-silkmuted/40 bg-silktext/5 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-silkmuted">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-silkmuted/40 bg-silktext/5 px-3 py-1 text-[12px] font-medium tracking-[0.12em] text-silkmuted">
       <span className="inline-block h-1.5 w-1.5 rounded-full bg-silkmuted" />
       fallback · 演示引擎（非 AI 生成，免费）
     </span>
@@ -311,7 +311,7 @@ export default function AiReadingSection({ chart, chartId, stage, onStageConsume
             当前命盘尚未落库（可能排盘时未登录或落库失败）——请在登录状态下重新排盘一次，即可使用 AI 参详。
           </p>
         )}
-        <p className="mt-3 text-[11.5px] text-silkmuted">
+        <p className="mt-3 text-[12px] text-silkmuted">
           live 参详每次消耗 1 灵签；演示引擎（fallback）免费；参详失败不扣费。
         </p>
         {errState && (

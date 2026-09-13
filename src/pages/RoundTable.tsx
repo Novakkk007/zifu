@@ -226,7 +226,7 @@ export default function RoundTablePage() {
             { label: "时", v: hour, set: setHour, ph: "2" },
           ].map((f) => (
             <label key={f.label} className="block">
-              <span className="text-[11.5px] tracking-[0.14em] text-inkmuted">{f.label}</span>
+              <span className="text-[12px] tracking-[0.14em] text-inkmuted">{f.label}</span>
               <input
                 value={f.v}
                 onChange={(e) => f.set(e.target.value)}
@@ -257,7 +257,7 @@ export default function RoundTablePage() {
           {/* 七席环坐 · 逐个入席（循环动画——思考期氛围） */}
           <div className="relative mx-auto h-[300px] max-w-[420px] overflow-hidden rounded-2xl border border-golddim/20 bg-silk2/60 sm:h-[330px]">
             <div className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 border-golddim/40 bg-silk text-center">
-              <span className="text-[11px] tracking-[0.2em] text-inkmuted">候茶</span>
+              <span className="text-[12px] tracking-[0.2em] text-inkmuted">候茶</span>
               <span className="mt-1 font-serif text-[13px] tracking-[0.12em] text-golddim">七席待开</span>
             </div>
             {ROUNDTABLE_SCHOOLS.map((s, i) => (
@@ -283,7 +283,7 @@ export default function RoundTablePage() {
                 >
                   {['📜', '📚', '🧭', '🌊', '🕯️', '🧧', '🔮'][i]}
                 </span>
-                <span className="mt-1 block text-[10.5px] leading-tight tracking-[0.03em] text-inkmuted">
+                <span className="mt-1 block text-[12px] leading-tight tracking-[0.03em] text-inkmuted">
                   {s.name.length > 5 ? s.name.slice(0, 5) : s.name}
                 </span>
               </motion.div>
@@ -357,14 +357,14 @@ export default function RoundTablePage() {
             <div
               className="absolute left-1/2 top-1/2 z-10 flex h-44 w-44 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 border-golddim/50 bg-silk2 text-center shadow-card"
             >
-              <span className="text-[10.5px] tracking-[0.24em] text-inkmuted">今日命盘</span>
+              <span className="text-[12px] tracking-[0.24em] text-inkmuted">今日命盘</span>
               <span className="mt-1 font-serif text-[15px] font-bold tracking-[0.12em] text-golddim">
                 {gender === "male" ? "乾造" : "坤造"}
               </span>
-              <span className="mt-1 text-[11.5px] text-inktext">
+              <span className="mt-1 text-[12px] text-inktext">
                 {year}-{month}-{day} {hour}时
               </span>
-              <span className="mt-1 text-[10.5px] text-inkmuted">七席同观 · 共识可参</span>
+              <span className="mt-1 text-[12px] text-inkmuted">七席同观 · 共识可参</span>
             </div>
             {result.seats.map((seat, i) => {
               const meta = ROUNDTABLE_SCHOOLS[i];
@@ -386,8 +386,8 @@ export default function RoundTablePage() {
                       第{i + 1}席 · {seat.school}
                     </span>
                   </div>
-                  <span className="text-[10px] text-inkmuted">{meta?.school}</span>
-                  <p className="mt-1.5 line-clamp-3 text-[11.5px] leading-[1.7] text-inktext">
+                  <span className="text-[12px] text-inkmuted">{meta?.school}</span>
+                  <p className="mt-1.5 line-clamp-3 text-[12px] leading-[1.7] text-inktext">
                     {seat.content}
                   </p>
                   <button
@@ -397,7 +397,7 @@ export default function RoundTablePage() {
                         [i]: prev[i] ?? { q: "", reply: "", busy: false },
                       }))
                     }
-                    className="mt-1.5 text-[10.5px] tracking-[0.08em] text-golddim hover:underline"
+                    className="mt-1.5 text-[12px] tracking-[0.08em] text-golddim hover:underline"
                   >
                     深问此席 →
                   </button>
@@ -410,17 +410,17 @@ export default function RoundTablePage() {
                         }
                         onKeyDown={(e) => e.key === "Enter" && askFollowUp(i)}
                         placeholder="问这一席……"
-                        className="w-full rounded border border-golddim/20 bg-silk px-2 py-1.5 text-[11.5px] text-inktext outline-none"
+                        className="w-full rounded border border-golddim/20 bg-silk px-2 py-1.5 text-[12px] text-inktext outline-none"
                       />
                       <button
                         onClick={() => askFollowUp(i)}
                         disabled={f.busy}
-                        className="mt-1.5 w-full rounded bg-golddim/80 py-1 text-[11px] tracking-[0.1em] text-white disabled:opacity-40"
+                        className="mt-1.5 w-full rounded bg-golddim/80 py-1 text-[12px] tracking-[0.1em] text-white disabled:opacity-40"
                       >
                         {f.busy ? "思量中……" : "深谈"}
                       </button>
                       {f.reply && (
-                        <p className="mt-1.5 whitespace-pre-line text-[11px] leading-[1.7] text-inkmuted">
+                        <p className="mt-1.5 whitespace-pre-line text-[12px] leading-[1.7] text-inkmuted">
                           {f.reply}
                         </p>
                       )}
@@ -442,7 +442,7 @@ export default function RoundTablePage() {
                   <span className="font-serif text-[14px] font-bold tracking-[0.1em] text-golddim">
                     第{i + 1}席 · {seat.school}
                   </span>
-                  <span className="ml-2 text-[10.5px] text-inkmuted">{meta?.school}</span>
+                  <span className="ml-2 text-[12px] text-inkmuted">{meta?.school}</span>
                   <p className="mt-2 whitespace-pre-line font-serif text-[13px] leading-[1.85] text-inktext">
                     {seat.content}
                   </p>
@@ -453,7 +453,7 @@ export default function RoundTablePage() {
                         [i]: prev[i] ?? { q: "", reply: "", busy: false },
                       }))
                     }
-                    className="mt-2 text-[11px] tracking-[0.08em] text-golddim hover:underline"
+                    className="mt-2 text-[12px] tracking-[0.08em] text-golddim hover:underline"
                   >
                     深问此席 →
                   </button>
@@ -471,7 +471,7 @@ export default function RoundTablePage() {
                       <button
                         onClick={() => askFollowUp(i)}
                         disabled={f.busy}
-                        className="mt-1.5 w-full rounded bg-golddim/80 py-1.5 text-[11.5px] tracking-[0.1em] text-white disabled:opacity-40"
+                        className="mt-1.5 w-full rounded bg-golddim/80 py-1.5 text-[12px] tracking-[0.1em] text-white disabled:opacity-40"
                       >
                         {f.busy ? "思量中……" : "深谈"}
                       </button>
@@ -509,10 +509,10 @@ export default function RoundTablePage() {
           {result.closing && (
             <div className="mt-4 rounded-2xl border border-golddim/15 bg-silk p-5 text-center">
               <p className="font-serif text-[13.5px] leading-[1.9] text-inktext">{result.closing}</p>
-              <p className="mt-2 text-[11px] tracking-[0.2em] text-inkmuted">—— 先生收束</p>
+              <p className="mt-2 text-[12px] tracking-[0.2em] text-inkmuted">—— 先生收束</p>
             </div>
           )}
-          <p className="mt-6 text-center text-[11px] text-inkmuted">
+          <p className="mt-6 text-center text-[12px] text-inkmuted">
             圆桌各家所论皆传统命理文化的观察视角，仅供文化研习，不作任何决策建议。
           </p>
           </>

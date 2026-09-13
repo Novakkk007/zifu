@@ -111,14 +111,14 @@ function errorStateOf(
 function SourceBadge({ result }: { result: ReadingResponse }) {
   if (result.source === 'live') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-goldbright">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-[12px] font-medium tracking-[0.12em] text-goldbright">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-goldbright" />
         live · 模型 {result.model ?? '未知'} · 消耗 1 灵签
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-silkmuted/40 bg-silktext/5 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-silkmuted">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-silkmuted/40 bg-silktext/5 px-3 py-1 text-[12px] font-medium tracking-[0.12em] text-silkmuted">
       <span className="inline-block h-1.5 w-1.5 rounded-full bg-silkmuted" />
       fallback · 演示引擎（非 AI 生成，免费）
     </span>
@@ -240,7 +240,7 @@ export default function AiReading({ chartId, benName, bianName }: AiReadingProps
           <p className="mt-4 text-[12.5px] tracking-[0.12em] text-silkmuted">
             本次起卦：《{benName}》{bianName ? `之《${bianName}》` : ' · 六爻安静'} · 卦例 #{chartId}
           </p>
-          <p className="mt-2 text-[11.5px] text-silkmuted">
+          <p className="mt-2 text-[12px] text-silkmuted">
             live 参详每次消耗 1 灵签；演示引擎（fallback）免费；参详失败不扣费。
           </p>
           {errState && (

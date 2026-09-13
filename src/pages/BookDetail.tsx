@@ -67,7 +67,7 @@ export default function BookDetail() {
           ← 藏经阁
         </Link>
         <header className="mt-6">
-          <p className="font-latin text-[11px] font-medium uppercase tracking-[0.3em] text-golddim">
+          <p className="font-latin text-[12px] font-medium uppercase tracking-[0.3em] text-golddim">
             Classics
           </p>
           <h1 className="mt-2 font-serif text-[34px] font-black tracking-[0.1em] text-inktext">
@@ -171,7 +171,7 @@ export default function BookDetail() {
                   <p className="font-serif text-[15.5px] leading-[1.9] text-inktext">
                     {ex.text}
                   </p>
-                  <p className="mt-3 text-[11.5px] tracking-[0.08em] text-inkmuted">
+                  <p className="mt-3 text-[12px] tracking-[0.08em] text-inkmuted">
                     —— {ex.source}
                   </p>
                 </li>
@@ -180,7 +180,7 @@ export default function BookDetail() {
           </section>
         )}
 
-        <p className="mt-10 text-center text-[11.5px] leading-[1.8] text-inkmuted">
+        <p className="mt-10 text-center text-[12px] leading-[1.8] text-inkmuted">
           {classicText ? (
             <>
               《子平真诠》为清代沈孝瞻所著，原著已进入公版。

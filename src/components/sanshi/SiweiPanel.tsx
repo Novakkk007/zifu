@@ -45,7 +45,7 @@ export default function SiweiPanel({ texts, caption = '参详输出 · 演示 mo
                   transition={{ duration: 0.26, ease: 'easeOut' }}
                 />
               )}
-              <span className="block font-latin text-[11px] font-medium tracking-[0.3em] text-gold">
+              <span className="block font-latin text-[12px] font-medium tracking-[0.3em] text-gold">
                 {p.latin}
               </span>
               <span className="mt-0.5 block font-serif text-[15.5px] font-bold tracking-[0.1em] text-silktext">

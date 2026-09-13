@@ -33,7 +33,7 @@ function FactorRows({ factors }: { factors: ScoreFactor[] }) {
           <div className="flex items-baseline justify-between gap-3">
             <span className="text-[12px] font-medium text-silktext">
               {f.name}
-              <span className="ml-1.5 text-[10.5px] text-silkmuted">权重 {f.weight}</span>
+              <span className="ml-1.5 text-[12px] text-silkmuted">权重 {f.weight}</span>
             </span>
             <span className="font-serif text-[13px] font-bold text-goldbright">{f.score}</span>
           </div>
@@ -43,7 +43,7 @@ function FactorRows({ factors }: { factors: ScoreFactor[] }) {
               style={{ width: `${f.score}%` }}
             />
           </div>
-          <p className="mt-1 text-[11px] leading-[1.7] text-silkmuted">{f.explanation}</p>
+          <p className="mt-1 text-[12px] leading-[1.7] text-silkmuted">{f.explanation}</p>
         </div>
       ))}
     </div>
@@ -83,7 +83,7 @@ function AnnotationCard({
       <button
         onClick={onClose}
         aria-label="关闭注解"
-        className="absolute right-2 top-2 min-h-11 rounded-full border border-golddim/40 px-3 py-0.5 text-[11px] text-silkmuted hover:text-goldbright sm:right-3 sm:top-3 sm:min-h-0 sm:px-2"
+        className="absolute right-2 top-2 min-h-11 rounded-full border border-golddim/40 px-3 py-0.5 text-[12px] text-silkmuted hover:text-goldbright sm:right-3 sm:top-3 sm:min-h-0 sm:px-2"
       >
         关闭
       </button>
@@ -92,7 +92,7 @@ function AnnotationCard({
       </p>
       <p className="mt-1 text-[12px] text-silkmuted">
         结构分 <span className="font-serif text-[16px] font-bold text-goldbright">{sel.item.score}</span>
-        <span className="ml-1 text-[10.5px]">/ 100（0–100，无量纲）</span>
+        <span className="ml-1 text-[12px]">/ 100（0–100，无量纲）</span>
       </p>
 
       {/* 干支基础信息 */}
@@ -133,7 +133,7 @@ function AnnotationCard({
 
       {/* 与命局的合冲刑害破 */}
       <div className="mt-3 border-t border-golddim/15 pt-3">
-        <p className="text-[11px] tracking-[0.14em] text-silkmuted">与命局的合冲刑害破</p>
+        <p className="text-[12px] tracking-[0.14em] text-silkmuted">与命局的合冲刑害破</p>
         {relations.length > 0 ? (
           <ul className="mt-1.5 space-y-1">
             {relations.map((r) => (
@@ -149,7 +149,7 @@ function AnnotationCard({
 
       {/* 评分构成 */}
       <div className="mt-4 border-t border-golddim/15 pt-4">
-        <p className="mb-2.5 text-[11px] tracking-[0.14em] text-silkmuted">评分构成（三因子）</p>
+        <p className="mb-2.5 text-[12px] tracking-[0.14em] text-silkmuted">评分构成（三因子）</p>
         <FactorRows factors={sel.item.factors} />
       </div>
 
@@ -161,7 +161,7 @@ function AnnotationCard({
           >
             AI 解释此阶段
           </button>
-          <p className="mt-2 text-[11px] leading-[1.7] text-silkmuted">
+          <p className="mt-2 text-[12px] leading-[1.7] text-silkmuted">
             走 AI 参详同一通道（需登录且命盘已落库），AI 将基于您的命盘按当前岁运解读。
           </p>
         </div>
@@ -232,7 +232,7 @@ export default function LifeChart({ chart, loading = false, error = null, onAiEx
           ))}
         </div>
       </div>
-      <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-silkmuted">
+      <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[12px] text-silkmuted">
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block h-0.5 w-6 bg-goldbright" /> 流年结构分折线
         </span>
@@ -261,7 +261,7 @@ export default function LifeChart({ chart, loading = false, error = null, onAiEx
       ) : (
         <div className="relative mt-4">
           {/* 移动端横向滚动容器 */}
-          <p className="mt-4 text-[11px] tracking-[0.08em] text-silkmuted sm:hidden">
+          <p className="mt-4 text-[12px] tracking-[0.08em] text-silkmuted sm:hidden">
             左右滑动查看完整轨迹 →
           </p>
           <div className="overflow-x-auto overscroll-x-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
@@ -392,7 +392,7 @@ export default function LifeChart({ chart, loading = false, error = null, onAiEx
           </div>
 
           {/* 因子权重说明 */}
-          <p className="mt-3 text-[11px] leading-[1.8] text-silkmuted">
+          <p className="mt-3 text-[12px] leading-[1.8] text-silkmuted">
             因子权重公开：五行结构变化 ×{FACTOR_WEIGHTS.wuxingBalance} · 十神作用 ×
             {FACTOR_WEIGHTS.tenGodAction} · 冲合刑害密度 ×{FACTOR_WEIGHTS.relationDensity}。
             点击流年节点或大运色带查看三因子子分与说明。

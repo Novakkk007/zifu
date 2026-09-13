@@ -47,7 +47,7 @@ function Ring({ spec, index }: { spec: RingSpec; index: number }) {
               className="absolute left-1/2 top-1/2"
               style={{ transform: `rotate(${angle}deg) translateY(-${r - 1}px)` }}
             >
-              <span className="block -translate-x-1/2 -translate-y-1/2 font-serif text-[11px] text-gold/60">
+              <span className="block -translate-x-1/2 -translate-y-1/2 font-serif text-[12px] text-gold/60">
                 {ch}
               </span>
             </span>
@@ -56,7 +56,7 @@ function Ring({ spec, index }: { spec: RingSpec; index: number }) {
       </div>
       {/* 环名小签（不随环旋转） */}
       <span
-        className="pointer-events-none absolute left-1/2 whitespace-nowrap font-serif text-[11px] tracking-[0.2em] text-gold/70"
+        className="pointer-events-none absolute left-1/2 whitespace-nowrap font-serif text-[12px] tracking-[0.2em] text-gold/70"
         style={{
           top: index === 0 ? -4 : -10,
           transform: 'translate(-50%, -100%)',

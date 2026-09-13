@@ -146,7 +146,7 @@ function SleepCard({ dayStem }: { dayStem: DayStem }) {
             🌙 今晚安寝 · {advice.theme}
           </h3>
         </div>
-        <span className="rounded-full border border-golddim/40 px-4 py-1.5 text-[11.5px] tracking-[0.12em] text-silkmuted">
+        <span className="rounded-full border border-golddim/40 px-4 py-1.5 text-[12px] tracking-[0.12em] text-silkmuted">
           五行养生 · 文化参考 · 不构成医疗建议
         </span>
       </div>
@@ -291,17 +291,17 @@ function HourGrid({ dayGz, dayStemIdx, now }: { dayGz: number; dayStemIdx: numbe
               )}
             >
               {isNow && (
-                <span className="absolute -top-2 right-1.5 rounded-full bg-gold px-1.5 py-px font-sans text-[10px] font-medium text-[#0B3B39]">
+                <span className="absolute -top-2 right-1.5 rounded-full bg-gold px-1.5 py-px font-sans text-[12px] font-medium text-[#0B3B39]">
                   现在
                 </span>
               )}
               <span className="font-serif text-[17px] font-bold text-inktext">{core.label}</span>
-              <span className="font-latin text-[10px] tracking-wide text-inkmuted">
+              <span className="font-latin text-[12px] tracking-wide text-inkmuted">
                 {HOUR_RANGES[i]}
               </span>
               <span
                 className={cn(
-                  'mt-0.5 rounded-full border px-2 py-px font-sans text-[11px] font-medium',
+                  'mt-0.5 rounded-full border px-2 py-px font-sans text-[12px] font-medium',
                   st.chip,
                 )}
               >
@@ -387,7 +387,7 @@ function LingqianSection() {
                 className="mt-7 w-full rounded-xl border border-golddim/30 bg-silk2 p-7 text-center"
               >
                 <div className="flex items-center justify-center gap-3">
-                  <span className="rounded-full border border-gold/50 px-3 py-0.5 font-sans text-[11px] font-medium tracking-[0.14em] text-golddim">
+                  <span className="rounded-full border border-gold/50 px-3 py-0.5 font-sans text-[12px] font-medium tracking-[0.14em] text-golddim">
                     {draw.sign.grade}
                   </span>
                   <span className="font-serif text-[20px] font-bold tracking-[0.14em] text-inktext">
@@ -405,7 +405,7 @@ function LingqianSection() {
                 <p className="mt-4 font-sans text-[13px] leading-[1.9] text-inkmuted">
                   简注：{draw.sign.note}
                 </p>
-                <p className="mt-3 font-sans text-[11.5px] tracking-[0.06em] text-inkmuted/70">
+                <p className="mt-3 font-sans text-[12px] tracking-[0.06em] text-inkmuted/70">
                   观音灵签通行本 · CSPRNG 均匀抽取 · 每日一签（同一日内重抽仍为该签）· 仅供文化体验
                 </p>
               </motion.div>
@@ -520,7 +520,7 @@ function MonthCalendar({ today }: { today: Date }) {
                   </span>
                   <span
                     className={cn(
-                      'font-serif text-[10.5px] leading-none',
+                      'font-serif text-[12px] leading-none',
                       todayCell ? 'text-goldbright/85' : 'text-inkmuted',
                     )}
                   >
@@ -529,7 +529,7 @@ function MonthCalendar({ today }: { today: Date }) {
                   {term && (
                     <span
                       className={cn(
-                        'absolute bottom-0.5 right-1 font-serif text-[9px]',
+                        'absolute bottom-0.5 right-1 font-serif text-[12px]',
                         todayCell ? 'text-goldbright' : 'text-golddim',
                       )}
                     >

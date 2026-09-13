@@ -143,7 +143,7 @@ export default function DirectAiCard({
         </button>
       </div>
       {savedKey && (
-        <p className="mt-2 text-[11.5px] text-golddim">
+        <p className="mt-2 text-[12px] text-golddim">
           已保存密钥（仅本机）· 直连端点{' '}
           {provider === 'deepseek' ? 'api.deepseek.com' : 'api.moonshot.cn'} · 模型{' '}
           {provider === 'deepseek' ? 'deepseek-chat' : 'kimi-k3'}

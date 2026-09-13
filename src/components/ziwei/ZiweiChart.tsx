@@ -38,12 +38,12 @@ export default function ZiweiChart({ chart, onSelect }: ZiweiChartProps) {
             >
               {/* 角标小印 */}
               {cell.isMing && (
-                <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-sm bg-gold font-serif text-[11px] font-bold text-deep3 sm:h-6 sm:w-6 sm:text-[12px]">
+                <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-sm bg-gold font-serif text-[12px] font-bold text-deep3 sm:h-6 sm:w-6 sm:text-[12px]">
                   命
                 </span>
               )}
               {cell.isShen && !cell.isMing && (
-                <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-sm border border-gold/70 font-serif text-[11px] font-bold text-golddim sm:h-6 sm:w-6 sm:text-[12px]">
+                <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-sm border border-gold/70 font-serif text-[12px] font-bold text-golddim sm:h-6 sm:w-6 sm:text-[12px]">
                   身
                 </span>
               )}
@@ -68,7 +68,7 @@ export default function ZiweiChart({ chart, onSelect }: ZiweiChartProps) {
                   ))}
                 </div>
                 {/* 辅星 / 杂曜 */}
-                <p className="mt-1 line-clamp-2 text-[10px] leading-[1.7] text-inkmuted sm:text-[11px]">
+                <p className="mt-1 line-clamp-2 text-[12px] leading-[1.7] text-inkmuted sm:text-[12px]">
                   {cell.minors.map((s) => (
                     <span key={s.name} className="mr-1.5 inline-flex items-center">
                       {s.name}
@@ -85,10 +85,10 @@ export default function ZiweiChart({ chart, onSelect }: ZiweiChartProps) {
               </div>
 
               <div className="mt-1 flex items-end justify-between">
-                <span className="font-serif text-[11px] tracking-[0.08em] text-golddim sm:text-[12px]">
+                <span className="font-serif text-[12px] tracking-[0.08em] text-golddim sm:text-[12px]">
                   {cell.name}
                 </span>
-                <span className="text-[10px] tracking-[0.08em] text-inkmuted/80 sm:text-[11px]">
+                <span className="text-[12px] tracking-[0.08em] text-inkmuted/80 sm:text-[12px]">
                   {cell.ganzhi}
                 </span>
               </div>
@@ -120,14 +120,14 @@ export default function ZiweiChart({ chart, onSelect }: ZiweiChartProps) {
               {chart.yearGanzhi}年生 · {chart.ju.name}
             </p>
             <div className="zf-hairline mx-auto mt-3" />
-            <p className="mt-3 text-[11.5px] leading-[1.9] text-inkmuted sm:text-[12.5px]">
+            <p className="mt-3 text-[12px] leading-[1.9] text-inkmuted sm:text-[12.5px]">
               命主 <span className="font-serif text-golddim">{chart.mingZhu}</span>{'　'}身主{' '}
               <span className="font-serif text-golddim">{chart.shenZhu}</span>
             </p>
-            <p className="mt-1 text-[10.5px] leading-[1.8] tracking-[0.06em] text-inkmuted/80 sm:text-[11.5px]">
+            <p className="mt-1 text-[12px] leading-[1.8] tracking-[0.06em] text-inkmuted/80 sm:text-[12px]">
               命宫{chart.mingGongGanzhi} · 身宫{chart.shenBranch} · {chart.genderKind}大限{chart.daxian.direction}
             </p>
-            <p className="mt-1 text-[10.5px] tracking-[0.08em] text-inkmuted/80 sm:text-[11.5px]">
+            <p className="mt-1 text-[12px] tracking-[0.08em] text-inkmuted/80 sm:text-[12px]">
               点击宫格查看宫位详情
             </p>
           </div>

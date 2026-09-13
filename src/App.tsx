@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router";
 import Layout from "@/components/Layout";
 import Home from "@/pages/Home";
 import { LoadingState } from "@/components/LoadingState";
+import PageTransition from "@/components/PageTransition";
 
 // 路由级懒加载：非首页引擎页面按需分包，首屏不再同步加载全部引擎
 const Hecan = lazy(() => import("@/pages/Hecan"));
@@ -10,6 +11,8 @@ const RoundTable = lazy(() => import("@/pages/RoundTable"));
 const Guanzhao = lazy(() => import("@/pages/Guanzhao"));
 const Bazi = lazy(() => import("@/pages/Bazi"));
 const Hepan = lazy(() => import("@/pages/bazi/Hepan"));
+const Jianlu = lazy(() => import("@/pages/Jianlu"));
+const JianluJie = lazy(() => import("@/pages/JianluJie"));
 const Liuyao = lazy(() => import("@/pages/Liuyao"));
 const Ziwei = lazy(() => import("@/pages/Ziwei"));
 const Qizheng = lazy(() => import("@/pages/Qizheng"));
@@ -27,7 +30,6 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const Account = lazy(() => import("@/pages/Account"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Login = lazy(() => import("@/pages/Login"));
-const FengshuiScenario = lazy(() => import("@/pages/scenario/FengshuiScenario"));
 const WealthScenario = lazy(() => import("@/pages/scenario/WealthScenario"));
 const LoveScenario = lazy(() => import("@/pages/scenario/LoveScenario"));
 const HealthScenario = lazy(() => import("@/pages/scenario/HealthScenario"));
@@ -35,8 +37,9 @@ const HealthScenario = lazy(() => import("@/pages/scenario/HealthScenario"));
 export default function App() {
   return (
     <Layout>
-      <Suspense fallback={<LoadingState className="mx-auto my-16 max-w-xl" />}>
-        <Routes>
+      <PageTransition>
+        <Suspense fallback={<LoadingState className="mx-auto my-16 max-w-xl" />}>
+          <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/hecan" element={<Hecan />} />
           <Route path="/roundtable" element={<RoundTable />} />
@@ -44,6 +47,8 @@ export default function App() {
           <Route path="/bazi" element={<Bazi />} />
           <Route path="/bazi/hepan" element={<Hepan />} />
           <Route path="/liuyao" element={<Liuyao />} />
+          <Route path="/jianlu" element={<Jianlu />} />
+          <Route path="/jianlu/jie/:code" element={<JianluJie />} />
           <Route path="/ziwei" element={<Ziwei />} />
           <Route path="/qizheng" element={<Qizheng />} />
           <Route path="/qimen" element={<Qimen />} />
@@ -61,10 +66,6 @@ export default function App() {
             path="/scenario/health"
             element={<HealthScenario />}
           />
-          <Route
-            path="/scenario/fengshui"
-            element={<FengshuiScenario />}
-          />
           <Route path="/toolkit" element={<Toolkit />} />
           <Route path="/wiki" element={<Wiki />} />
           <Route path="/wiki/:bookId" element={<BookDetail />} />
@@ -80,7 +81,8 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </Suspense>
+        </Suspense>
+      </PageTransition>
     </Layout>
   );
 }

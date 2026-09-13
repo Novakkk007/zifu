@@ -16,6 +16,7 @@ module.exports = {
         golddim: "rgb(var(--gold-dim) / <alpha-value>)",
         inktext: "rgb(var(--ink-text) / <alpha-value>)",
         inkmuted: "rgb(var(--ink-muted) / <alpha-value>)",
+        inkfaint: "rgb(var(--ink-muted) / 0.55)",
         silktext: "rgb(var(--silk-text) / <alpha-value>)",
         silkmuted: "rgb(var(--silk-muted) / <alpha-value>)",
         /* 语义色（gold-indigo 主题原生定义，其余主题走 :root 兜底值） */
@@ -70,7 +71,7 @@ module.exports = {
       fontFamily: {
         serif: ['"Noto Serif SC"', 'Songti SC', 'serif'],
         sans: ['"Noto Sans SC"', 'PingFang SC', 'sans-serif'],
-        latin: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        latin: ['"Noto Serif SC"', 'Georgia', 'serif'],
       },
       borderRadius: {
         xl: "12px",

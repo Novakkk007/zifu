@@ -43,25 +43,25 @@ export default function JiugongPlate({ palaces, onSelect }: JiugongPlateProps) {
           >
             {/* 值符角标 */}
             {p.isZhifu && (
-              <span className="absolute -top-2.5 left-1.5 rounded-full px-2 py-0.5 font-sans text-[10px] font-semibold tracking-[0.14em] text-[#0B3B39] [background:linear-gradient(135deg,rgb(var(--gold-bright)),rgb(var(--gold)))] sm:left-1/2 sm:-translate-x-1/2 sm:px-2.5">
+              <span className="absolute -top-2.5 left-1.5 rounded-full px-2 py-0.5 font-sans text-[12px] font-semibold tracking-[0.14em] text-[#0B3B39] [background:linear-gradient(135deg,rgb(var(--gold-bright)),rgb(var(--gold)))] sm:left-1/2 sm:-translate-x-1/2 sm:px-2.5">
                 值符
               </span>
             )}
             {/* 空亡 / 马星角标 */}
             <div className="absolute -top-2 right-2 flex gap-1">
               {p.isKongWang && (
-                <span className="rounded-full border border-inkmuted/40 bg-silk px-1.5 py-px font-sans text-[9.5px] tracking-[0.1em] text-inkmuted">
+                <span className="rounded-full border border-inkmuted/40 bg-silk px-1.5 py-px font-sans text-[12px] tracking-[0.1em] text-inkmuted">
                   空亡
                 </span>
               )}
               {p.hasMaXing && (
-                <span className="rounded-full border border-golddim/50 bg-silk px-1.5 py-px font-sans text-[9.5px] tracking-[0.1em] text-golddim">
+                <span className="rounded-full border border-golddim/50 bg-silk px-1.5 py-px font-sans text-[12px] tracking-[0.1em] text-golddim">
                   马星
                 </span>
               )}
             </div>
             <div className="flex items-start justify-between">
-              <span className="text-[10.5px] tracking-[0.1em] text-inkmuted">{p.gua}</span>
+              <span className="text-[12px] tracking-[0.1em] text-inkmuted">{p.gua}</span>
               <span className="text-[12px] tracking-[0.08em] text-golddim">
                 {p.god ? `${p.god}${p.godAlias ? `(${p.godAlias})` : ''}` : '—'}
               </span>
@@ -70,24 +70,24 @@ export default function JiugongPlate({ palaces, onSelect }: JiugongPlateProps) {
               <span className="font-serif text-[16px] font-bold tracking-[0.06em] text-inktext md:text-[17px]">
                 {p.star || '中宫'}
                 {p.starJi && (
-                  <span className="ml-1 text-[11px] font-normal text-inkmuted">({p.starJi}寄)</span>
+                  <span className="ml-1 text-[12px] font-normal text-inkmuted">({p.starJi}寄)</span>
                 )}
               </span>
               <span className={cn('flex items-center gap-1 text-[14px]', DOOR_CLS[kind])}>
                 {p.door ? `${p.door}门` : '寄宫'}
                 {p.isZhishi && (
-                  <span className="inline-flex h-4 w-4 items-center justify-center rounded-sm bg-gold font-serif text-[10px] font-bold text-deep3">
+                  <span className="inline-flex h-4 w-4 items-center justify-center rounded-sm bg-gold font-serif text-[12px] font-bold text-deep3">
                     使
                   </span>
                 )}
               </span>
             </div>
-            <div className="mt-1.5 space-y-0.5 border-t border-golddim/15 pt-1.5 text-[11.5px] leading-snug text-inkmuted md:mt-2">
+            <div className="mt-1.5 space-y-0.5 border-t border-golddim/15 pt-1.5 text-[12px] leading-snug text-inkmuted md:mt-2">
               <p>
                 <span className="mr-1.5 text-golddim/80">天</span>
                 {p.tianGan || '—'}
                 {p.tianGanJi && (
-                  <span className="ml-1 text-[10px] text-inkmuted/80">+{p.tianGanJi}(寄)</span>
+                  <span className="ml-1 text-[12px] text-inkmuted/80">+{p.tianGanJi}(寄)</span>
                 )}
               </p>
               <p>

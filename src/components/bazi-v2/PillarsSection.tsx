@@ -31,7 +31,7 @@ function PillarCard({
         isDay ? 'border-gold/60 ring-1 ring-gold/40' : 'border-golddim/25',
       )}
     >
-      <p className="text-[11.5px] tracking-[0.18em] text-inkmuted">
+      <p className="text-[12px] tracking-[0.18em] text-inkmuted">
         {pillar?.label ?? '时柱'}
         {isDay && <span className="ml-1.5 text-golddim">日主</span>}
       </p>
@@ -58,7 +58,7 @@ function PillarCard({
               {WUXING_ICONS[pillar.branchWuxing]}
             </span>
           </p>
-          <div className="mt-3 space-y-1 border-t border-golddim/15 pt-2.5 text-[11.5px] leading-[1.7] text-inkmuted">
+          <div className="mt-3 space-y-1 border-t border-golddim/15 pt-2.5 text-[12px] leading-[1.7] text-inkmuted">
             <p>
               藏干：
               {pillar.hiddenStems.map((h) => (
@@ -77,7 +77,7 @@ function PillarCard({
             </p>
             {shensha.length > 0 && (
               <div className="mt-2 border-t border-dashed border-golddim/25 pt-2">
-                <p className="text-[11px] leading-[1.8] text-inkmuted">
+                <p className="text-[12px] leading-[1.8] text-inkmuted">
                   <span className="mr-1.5 font-serif text-golddim">神煞</span>
                   {shensha.slice(0, 4).map((s, i) => (
                     <span key={s.ruleId + s.char} className="mr-1.5">
@@ -99,7 +99,7 @@ function PillarCard({
       ) : (
         <p className="mt-3 py-6 font-serif text-[18px] text-inkmuted/60">
           时辰不详
-          <span className="mt-1 block text-[11.5px]">时柱未排</span>
+          <span className="mt-1 block text-[12px]">时柱未排</span>
         </p>
       )}
     </motion.div>
@@ -109,9 +109,9 @@ function PillarCard({
 function GongCard({ title, gong }: { title: string; gong: GongInfo }) {
   return (
     <div className="rounded-lg border border-dashed border-golddim/40 bg-silk2/60 px-5 py-4 text-center">
-      <p className="text-[11.5px] tracking-[0.18em] text-inkmuted">{title}</p>
+      <p className="text-[12px] tracking-[0.18em] text-inkmuted">{title}</p>
       <p className="mt-1.5 font-serif text-[24px] font-black text-inktext">{gong.ganzhi}</p>
-      <p className="mt-1.5 text-[11px] leading-[1.7] text-inkmuted">{gong.method}</p>
+      <p className="mt-1.5 text-[12px] leading-[1.7] text-inkmuted">{gong.method}</p>
     </div>
   )
 }
@@ -143,7 +143,7 @@ export default function PillarsSection({ chart }: { chart: BaziChartV2 }) {
 
       {(chart.mingGong || chart.shenGong || chart.fetalOrigin) && (
         <div className="mt-5">
-          <p className="mb-2.5 text-center text-[11.5px] tracking-[0.16em] text-inkmuted">
+          <p className="mb-2.5 text-center text-[12px] tracking-[0.16em] text-inkmuted">
             命宫 / 身宫 / 胎元（传统起法，单列参考，不入四柱）
           </p>
           <div className="mx-auto grid max-w-[520px] grid-cols-2 gap-4 sm:grid-cols-3">

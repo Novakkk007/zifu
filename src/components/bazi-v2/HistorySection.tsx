@@ -76,7 +76,7 @@ export default function HistorySection({
     <div className="mx-auto max-w-[860px] rounded-xl border border-golddim/25 bg-silk2 p-7 shadow-card md:p-8">
       <div className="flex items-baseline justify-between">
         <p className="font-serif text-[16px] font-bold tracking-[0.12em] text-inktext">排盘记录</p>
-        <span className="text-[11.5px] text-inkmuted">{rows.length} / 50 条</span>
+        <span className="text-[12px] text-inkmuted">{rows.length} / 50 条</span>
       </div>
 
       {history.isLoading ? (
@@ -111,11 +111,11 @@ export default function HistorySection({
                 >
                   <p className="truncate font-serif text-[14.5px] font-bold text-inktext">
                     {r.title}
-                    <span className="ml-2 rounded-full border border-golddim/30 px-2 py-0.5 align-middle font-sans text-[10.5px] font-normal tracking-[0.08em] text-inkmuted">
+                    <span className="ml-2 rounded-full border border-golddim/30 px-2 py-0.5 align-middle font-sans text-[12px] font-normal tracking-[0.08em] text-inkmuted">
                       {r.chartType === 'bazi' ? '八字' : r.chartType}
                     </span>
                   </p>
-                  <p className="mt-1 text-[11.5px] text-inkmuted">
+                  <p className="mt-1 text-[12px] text-inkmuted">
                     {new Date(r.createdAt).toLocaleString('zh-CN', { hour12: false })}
                     
                   </p>
@@ -124,14 +124,14 @@ export default function HistorySection({
                   onClick={() => recompute.mutate({ chartId: r.id })}
                   disabled={recompute.isPending}
                   title="按最新算法 / 规则重新计算此盘（生成新版本快照）"
-                  className="min-h-11 rounded-full border border-golddim/30 px-3 py-1 text-[11.5px] text-golddim transition-colors hover:border-golddim hover:bg-golddim/10 disabled:opacity-50 sm:min-h-0"
+                  className="min-h-11 rounded-full border border-golddim/30 px-3 py-1 text-[12px] text-golddim transition-colors hover:border-golddim hover:bg-golddim/10 disabled:opacity-50 sm:min-h-0"
                 >
                   {recompute.isPending ? '重算中…' : '重算'}
                 </button>
                 <button
                   onClick={() => remove.mutate({ id: r.id })}
                   disabled={remove.isPending}
-                  className="min-h-11 rounded-full border border-golddim/30 px-3 py-1 text-[11.5px] text-inkmuted transition-colors hover:border-[#B04A3A]/60 hover:text-[#B04A3A] disabled:opacity-50 sm:min-h-0"
+                  className="min-h-11 rounded-full border border-golddim/30 px-3 py-1 text-[12px] text-inkmuted transition-colors hover:border-[#B04A3A]/60 hover:text-[#B04A3A] disabled:opacity-50 sm:min-h-0"
                 >
                   删除
                 </button>
@@ -145,7 +145,7 @@ export default function HistorySection({
           {notice}
         </p>
       )}
-      <p className="mt-4 text-center text-[11px] text-inkmuted">
+      <p className="mt-4 text-center text-[12px] text-inkmuted">
         点击记录可回填展示；「重算」按最新规则复算并留存版本快照；删除后立即生效且不可恢复。
       </p>
     </div>

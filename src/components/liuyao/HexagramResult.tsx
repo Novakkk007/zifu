@@ -5,6 +5,7 @@ import YaoLine from '@/components/liuyao/YaoLine'
 import type { Toss } from '@/components/liuyao/logic'
 import type { EngineResult, HexagramData, LiuyaoChart } from '@/components/liuyao/api'
 import { cn } from '@/lib/utils'
+import { GUACI_PLAIN } from '@contracts/liuyao/guaci-plain'
 
 /** 单卦卡：六爻图形 + 卦名 + 上下卦/卦宫小注 */
 function HexagramCard({
@@ -104,7 +105,7 @@ function YaoDetailTable({ chart }: { chart: LiuyaoChart }) {
                 )}
               >
                 {/* 六神 */}
-                <span className="w-10 shrink-0 text-[11.5px] tracking-[0.08em] text-inkmuted sm:w-12">
+                <span className="w-10 shrink-0 text-[12px] tracking-[0.08em] text-inkmuted sm:w-12">
                   {y.liushen}
                 </span>
                 {/* 六亲 + 干支 + 五行 */}
@@ -133,7 +134,7 @@ function YaoDetailTable({ chart }: { chart: LiuyaoChart }) {
                   )}
                 </span>
                 {/* 动静 / 旬空 */}
-                <span className="col-span-3 col-start-2 w-auto text-left text-[11.5px] tracking-[0.06em] text-inkmuted sm:w-14 sm:shrink-0 sm:text-right">
+                <span className="col-span-3 col-start-2 w-auto text-left text-[12px] tracking-[0.06em] text-inkmuted sm:w-14 sm:shrink-0 sm:text-right">
                   {y.moving && <span className="mr-1 font-semibold text-golddim">动</span>}
                   {y.xunKong && <span className="text-[#B04A3A]">空亡</span>}
                 </span>
@@ -143,7 +144,7 @@ function YaoDetailTable({ chart }: { chart: LiuyaoChart }) {
                 </span>
               </div>
               {fu && (
-                <p className="py-0.5 pl-14 text-[11.5px] tracking-[0.06em] text-inkmuted/80 sm:pl-16">
+                <p className="py-0.5 pl-14 text-[12px] tracking-[0.06em] text-inkmuted/80 sm:pl-16">
                   伏神：{fu.liuqin}
                   <span className="font-serif">{fu.ganzhi}</span>
                   {fu.wuxing}（伏于{fu.feiGanzhi}之下）
@@ -229,7 +230,7 @@ export default function HexagramResult({
           <div className="mt-4 space-y-2 border-t border-golddim/20 pt-4">
             {movingIdx.map((i) => (
               <p key={i} className="font-serif text-[15.5px] leading-[2] text-inktext">
-                <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gold/15 font-sans text-[11px] font-bold text-golddim">
+                <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gold/15 font-sans text-[12px] font-bold text-golddim">
                   {i + 1}
                 </span>
                 {ben.yao[i]}
@@ -240,6 +241,14 @@ export default function HexagramResult({
         <footer className="mt-5 text-[12.5px] tracking-[0.1em] text-inkmuted">
           ——《周易》{bian ? ` 之《${bian.name}》` : ''} · 互卦《{chart.huGua.name}》
         </footer>
+        {GUACI_PLAIN[ben.name] && (
+          <div className="mt-5 rounded-xl border border-golddim/20 bg-gold/[0.05] px-5 py-4">
+            <p className="text-[12px] tracking-[0.24em] text-golddim">先生白话</p>
+            <p className="mt-2 text-[14px] leading-[2.05] tracking-[0.03em] text-silktext">
+              {GUACI_PLAIN[ben.name]}
+            </p>
+          </div>
+        )}
       </motion.div>
 
       {/* meta badge：版本 / 流派 / precision */}
@@ -249,11 +258,11 @@ export default function HexagramResult({
         transition={{ delay: 0.9, duration: 0.7 }}
         className="mt-8 flex flex-wrap items-center justify-center gap-2.5"
       >
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3.5 py-1.5 text-[11.5px] font-medium tracking-[0.12em] text-golddim">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3.5 py-1.5 text-[12px] font-medium tracking-[0.12em] text-golddim">
           <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
           已验证算法
         </span>
-        <span className="inline-flex items-center rounded-full border border-golddim/35 px-3.5 py-1.5 text-[11.5px] tracking-[0.12em] text-inkmuted">
+        <span className="inline-flex items-center rounded-full border border-golddim/35 px-3.5 py-1.5 text-[12px] tracking-[0.12em] text-inkmuted">
           {result.meta.ruleVariant}
         </span>
       </motion.div>
