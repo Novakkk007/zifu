@@ -51,6 +51,7 @@ export default function ClassicReader({
   chapters,
 }: ClassicReaderProps) {
   const [activeChapter, setActiveChapter] = useState(0);
+  const [fontSize, setFontSize] = useState<15 | 17 | 19>(17);
   const activeChapterRef = useRef(0);
   const chapterRefs = useRef<Array<HTMLElement | null>>([]);
 
@@ -152,7 +153,7 @@ export default function ClassicReader({
     >
       <div className="border-y border-golddim/20 py-5 text-center">
         <p className="font-latin text-[10px] uppercase tracking-[0.28em] text-golddim">
-          Complete Text · 47 Chapters
+          Complete Text · {chapters.length} Chapters
         </p>
         <h2
           id="full-text-title"
@@ -163,6 +164,24 @@ export default function ClassicReader({
         <p className="mt-2 text-[12px] leading-[1.8] text-inkmuted">
           目录随阅读进度高亮，离开后将从本机保存的位置继续。
         </p>
+        <div className="mt-3 flex items-center justify-center gap-2 text-[12px] text-inkmuted">
+          <span className="tracking-[0.14em]">字号</span>
+          {([15, 17, 19] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setFontSize(s)}
+              aria-label={`字号 ${s}px`}
+              className={`rounded-full border px-2.5 py-0.5 transition-colors ${
+                fontSize === s
+                  ? 'border-gold/60 bg-gold/10 text-golddim'
+                  : 'border-golddim/25 text-inkmuted hover:border-gold/40'
+              }`}
+            >
+              {s === 15 ? '小' : s === 17 ? '中' : '大'}
+            </button>
+          ))}
+        </div>
       </div>
 
       <details className="mt-6 rounded-xl border border-golddim/20 bg-white/55 p-4 lg:hidden">
@@ -209,7 +228,7 @@ export default function ClassicReader({
                 {chapter.paragraphs.map((paragraph, paragraphIndex) => (
                   <p
                     key={paragraphIndex}
-                    className="whitespace-pre-line text-justify indent-[2em] font-serif text-[16px] leading-[2.15] tracking-[0.025em] text-inktext sm:text-[17px] sm:leading-[2.2]"
+                    className={`whitespace-pre-line text-justify indent-[2em] font-serif leading-[2.15] tracking-[0.025em] text-inktext ${fontSize === 15 ? "text-[15px]" : fontSize === 17 ? "text-[17px]" : "text-[19px]"}`}
                   >
                     {paragraph}
                   </p>
