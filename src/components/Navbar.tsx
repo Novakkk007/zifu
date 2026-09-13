@@ -24,6 +24,7 @@ const YAN_MENU: { group: '典籍 · 藏' | '术数 · 藏'; items: { to: string;
       { to: '/qimen', label: '奇门遁甲' },
       { to: '/bazi/hepan', label: '八字合盘' },
       { to: '/scenario/fengshui', label: '风水参详' },
+      { to: '/hecan', label: '三术合参' },
     ],
   },
 ]
@@ -32,17 +33,16 @@ const NAV_LINKS = [
   { to: '/liuyao', label: '爻一爻' },
   { to: '/bazi', label: '排盘' },
   { to: '/jianlu', label: '问剑' },
-  { to: '/wiki', label: '藏经阁' },
 ]
 
 const linkCls =
-  'font-sans text-[13.5px] tracking-[0.1em] text-inkmuted transition-colors hover:text-golddim'
+  'font-sans text-[14px] tracking-[0.08em] text-silkmuted transition-colors hover:text-goldbright'
 
 /** 当前页：金色文字 + 金色下划线 */
 const navLinkCls = ({ isActive }: { isActive: boolean }) =>
   cn(
     linkCls,
-    isActive && 'text-golddim underline decoration-gold/70 underline-offset-8',
+    isActive && 'text-goldbright underline decoration-gold/60 underline-offset-8',
   )
 
 export default function Navbar() {
@@ -80,8 +80,8 @@ export default function Navbar() {
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 h-16 border-b bg-silk/90 backdrop-blur-md transition-[border-color] duration-300',
-        scrolled ? 'border-[rgba(199,162,58,0.18)]' : 'border-transparent',
+        'sticky top-0 z-50 h-16 border-b bg-deep2/85 backdrop-blur-md transition-[border-color] duration-300',
+        scrolled ? 'border-[rgba(201,164,92,0.18)]' : 'border-transparent',
       )}
     >
       <div className="zf-container flex h-full items-center justify-between">
@@ -90,12 +90,6 @@ export default function Navbar() {
           <BrandLogo variant="mark" size={28} />
           <span className="bg-gradient-to-br from-goldbright to-gold bg-clip-text font-serif text-[22px] font-black tracking-[0.12em] text-transparent">
             紫府
-          </span>
-          <span
-            className="hidden font-latin text-[10px] font-medium tracking-[0.3em] text-inkmuted sm:block"
-            style={{ writingMode: 'vertical-rl' }}
-          >
-            ZIFU PALACE
           </span>
         </Link>
 
@@ -127,7 +121,7 @@ export default function Navbar() {
                 }
               }}
             >
-              藏
+              藏经阁
               <ChevronDown
                 className={cn('h-3.5 w-3.5 transition-transform', dropOpen && 'rotate-180')}
               />
@@ -137,7 +131,7 @@ export default function Navbar() {
                   <div
                     role="menu"
                     aria-label="藏"
-                    className="overflow-hidden rounded-xl border border-gold/15 bg-silk shadow-card"
+                    className="overflow-hidden rounded-xl border border-gold/20 bg-deep3 shadow-card"
                     onKeyDown={(e) => {
                       // 方向键在菜单项间移动
                       if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
@@ -163,7 +157,7 @@ export default function Navbar() {
                             key={item.to + item.label}
                             to={item.to}
                             role="menuitem"
-                            className="block px-5 py-2.5 font-sans text-[13.5px] tracking-[0.1em] text-inkmuted outline-none transition-colors hover:bg-silk2 hover:text-golddim focus-visible:bg-silk2 focus-visible:text-golddim"
+                            className="block px-5 py-2.5 font-sans text-[13.5px] tracking-[0.08em] text-silkmuted outline-none transition-colors hover:bg-silk2/10 hover:text-goldbright focus-visible:bg-silk2/10 focus-visible:text-goldbright"
                           >
                             {item.label}
                           </NavLink>
@@ -220,7 +214,7 @@ export default function Navbar() {
           ) : (
             <Link
               to="/profile"
-              className="zf-btn inline-flex min-h-11 items-center rounded-full bg-deep px-5 py-2 font-sans text-[13px] font-medium tracking-[0.12em] text-silk lg:min-h-0"
+              className="zf-btn inline-flex min-h-11 items-center rounded-full border border-gold/50 bg-gold/10 px-5 py-2 font-sans text-[13px] font-medium tracking-[0.12em] text-goldbright transition-colors hover:bg-gold/20 lg:min-h-0"
             >
               我的
             </Link>

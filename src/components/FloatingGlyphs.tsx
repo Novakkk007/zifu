@@ -47,7 +47,7 @@ type FloatingGlyphsProps = {
  * 仅使用 transform 的 CSS 动画，不占用首屏脚本执行时间。
  */
 const FloatingGlyphs = memo(function FloatingGlyphs({
-  count = 40,
+  count = 12,
   onDeep = true,
   className,
 }: FloatingGlyphsProps) {
@@ -62,8 +62,8 @@ const FloatingGlyphs = memo(function FloatingGlyphs({
         opacity: onDeep ? 0.08 + r(5) * 0.06 : 0.05 + r(5) * 0.04,
         duration: 26 + r(6) * 34,
         delay: -r(7) * 40,
-        gx: (r(8) - 0.5) * 60,
-        gy: (r(9) - 0.5) * 60,
+        gx: (r(8) - 0.5) * 28,
+        gy: (r(9) - 0.5) * 28,
         gr: (r(10) - 0.5) * 12,
       }
     })

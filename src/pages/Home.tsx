@@ -119,7 +119,7 @@ export default function Home() {
           {/* 次入口 · 八字 */}
           <Link
             to="/bazi"
-            className="group relative overflow-hidden rounded-2xl border border-golddim/30 bg-silk2/50 px-7 py-9 text-center transition-all duration-300 hover:border-gold/55 hover:bg-silk2/80 hover:shadow-[0_0_40px_rgba(201,164,92,0.14)] sm:col-span-2"
+            className="group relative overflow-hidden rounded-2xl border border-golddim/30 bg-gold/[0.04] px-7 py-9 text-center transition-all duration-300 hover:border-gold/55 hover:bg-gold/[0.09] hover:shadow-[0_0_40px_rgba(201,164,92,0.14)] sm:col-span-2"
            
           >
             <span className="pointer-events-none absolute -right-4 -top-4 font-serif text-[72px] leading-none text-gold/[0.06] transition-transform duration-500 group-hover:scale-110">☵</span>
@@ -132,8 +132,8 @@ export default function Home() {
                 animation: "zifu-sweep 8s linear infinite",
               }}
             />
-            <p className="font-serif text-[20px] font-bold tracking-[0.18em] text-inktext">看这一生</p>
-            <p className="mt-4 text-[12px] leading-[2] tracking-[0.08em] text-inkmuted">
+            <p className="font-serif text-[20px] font-bold tracking-[0.18em] text-silktext">看这一生</p>
+            <p className="mt-4 text-[12px] leading-[2] tracking-[0.08em] text-silkmuted">
               排一盘，照见底色与来路
             </p>
             <p className="mt-5 font-sans text-[11.5px] tracking-[0.2em] text-golddim/80 transition-colors group-hover:text-golddim">
