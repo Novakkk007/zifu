@@ -12,6 +12,7 @@ import JianluDuel from '@/components/JianluDuel'
 import RankUpOverlay from '@/components/RankUpOverlay'
 import { usePageMeta } from '@/lib/page-meta'
 import { loadRecord, rankOf, nextRank, RANKS, type JianluMode, type RankLevel } from '@/lib/jianlu'
+import { ACHIEVEMENTS, unlockedCount } from '@/lib/jianlu-meta'
 
 const GATES = [
   { name: '子平格局派', peak: '藏剑峰', Glyph: ScrollText, desc: '格局立论，纲举目张' },
@@ -148,6 +149,48 @@ export default function JianluPage() {
               {lv.name}
             </span>
           ))}
+        </motion.div>
+
+        {/* 剑冢 · 成就 */}
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.6 }}
+          className="mt-10"
+        >
+          <div className="flex items-baseline justify-between">
+            <p className="text-[12px] tracking-[0.3em] text-golddim">剑冢 · 成就</p>
+            <p className="text-[12px] tracking-[0.1em] text-silkmuted">
+              已刻 {unlockedCount(r)} / {ACHIEVEMENTS.length}
+            </p>
+          </div>
+          <div className="mt-4 grid grid-cols-4 gap-2.5 sm:grid-cols-6">
+            {ACHIEVEMENTS.map((a) => {
+              const ok = a.unlocked(r)
+              return (
+                <div
+                  key={a.id}
+                  title={`${a.name}——${a.desc}`}
+                  className={`flex aspect-square flex-col items-center justify-center rounded-xl border transition-all ${
+                    ok
+                      ? 'border-gold/55 bg-gold/[0.09]'
+                      : 'border-golddim/20 bg-deep3/70'
+                  }`}
+                >
+                  <span
+                    className={`font-serif text-[20px] font-bold ${
+                      ok ? 'text-goldbright' : 'text-silkmuted/50'
+                    }`}
+                  >
+                    {a.glyph}
+                  </span>
+                  <span className={`mt-1 text-[12px] tracking-[0.06em] ${ok ? 'text-silktext' : 'text-silkmuted/60'}`}>
+                    {a.name}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
         </motion.div>
 
         {/* 三模式 */}
