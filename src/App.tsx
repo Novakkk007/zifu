@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router";
 import Layout from "@/components/Layout";
 import Home from "@/pages/Home";
 import { LoadingState } from "@/components/LoadingState";
+import PageTransition from "@/components/PageTransition";
 
 // 路由级懒加载：非首页引擎页面按需分包，首屏不再同步加载全部引擎
 const Hecan = lazy(() => import("@/pages/Hecan"));
@@ -36,8 +37,9 @@ const HealthScenario = lazy(() => import("@/pages/scenario/HealthScenario"));
 export default function App() {
   return (
     <Layout>
-      <Suspense fallback={<LoadingState className="mx-auto my-16 max-w-xl" />}>
-        <Routes>
+      <PageTransition>
+        <Suspense fallback={<LoadingState className="mx-auto my-16 max-w-xl" />}>
+          <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/hecan" element={<Hecan />} />
           <Route path="/roundtable" element={<RoundTable />} />
@@ -82,7 +84,8 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </Suspense>
+        </Suspense>
+      </PageTransition>
     </Layout>
   );
 }

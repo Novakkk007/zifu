@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { ARENA_GATES } from '@contracts/engines/jianlu/arena-questions'
+import { enableSound, sndRight, sndVictory, sndWrong, soundEnabled } from '@/lib/jianlu-sound'
 import { addWin, loadRecord, saveRecord } from '@/lib/jianlu'
 
 interface ArenaViewProps {
@@ -21,6 +22,7 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
   const [right, setRight] = useState(0)
   const [finished, setFinished] = useState(false)
   const [passed, setPassed] = useState(false)
+  const [combo, setCombo] = useState(0)
 
   const gate = ARENA_GATES[gateIdx]
   const q = gate.questions[qIdx]
@@ -30,6 +32,11 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
     setPicked(i)
     if (i === q.answer) {
       setRight((v) => v + 1)
+      setCombo((c) => c + 1)
+      sndRight()
+    } else {
+      setCombo(0)
+      sndWrong()
     }
   }
 
@@ -42,6 +49,7 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
       const ok = right >= 2
       setPassed(ok)
       setFinished(true)
+      if (ok) sndVictory()
       if (ok) {
         const r = addWin(record, 'arena')
         const cleared = Math.max(record.gatesCleared, gateIdx + 1)
@@ -58,6 +66,7 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
     setQIdx(0)
     setPicked(null)
     setRight(0)
+    setCombo(0)
     setFinished(false)
     setPassed(false)
   }
@@ -80,7 +89,20 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
           第 {gateIdx + 1} 关 · {gate.name}
         </p>
         <p className="text-[12px] tracking-[0.1em] text-inkmuted">
+          <button
+            type="button"
+            onClick={() => enableSound()}
+            title="开声音（清磬·剑鸣）"
+            className={`mr-2 inline-block ${soundEnabled() ? 'text-golddim' : 'text-inkfaint'}`}
+          >
+            {soundEnabled() ? '🔔' : '🔕'}
+          </button>
           {gateIdx + 1}/7
+          {combo >= 2 && (
+            <span className="ml-2 rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 text-[10.5px] tracking-[0.14em] text-goldbright">
+              连断 {combo} 题
+            </span>
+          )}
         </p>
       </div>
 
@@ -110,11 +132,19 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
               const isRight = picked !== null && i === q.answer
               const isWrongPick = picked === i && i !== q.answer
               return (
-                <button
+                <motion.button
                   key={i}
                   onClick={() => pick(i)}
                   disabled={picked !== null}
-                  className={`block w-full rounded-xl border px-5 py-3.5 text-left text-[14px] leading-[1.8] transition-all duration-300 ${
+                  animate={
+                    isRight
+                      ? { scale: [1, 1.03, 1], boxShadow: ['0 0 0px rgba(201,164,92,0)', '0 0 22px rgba(201,164,92,0.35)', '0 0 0px rgba(201,164,92,0)'] }
+                      : isWrongPick
+                        ? { x: [0, -5, 5, -3, 3, 0] }
+                        : { scale: 1 }
+                  }
+                  transition={{ duration: isWrongPick ? 0.35 : 0.5 }}
+                  className={`block w-full rounded-xl border px-5 py-3.5 text-left text-[14px] leading-[1.8] transition-colors duration-300 ${
                     picked === null
                       ? 'border-golddim/25 bg-silk2/40 text-silktext hover:border-gold/60 hover:bg-gold/[0.07]'
                       : isRight
@@ -126,7 +156,7 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
                 >
                   <span className="mr-2 font-serif text-[13px] text-golddim">{['甲', '乙', '丙', '丁'][i]}</span>
                   {op}
-                </button>
+                </motion.button>
               )
             })}
           </div>
@@ -152,10 +182,29 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
           animate={{ opacity: 1, y: 0 }}
           className="mt-8 rounded-2xl border border-gold/30 bg-gold/[0.05] p-8 text-center"
         >
-          <p className="text-[40px]">{passed ? '🗡️' : '🍂'}</p>
-          <p className="mt-4 font-serif text-[24px] font-bold tracking-[0.18em] text-goldbright">
+          {passed ? (
+            <motion.div
+              initial={{ scale: 0.4, opacity: 0, rotate: -20 }}
+              animate={{ scale: 1, opacity: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 14 }}
+              className="relative mx-auto h-16 w-16"
+            >
+              <span className="absolute inset-0 rounded-full bg-gold/20 blur-xl" aria-hidden />
+              <span className="relative flex h-full w-full items-center justify-center text-[34px] text-goldbright">
+                ⚔
+              </span>
+            </motion.div>
+          ) : (
+            <p className="text-[40px]">🍂</p>
+          )}
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.6 }}
+            className="mt-4 font-serif text-[24px] font-bold tracking-[0.18em] text-goldbright"
+          >
             {passed ? `破 ${gate.name}` : '惜败一招'}
-          </p>
+          </motion.p>
           <p className="mt-3 text-[13px] leading-[2] text-silkmuted">
             {passed
               ? `三题答对 ${right} 题——${gate.peak}已破，胜场 +1。`

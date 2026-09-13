@@ -4,40 +4,43 @@ import { ChevronDown, LogOut, Menu, Sparkle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import BrandLogo from '@/components/BrandLogo'
+import ZifuIcon from '@/components/ZifuIcon'
 
 /** 藏 · 收纳低频（三层·阁——不占门面，深处寻访） */
-const YAN_MENU: { group: '宝' | '术' | '藏经阁'; items: { to: string; label: string }[] }[] = [
+const YAN_MENU: { group: '藏经阁' | '术' | '宝'; icon: 'cangjingge' | 'shu' | 'bao'; items: { to: string; label: string }[] }[] = [
   {
     group: '藏经阁',
+    icon: 'cangjingge',
     items: [
       { to: '/wiki', label: '典藏电子书' },
-      { to: '/daily', label: '今日盘' },
       { to: '/column', label: '先生专栏' },
     ],
   },
   {
     group: '术',
+    icon: 'shu',
     items: [
       { to: '/ziwei', label: '紫微斗数' },
       { to: '/daliuren', label: '大六壬' },
       { to: '/qimen', label: '奇门遁甲' },
-      { to: '/bazi/hepan', label: '八字合盘' },
-      { to: '/scenario/fengshui', label: '风水参详' },
-      { to: '/hecan', label: '三术合参' },
     ],
   },
   {
     group: '宝',
+    icon: 'bao',
     items: [
       { to: '/toolkit', label: '百宝袋' },
+      { to: '/daily', label: '今日盘' },
+      { to: '/bazi/hepan', label: '八字合盘' },
+      { to: '/hecan', label: '三术合参' },
     ],
   },
 ]
 
-const NAV_LINKS = [
-  { to: '/liuyao', label: '爻一爻' },
-  { to: '/bazi', label: '排盘' },
-  { to: '/jianlu', label: '问剑' },
+const NAV_LINKS: { to: string; label: string; icon: 'liuyao' | 'bazi' | 'jianlu' }[] = [
+  { to: '/liuyao', label: '六爻', icon: 'liuyao' },
+  { to: '/bazi', label: '排盘', icon: 'bazi' },
+  { to: '/jianlu', label: '问剑', icon: 'jianlu' },
 ]
 
 const linkCls =
@@ -126,6 +129,7 @@ export default function Navbar() {
                 }
               }}
             >
+              <ZifuIcon name="cangbaoge" size={15} strokeWidth={1.1} />
               藏宝阁
               <ChevronDown
                 className={cn('h-3.5 w-3.5 transition-transform', dropOpen && 'rotate-180')}
@@ -154,8 +158,9 @@ export default function Navbar() {
                   >
                     {YAN_MENU.map((group) => (
                       <div key={group.group}>
-                        <div className="border-t border-gold/10 px-5 pt-2 pb-1 font-serif text-[11px] tracking-[0.24em] text-golddim first:border-t-0">
-                          {group.group}
+                        <div className="flex items-center gap-1.5 border-t border-gold/10 px-5 pt-2 pb-1 first:border-t-0">
+                          <ZifuIcon name={group.icon} size={12} strokeWidth={1} className="text-golddim" />
+                          <span className="font-serif text-[11px] tracking-[0.24em] text-golddim">{group.group}</span>
                         </div>
                         {group.items.map((item) => (
                           <NavLink
@@ -187,7 +192,14 @@ export default function Navbar() {
             三术合参
           </NavLink>
           {NAV_LINKS.map((l) => (
-            <NavLink key={l.to} to={l.to} className={navLinkCls}>
+            <NavLink
+              key={l.to}
+              to={l.to}
+              className={({ isActive }) =>
+                cn('flex items-center gap-1.5', navLinkCls({ isActive }))
+              }
+            >
+              <ZifuIcon name={l.icon} size={15} strokeWidth={1.1} className={undefined} />
               {l.label}
             </NavLink>
           ))}
