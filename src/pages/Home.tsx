@@ -5,6 +5,7 @@ import FloatingGlyphs from "@/components/FloatingGlyphs";
 import BrandLogo from "@/components/BrandLogo";
 import { usePageMeta } from "@/lib/page-meta";
 import QuoteRotator from '@/components/QuoteRotator'
+import Reveal from '@/components/Reveal'
 
 /** 信任锚点（低调四言） */
 const TRUST_VERSE = [
@@ -142,12 +143,23 @@ export default function Home() {
           </Link>
         </motion.div>
 
+        {/* 首屏滚动提示 */}
+        <motion.div
+          initial={reduce ? false : { opacity: 0 }}
+          animate={{ opacity: entered ? 1 : 0 }}
+          transition={{ duration: 1.2, delay: 2.2 }}
+          className="mt-12 flex flex-col items-center gap-1.5 text-golddim/70"
+        >
+          <span className="text-[12px] tracking-[0.3em] text-inkmuted">往下看</span>
+          <span aria-hidden className="block h-8 w-px animate-pulse bg-gradient-to-b from-gold/60 to-transparent" />
+        </motion.div>
+
         {/* 信任四言（低调收底） */}
         <motion.div
           initial={reduce ? { opacity: 0 } : { opacity: 0 }}
           animate={{ opacity: entered ? 1 : 0 }}
           transition={{ duration: 1.4, delay: 1.5 }}
-          className="mt-16 flex flex-wrap items-center justify-center gap-x-8 gap-y-3"
+          className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3"
         >
           {TRUST_VERSE.map((v) => (
             <span key={v.line} className="flex items-baseline gap-2 font-serif">
@@ -166,6 +178,64 @@ export default function Home() {
           </Link>
         </motion.div>
       </div>
+
+      {/* 第二屏 · 三条路（引桥带） */}
+      <section className="relative z-10 border-t border-golddim/15 bg-deep2/60 py-20 md:py-28">
+        <div className="zf-container mx-auto max-w-5xl px-4">
+          <Reveal>
+            <div className="text-center">
+              <p className="text-[12px] tracking-[0.34em] text-golddim">门内三条路</p>
+              <h2 className="mt-3 font-serif text-[clamp(24px,3.2vw,30px)] font-bold tracking-[0.14em] text-silktext">
+                看你想去哪里
+              </h2>
+            </div>
+          </Reveal>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            <Reveal delay={0.08}>
+              <Link
+                to="/liuyao"
+                className="group flex h-full flex-col rounded-2xl border border-golddim/25 bg-silk2/50 p-7 transition-all duration-300 hover:border-gold/55 hover:bg-silk2/75 hover:shadow-[0_0_40px_rgba(201,164,92,0.14)]"
+              >
+                <p className="font-serif text-[19px] font-bold tracking-[0.16em] text-goldbright">遇事不决</p>
+                <p className="mt-3 flex-1 text-[13px] leading-[2] tracking-[0.04em] text-silkmuted">
+                  先生常说：问事的人，心里早有一半答案——摇一卦，把它照出来。
+                </p>
+                <p className="mt-5 text-[12px] tracking-[0.2em] text-golddim transition-colors group-hover:text-goldbright">
+                  去六爻 →
+                </p>
+              </Link>
+            </Reveal>
+            <Reveal delay={0.16}>
+              <Link
+                to="/bazi"
+                className="group flex h-full flex-col rounded-2xl border border-golddim/25 bg-silk2/50 p-7 transition-all duration-300 hover:border-gold/55 hover:bg-silk2/75 hover:shadow-[0_0_40px_rgba(201,164,92,0.14)]"
+              >
+                <p className="font-serif text-[19px] font-bold tracking-[0.16em] text-goldbright">想看清这一生</p>
+                <p className="mt-3 flex-1 text-[13px] leading-[2] tracking-[0.04em] text-silkmuted">
+                  排一盘，照见底色与来路——先生不吆喝，只把盘讲给你听。
+                </p>
+                <p className="mt-5 text-[12px] tracking-[0.2em] text-golddim transition-colors group-hover:text-goldbright">
+                  去排盘 →
+                </p>
+              </Link>
+            </Reveal>
+            <Reveal delay={0.24}>
+              <Link
+                to="/jianlu"
+                className="group flex h-full flex-col rounded-2xl border border-golddim/25 bg-silk2/50 p-7 transition-all duration-300 hover:border-gold/55 hover:bg-silk2/75 hover:shadow-[0_0_40px_rgba(201,164,92,0.14)]"
+              >
+                <p className="font-serif text-[19px] font-bold tracking-[0.16em] text-goldbright">想练手见真章</p>
+                <p className="mt-3 flex-1 text-[13px] leading-[2] tracking-[0.04em] text-silkmuted">
+                  华山七峰，各派高手守关——与天下同参同断，练的是眼力，长的是心气。
+                </p>
+                <p className="mt-5 text-[12px] tracking-[0.2em] text-golddim transition-colors group-hover:text-goldbright">
+                  去问剑 →
+                </p>
+              </Link>
+            </Reveal>
+          </div>
+        </div>
+      </section>
 
       <style>{`
         @keyframes zifu-breathe {
