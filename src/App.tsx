@@ -12,6 +12,7 @@ const Guanzhao = lazy(() => import("@/pages/Guanzhao"));
 const Bazi = lazy(() => import("@/pages/Bazi"));
 const Hepan = lazy(() => import("@/pages/bazi/Hepan"));
 const Jianlu = lazy(() => import("@/pages/Jianlu"));
+const JianluJie = lazy(() => import("@/pages/JianluJie"));
 const Liuyao = lazy(() => import("@/pages/Liuyao"));
 const Ziwei = lazy(() => import("@/pages/Ziwei"));
 const Qizheng = lazy(() => import("@/pages/Qizheng"));
@@ -47,6 +48,7 @@ export default function App() {
           <Route path="/bazi/hepan" element={<Hepan />} />
           <Route path="/liuyao" element={<Liuyao />} />
           <Route path="/jianlu" element={<Jianlu />} />
+          <Route path="/jianlu/jie/:code" element={<JianluJie />} />
           <Route path="/ziwei" element={<Ziwei />} />
           <Route path="/qizheng" element={<Qizheng />} />
           <Route path="/qimen" element={<Qimen />} />

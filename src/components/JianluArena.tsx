@@ -7,6 +7,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { ARENA_GATES } from '@contracts/engines/jianlu/arena-questions'
 import { enableSound, sndRight, sndVictory, sndWrong, soundEnabled } from '@/lib/jianlu-sound'
 import { addLoss, addWin, loadRecord, saveRecord } from '@/lib/jianlu'
+import { JianluReportButton } from '@/components/JianluReport'
 
 interface ArenaViewProps {
   record: ReturnType<typeof loadRecord>
@@ -23,6 +24,8 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
   const [finished, setFinished] = useState(false)
   const [passed, setPassed] = useState(false)
   const [combo, setCombo] = useState(0)
+  /** 进入本视图时的破峰数——首次破新峰时展示战报入口 */
+  const [gatesAtStart] = useState(record.gatesCleared)
 
   const gate = ARENA_GATES[gateIdx]
   const q = gate.questions[qIdx]
@@ -229,6 +232,15 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
               >
                 再战此峰
               </button>
+            )}
+            {passed && record.gatesCleared > gatesAtStart && (
+              <JianluReportButton
+                record={record}
+                scene={record.wins === 1 ? 'first-win' : 'gate'}
+                className="rounded-full border border-gold/55 bg-gold/10 px-7 py-2.5 font-serif text-[14px] tracking-[0.16em] text-goldbright transition hover:bg-gold/20"
+              >
+                生成战报
+              </JianluReportButton>
             )}
             <button onClick={onExit} className="text-[12.5px] tracking-[0.12em] text-inkmuted hover:text-golddim">
               回剑庐

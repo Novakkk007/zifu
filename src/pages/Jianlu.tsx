@@ -10,6 +10,7 @@ import FloatingGlyphs from '@/components/FloatingGlyphs'
 import JianluArena from '@/components/JianluArena'
 import JianluDuel from '@/components/JianluDuel'
 import RankUpOverlay from '@/components/RankUpOverlay'
+import { JianluReportButton } from '@/components/JianluReport'
 import { usePageMeta } from '@/lib/page-meta'
 import { loadRecord, rankOf, nextRank, RANKS, type JianluMode, type RankLevel } from '@/lib/jianlu'
 import { ACHIEVEMENTS, answerDaily, dailyQuestion, insightTitle, loadInsight, todayKey, unlockedCount } from '@/lib/jianlu-meta'
@@ -125,6 +126,17 @@ export default function JianluPage() {
             <span>胜率 <b className="text-golddim">{winRate}%</b></span>
             <span>连胜 <b className="text-golddim">{r.streak}</b></span>
           </div>
+          <JianluReportButton
+            record={r}
+            disabled={r.wins === 0}
+            className={`mt-5 rounded-full border px-6 py-2 font-serif text-[13px] tracking-[0.18em] transition ${
+              r.wins === 0
+                ? 'cursor-default border-golddim/20 bg-silk2/20 text-silkmuted'
+                : 'border-gold/45 bg-gold/10 text-goldbright hover:bg-gold/20'
+            }`}
+          >
+            战报
+          </JianluReportButton>
           {next && (
             <p className="mt-4 text-[12px] tracking-[0.1em] text-inkmuted">
               {next.needGates !== undefined && r.gatesCleared < next.needGates

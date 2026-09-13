@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { ARENA_GATES, type ArenaQuestion } from '@contracts/engines/jianlu/arena-questions'
 import { addLoss, addWin, loadRecord, saveRecord } from '@/lib/jianlu'
+import { copyToClipboard, encodeGateQuestion, jianluJieLink } from '@/lib/jianlu-code'
 
 interface JianluDuelProps {
   record: ReturnType<typeof loadRecord>
@@ -19,6 +20,10 @@ interface DuelState {
   gateName: string
   peak: string
   glyph: string
+  /** 关口下标（传一题口令用） */
+  gateIdx: number
+  /** 题号下标（传一题口令用） */
+  qIdx: number
   /** 对手是否看走眼 */
   aiMiss: boolean
   /** 对手的答案（看走眼时错位一格） */
@@ -34,9 +39,14 @@ export default function JianluDuel({ record, onRecordChange, onExit }: JianluDue
   const [duel, setDuel] = useState<DuelState | null>(null)
   const [result, setResult] = useState<'win' | 'draw' | 'lose' | null>(null)
   const [thinking, setThinking] = useState(false)
+  const [shareState, setShareState] = useState<'idle' | 'copied' | 'failed'>('idle')
+  const [shareCode, setShareCode] = useState('')
+  const [shareLink, setShareLink] = useState('')
   const revealTimer = useRef<number | null>(null)
+  const shareTimer = useRef<number | null>(null)
   useEffect(() => () => {
     if (revealTimer.current !== null) window.clearTimeout(revealTimer.current)
+    if (shareTimer.current !== null) window.clearTimeout(shareTimer.current)
   }, [])
 
   const randomDuel = (): DuelState => {
@@ -45,14 +55,18 @@ export default function JianluDuel({ record, onRecordChange, onExit }: JianluDue
       crypto.getRandomValues(a)
       return a[0] / 2 ** 32
     }
-    const g = ARENA_GATES[Math.floor(rnd() * ARENA_GATES.length)]
-    const q = g.questions[Math.floor(rnd() * g.questions.length)]
+    const gateIdx = Math.floor(rnd() * ARENA_GATES.length)
+    const g = ARENA_GATES[gateIdx]
+    const qIdx = Math.floor(rnd() * g.questions.length)
+    const q = g.questions[qIdx]
     const aiMiss = rnd() < 0.25
     return {
       q,
       gateName: g.name,
       peak: g.peak,
       glyph: g.glyph,
+      gateIdx,
+      qIdx,
       aiMiss,
       aiAnswer: aiMiss ? (q.answer + 1) % 4 : q.answer,
       picked: null,
@@ -65,6 +79,13 @@ export default function JianluDuel({ record, onRecordChange, onExit }: JianluDue
       window.clearTimeout(revealTimer.current)
       revealTimer.current = null
     }
+    if (shareTimer.current !== null) {
+      window.clearTimeout(shareTimer.current)
+      shareTimer.current = null
+    }
+    setShareState('idle')
+    setShareCode('')
+    setShareLink('')
     setDuel(randomDuel())
     setResult(null)
     setThinking(true)
@@ -96,6 +117,22 @@ export default function JianluDuel({ record, onRecordChange, onExit }: JianluDue
   }
 
   const again = () => start()
+
+  /** 传一题：复制当前题口令——口令只含关号题号，零隐私 */
+  const shareDuel = async () => {
+    if (!duel) return
+    const code = encodeGateQuestion(duel.gateIdx, duel.qIdx)
+    setShareCode(code)
+    const link = jianluJieLink(code)
+    setShareLink(link)
+    const ok = await copyToClipboard(link)
+    setShareState(ok ? 'copied' : 'failed')
+    if (shareTimer.current !== null) window.clearTimeout(shareTimer.current)
+    shareTimer.current = window.setTimeout(() => {
+      shareTimer.current = null
+      setShareState('idle')
+    }, 2400)
+  }
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -221,17 +258,38 @@ export default function JianluDuel({ record, onRecordChange, onExit }: JianluDue
                     ? '你与对方断得一致——旗鼓相当，此局作平，胜场 +1。'
                     : duel.q.explain}
               </p>
-              <div className="mt-5 flex items-center justify-center gap-4">
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-4">
                 <button
                   onClick={again}
                   className="rounded-full border border-gold/60 bg-gold/15 px-7 py-2.5 font-serif text-[14px] tracking-[0.16em] text-goldbright transition hover:bg-gold/25"
                 >
                   再断一盘
                 </button>
+                <button
+                  onClick={shareDuel}
+                  title="复制此题口令，传给同好接剑"
+                  className={`rounded-full border px-6 py-2.5 font-serif text-[13.5px] tracking-[0.14em] transition ${
+                    shareState === 'copied'
+                      ? 'border-gold/60 bg-gold/10 text-goldbright'
+                      : 'border-golddim/40 bg-silk2/40 text-silktext hover:border-gold/50 hover:text-goldbright'
+                  }`}
+                >
+                  {shareState === 'copied' ? '口令已抄下' : '传一题'}
+                </button>
                 <button onClick={onExit} className="text-[12.5px] tracking-[0.12em] text-inkmuted hover:text-golddim">
                   回剑庐
                 </button>
               </div>
+              {shareState === 'copied' && (
+                <p className="mt-4 text-[12px] tracking-[0.08em] text-golddim">
+                  口令「{shareCode}」已抄下——传给同好，点开即接剑。
+                </p>
+              )}
+              {shareState === 'failed' && (
+                <p className="mt-4 break-all text-[12px] leading-[1.8] tracking-[0.04em] text-inkmuted">
+                  复制未成——口令「{shareCode}」，可手动抄下链接传与同好：{shareLink}
+                </p>
+              )}
             </motion.div>
           )}
         </motion.div>
