@@ -312,7 +312,7 @@ export default function DirectAiChat({
       {hasReading && (
         <div className="mx-auto mt-7 max-w-[760px] border-t border-golddim/25 pt-6 text-left">
           <div className="mb-4 flex items-center justify-between">
-            <p className="text-center text-[11.5px] tracking-[0.14em] text-golddim">
+            <p className="text-center text-[12px] tracking-[0.14em] text-golddim">
               先生与访客 · {model ? `live · ${model}` : 'live'}
             </p>
             {messages.length > 0 && (
@@ -326,7 +326,7 @@ export default function DirectAiChat({
                     /* ignore */
                   }
                 }}
-                className="text-[11.5px] tracking-[0.1em] text-inkmuted underline-offset-2 transition-colors hover:text-goldbright hover:underline"
+                className="text-[12px] tracking-[0.1em] text-inkmuted underline-offset-2 transition-colors hover:text-goldbright hover:underline"
               >
                 清空对话
               </button>
@@ -345,12 +345,12 @@ export default function DirectAiChat({
                     }
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
-                      <p className="text-[11px] tracking-[0.15em] text-golddim">{isVisitor ? '访客' : '先生'}</p>
+                      <p className="text-[12px] tracking-[0.15em] text-golddim">{isVisitor ? '访客' : '先生'}</p>
                       {!isVisitor && (
                         <button
                           type="button"
                           onClick={() => (voiceSpeaking ? voiceStop() : voiceSpeak(message.content))}
-                          className="rounded-full border border-golddim/40 px-3 py-0.5 text-[11px] tracking-[0.1em] text-golddim transition-colors hover:border-goldbright hover:text-goldbright"
+                          className="rounded-full border border-golddim/40 px-3 py-0.5 text-[12px] tracking-[0.1em] text-golddim transition-colors hover:border-goldbright hover:text-goldbright"
                           aria-label={voiceSpeaking ? '停止朗读' : '先生朗读'}
                         >
                           {voiceSpeaking ? '◼ 停止' : '▶ 先生之声'}
@@ -408,7 +408,7 @@ export default function DirectAiChat({
               {busy ? '请稍候' : '问先生'}
             </button>
           </form>
-          <p className="mt-3 text-center text-[11px] leading-relaxed text-silkmuted/80">
+          <p className="mt-3 text-center text-[12px] leading-relaxed text-silkmuted/80">
             对话仅供传统文化参考；前文会做长度保护后随追问发送。
           </p>
         </div>

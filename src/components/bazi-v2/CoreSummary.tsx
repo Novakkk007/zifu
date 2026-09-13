@@ -72,7 +72,7 @@ export default function CoreSummary({ chart, onAiRead }: { chart: BaziChartV2; o
         <h3 className="font-serif text-[19px] font-bold tracking-[0.1em] text-silktext">
           命盘速览 · 核心三件事
         </h3>
-        <span className="rounded-full border border-golddim/40 px-3 py-1 text-[11px] tracking-[0.1em] text-golddim">
+        <span className="rounded-full border border-golddim/40 px-3 py-1 text-[12px] tracking-[0.1em] text-golddim">
           人话版 · 细节见下方专业盘
         </span>
       </div>
@@ -89,7 +89,7 @@ export default function CoreSummary({ chart, onAiRead }: { chart: BaziChartV2; o
                   <span key={c.step} className="flex items-center gap-1.5">
                     {i > 0 && <span className="text-golddim/60">→</span>}
                     <span
-                      className="rounded-full border border-golddim/30 bg-deep px-2.5 py-1 text-[10.5px] text-golddim"
+                      className="rounded-full border border-golddim/30 bg-deep px-2.5 py-1 text-[12px] text-golddim"
                       title={c.detail}
                     >
                       {c.step}

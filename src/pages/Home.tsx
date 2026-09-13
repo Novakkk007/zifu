@@ -111,7 +111,7 @@ export default function Home() {
               <br />
               不问生辰，两步到卦
             </p>
-            <p className="mt-5 font-sans text-[11.5px] tracking-[0.2em] text-golddim transition-colors group-hover:text-goldbright">
+            <p className="mt-5 font-sans text-[12px] tracking-[0.2em] text-golddim transition-colors group-hover:text-goldbright">
               起 一 卦
             </p>
           </Link>
@@ -136,7 +136,7 @@ export default function Home() {
             <p className="mt-4 text-[12px] leading-[2] tracking-[0.08em] text-silkmuted">
               排一盘，照见底色与来路
             </p>
-            <p className="mt-5 font-sans text-[11.5px] tracking-[0.2em] text-golddim/80 transition-colors group-hover:text-golddim">
+            <p className="mt-5 font-sans text-[12px] tracking-[0.2em] text-golddim/80 transition-colors group-hover:text-golddim">
               排 盘
             </p>
           </Link>
@@ -152,7 +152,7 @@ export default function Home() {
           {TRUST_VERSE.map((v) => (
             <span key={v.line} className="flex items-baseline gap-2 font-serif">
               <span className="text-[14px] tracking-[0.2em] text-inkmuted">{v.line}</span>
-              <span className="text-[11px] tracking-[0.14em] text-inkfaint">{v.note}</span>
+              <span className="text-[12px] tracking-[0.14em] text-inkfaint">{v.note}</span>
             </span>
           ))}
           <Link
@@ -162,7 +162,7 @@ export default function Home() {
             <span className="text-[14px] tracking-[0.2em] text-inkmuted transition-colors group-hover:text-goldbright">
               ⚔️ 华山问剑
             </span>
-            <span className="text-[11px] tracking-[0.14em] text-inkfaint">练手见真章</span>
+            <span className="text-[12px] tracking-[0.14em] text-inkfaint">练手见真章</span>
           </Link>
         </motion.div>
       </div>

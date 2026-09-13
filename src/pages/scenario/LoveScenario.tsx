@@ -38,7 +38,7 @@ export default function LoveScenario() {
       <FloatingGlyphs count={18} onDeep />
       <div className="relative zf-container max-w-[880px]">
         <header className="text-center">
-          <p className="font-latin text-[11px] font-medium uppercase tracking-[0.3em] text-golddim">
+          <p className="font-latin text-[12px] font-medium uppercase tracking-[0.3em] text-golddim">
             Love &amp; Marriage
           </p>
           <h1 className="mt-2 font-serif text-[30px] font-black tracking-[0.12em] text-silktext">

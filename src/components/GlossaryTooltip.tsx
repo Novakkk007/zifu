@@ -78,7 +78,7 @@ export default function GlossaryTooltip({ term, children, className }: Props) {
         <p className="mt-2 text-[12.5px] leading-[1.9] text-silktext">{entry.def}</p>
         {books.length > 0 && (
           <div className="mt-3 border-t border-gold/15 pt-2.5">
-            <p className="text-[11px] tracking-[0.14em] text-silkmuted">相关典籍 · 藏经阁</p>
+            <p className="text-[12px] tracking-[0.14em] text-silkmuted">相关典籍 · 藏经阁</p>
             <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
               {books.map((b) => (
                 <li key={b.id}>

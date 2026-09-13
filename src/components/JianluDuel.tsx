@@ -143,9 +143,9 @@ export default function JianluDuel({ record, onRecordChange, onExit }: JianluDue
                 <p className="font-serif text-[16px] tracking-[0.1em] text-silktext">
                   {duel.gateName} · {duel.peak}
                 </p>
-                <p className="text-[10.5px] tracking-[0.18em] text-golddim">本局对手</p>
+                <p className="text-[12px] tracking-[0.18em] text-golddim">本局对手</p>
               </div>
-              <span className="ml-auto flex items-center gap-2 text-[11px] text-inkmuted">
+              <span className="ml-auto flex items-center gap-2 text-[12px] text-inkmuted">
                 {thinking ? (
                   <>
                     <span className="inline-block h-2 w-2 animate-ping rounded-full bg-gold" />
@@ -164,7 +164,7 @@ export default function JianluDuel({ record, onRecordChange, onExit }: JianluDue
 
           {/* 你的剑 */}
           <div className="mt-4 rounded-2xl border border-gold/30 bg-gold/[0.05] p-6">
-            <p className="text-[11px] tracking-[0.24em] text-golddim">你的断剑</p>
+            <p className="text-[12px] tracking-[0.24em] text-golddim">你的断剑</p>
             <div className="mt-4 space-y-2.5">
               {duel.q.options.map((op, i) => {
                 const isRight = duel.picked !== null && i === duel.q.answer
@@ -188,7 +188,7 @@ export default function JianluDuel({ record, onRecordChange, onExit }: JianluDue
                     <span className="mr-2 font-serif text-[13px] text-golddim">{['甲', '乙', '丙', '丁'][i]}</span>
                     {op}
                     {isAiPick && duel.revealed && (
-                      <span className="ml-2 rounded-full border border-golddim/40 px-2 py-0.5 text-[9.5px] tracking-[0.1em] text-golddim">
+                      <span className="ml-2 rounded-full border border-golddim/40 px-2 py-0.5 text-[12px] tracking-[0.1em] text-golddim">
                         对方断此
                       </span>
                     )}

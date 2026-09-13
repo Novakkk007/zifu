@@ -42,12 +42,12 @@ export default function PalaceDrawer({ cell, open, onOpenChange }: PalaceDrawerP
                   {cell.branch}宫
                 </span>
                 {cell.isMing && (
-                  <span className="rounded-sm bg-gold px-1.5 py-0.5 font-serif text-[11px] font-bold text-deep3">
+                  <span className="rounded-sm bg-gold px-1.5 py-0.5 font-serif text-[12px] font-bold text-deep3">
                     命宫
                   </span>
                 )}
                 {cell.isShen && (
-                  <span className="rounded-sm border border-gold/70 px-1.5 py-0.5 font-serif text-[11px] font-bold text-goldbright">
+                  <span className="rounded-sm border border-gold/70 px-1.5 py-0.5 font-serif text-[12px] font-bold text-goldbright">
                     身宫
                   </span>
                 )}

@@ -135,7 +135,7 @@ export default function GuanzhaoPage() {
         >
         <div className="grid grid-cols-2 gap-4">
           <label className="block">
-            <span className="text-[11.5px] tracking-[0.14em] text-inkmuted">称谓（可选）</span>
+            <span className="text-[12px] tracking-[0.14em] text-inkmuted">称谓（可选）</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -144,7 +144,7 @@ export default function GuanzhaoPage() {
             />
           </label>
           <label className="block">
-            <span className="text-[11.5px] tracking-[0.14em] text-inkmuted">想被照见的主题（可选）</span>
+            <span className="text-[12px] tracking-[0.14em] text-inkmuted">想被照见的主题（可选）</span>
             <input
               value={focus}
               onChange={(e) => setFocus(e.target.value)}
@@ -171,7 +171,7 @@ export default function GuanzhaoPage() {
               </button>
             ))}
           </div>
-          <div className="text-[11px] text-inkmuted">生辰（公历）</div>
+          <div className="text-[12px] text-inkmuted">生辰（公历）</div>
         </div>
         <div className="mt-3 grid grid-cols-4 gap-3">
           {[
@@ -181,7 +181,7 @@ export default function GuanzhaoPage() {
             { label: "时", v: hour, set: setHour, ph: "12" },
           ].map((f) => (
             <label key={f.label} className="block">
-              <span className="text-[11.5px] tracking-[0.14em] text-inkmuted">{f.label}</span>
+              <span className="text-[12px] tracking-[0.14em] text-inkmuted">{f.label}</span>
               <input
                 value={f.v}
                 onChange={(e) => f.set(e.target.value)}
@@ -219,7 +219,7 @@ export default function GuanzhaoPage() {
             <p className="whitespace-pre-line text-center font-serif text-[15.5px] leading-[2.1] text-silktext">
               {content}
             </p>
-            <p className="mt-6 text-center text-[11px] tracking-[0.2em] text-inkmuted">
+            <p className="mt-6 text-center text-[12px] tracking-[0.2em] text-inkmuted">
               —— 先生观照 · 相由心生
             </p>
           </motion.div>

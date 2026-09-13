@@ -16,7 +16,7 @@ const tdCls = 'border-b border-golddim/10 px-3 py-2.5 align-top text-[13px] lead
 function TableShell({ children, caption }: { children: ReactNode; caption: string }) {
   return (
     <div className="overflow-hidden rounded-xl border border-golddim/25 bg-silk2 shadow-card">
-      <p className="border-b border-golddim/15 px-4 py-2 text-[11px] tracking-[0.08em] text-inkmuted sm:hidden">
+      <p className="border-b border-golddim/15 px-4 py-2 text-[12px] tracking-[0.08em] text-inkmuted sm:hidden">
         左右滑动查看完整表格 →
       </p>
       <div className="overflow-x-auto overscroll-x-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
@@ -74,7 +74,7 @@ export function TenGodsTable({ chart }: { chart: BaziChartV2 }) {
                 {sources.map((s, i) => (
                   <span key={i} className="mr-2 inline-block whitespace-nowrap">
                     {s.pillar}·{s.char}
-                    <span className="ml-1 text-[11px] text-inkmuted">（{s.layer}）</span>
+                    <span className="ml-1 text-[12px] text-inkmuted">（{s.layer}）</span>
                   </span>
                 ))}
               </td>
@@ -181,12 +181,12 @@ export function ShenshaTable({ chart }: { chart: BaziChartV2 }) {
               <td className={`${tdCls} font-serif font-bold text-golddim`}>
                 {s.name}
                 {g.hits.length > 1 && (
-                  <span className="ml-1.5 rounded-full border border-golddim/30 px-1.5 py-0.5 align-middle font-sans text-[10px] font-normal text-inkmuted">
+                  <span className="ml-1.5 rounded-full border border-golddim/30 px-1.5 py-0.5 align-middle font-sans text-[12px] font-normal text-inkmuted">
                     {g.hits.length} 柱命中
                   </span>
                 )}
                 {s.variant ? (
-                  <p className="mt-1 font-sans text-[11px] font-normal leading-[1.6] text-inkmuted">
+                  <p className="mt-1 font-sans text-[12px] font-normal leading-[1.6] text-inkmuted">
                     {s.variant.length > 26 ? `${s.variant.slice(0, 26)}…` : s.variant}
                   </p>
                 ) : null}
@@ -231,19 +231,19 @@ export function ChengguCard({ chart }: { chart: BaziChartV2 }) {
       <p className="text-center font-serif text-[15px] font-bold tracking-[0.12em] text-inktext">
         称骨（袁天罡称骨歌）
       </p>
-      <p className="mt-1 text-center text-[11.5px] tracking-[0.16em] text-inkmuted">
+      <p className="mt-1 text-center text-[12px] tracking-[0.16em] text-inkmuted">
         {c.gender === 'female' ? '· 女命歌诀 ·' : '· 男命歌诀 ·'}
       </p>
       <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
         {parts.map((p) => (
           <div key={p.label} className="rounded-lg border border-golddim/20 bg-silk px-3 py-3 text-center">
-            <p className="text-[11.5px] tracking-[0.08em] text-inkmuted">{p.label}</p>
+            <p className="text-[12px] tracking-[0.08em] text-inkmuted">{p.label}</p>
             <p className="mt-1 font-serif text-[16px] font-bold text-inktext">{qian(p.q)}</p>
           </div>
         ))}
       </div>
       <div className="mt-5 text-center">
-        <p className="text-[11.5px] tracking-[0.16em] text-inkmuted">总骨重</p>
+        <p className="text-[12px] tracking-[0.16em] text-inkmuted">总骨重</p>
         <p className="mt-1 font-serif text-[34px] font-black leading-none text-golddim">
           {c.totalText}
         </p>
@@ -251,7 +251,7 @@ export function ChengguCard({ chart }: { chart: BaziChartV2 }) {
       <p className="mt-4 whitespace-pre-line border-t border-golddim/15 pt-4 text-center font-serif text-[14.5px] leading-[2] text-inktext">
         {c.verse}
       </p>
-      <p className="mt-3 text-center text-[11.5px] text-inkmuted">{c.source}</p>
+      <p className="mt-3 text-center text-[12px] text-inkmuted">{c.source}</p>
     </div>
   )
 }

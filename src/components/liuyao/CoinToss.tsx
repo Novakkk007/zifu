@@ -450,7 +450,7 @@ export default function CoinToss({ tosses, coins, spin, tossing, onToss, onReset
                 <div className="flex h-[22px] flex-1 items-center justify-center rounded-md bg-silk2/70 px-3">
                   <YaoLine toss={toss} width={72} placeholder={toss === undefined} />
                 </div>
-                <span className="w-16 text-[11.5px] tracking-[0.06em] text-golddim">
+                <span className="w-16 text-[12px] tracking-[0.06em] text-golddim">
                   {toss !== undefined ? yaoLabel(toss) : ''}
                 </span>
               </div>

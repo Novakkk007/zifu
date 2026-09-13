@@ -167,7 +167,7 @@ export default function Account() {
             >
               创建 / 恢复我的账页
             </ZifuButton>
-            <p className="text-[11.5px] leading-[1.7] text-inkmuted/70">
+            <p className="text-[12px] leading-[1.7] text-inkmuted/70">
               账页数据存储于紫府服务器（灵签余额）；换设备可用「恢复账页」重新绑定。
             </p>
           </CardContent>
@@ -180,7 +180,7 @@ export default function Account() {
     <div className="bg-silk pb-24 pt-14 md:pt-20">
       <div className="zf-container flex flex-col gap-8">
         <header>
-          <p className="font-latin text-[11px] font-medium tracking-[0.3em] text-golddim">
+          <p className="font-latin text-[12px] font-medium tracking-[0.3em] text-golddim">
             ACCOUNT
           </p>
           <h1 className="mt-1 font-serif text-[30px] font-black tracking-[0.1em] text-inktext">
@@ -308,7 +308,7 @@ export default function Account() {
                   {rechargeMsg && (
                     <p className="text-[12.5px] leading-[1.8] text-inkmuted">{rechargeMsg}</p>
                   )}
-                  <p className="text-[11.5px] leading-[1.8] text-inkmuted/70">
+                  <p className="text-[12px] leading-[1.8] text-inkmuted/70">
                     详批类服务 9 灵签/次，扣减前必有确认提示。支付通道接入后，充值将支持微信/支付宝。
                   </p>
                 </>
@@ -418,7 +418,7 @@ export default function Account() {
                           <td className="py-2.5 pr-4">
                             <span
                               className={cn(
-                                'inline-flex items-center gap-1.5 rounded-full border bg-transparent px-2.5 py-0.5 text-[11.5px] font-medium tracking-[0.08em]',
+                                'inline-flex items-center gap-1.5 rounded-full border bg-transparent px-2.5 py-0.5 text-[12px] font-medium tracking-[0.08em]',
                                 st.cls,
                               )}
                             >

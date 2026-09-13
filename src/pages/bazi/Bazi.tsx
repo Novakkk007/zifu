@@ -356,7 +356,7 @@ export default function Bazi() {
                     先生通盘而讲——性格底色、人生脉络，一段一盏茶。
                   </p>
                 </div>
-                <span className="shrink-0 font-sans text-[11px] tracking-[0.16em] text-golddim">往下走</span>
+                <span className="shrink-0 font-sans text-[12px] tracking-[0.16em] text-golddim">往下走</span>
               </div>
             </motion.div>
 
@@ -387,7 +387,7 @@ export default function Bazi() {
                     七席法脉同观一盘——各言其见，共识与分歧一并呈上。
                   </p>
                 </div>
-                <span className="shrink-0 font-sans text-[11px] tracking-[0.16em] text-golddim/90">开圆桌</span>
+                <span className="shrink-0 font-sans text-[12px] tracking-[0.16em] text-golddim/90">开圆桌</span>
               </div>
             </motion.div>
 
@@ -418,7 +418,7 @@ export default function Bazi() {
                     照见、照亮、照护——看盘里困住你的循环，点一盏灯。
                   </p>
                 </div>
-                <span className="shrink-0 font-sans text-[11px] tracking-[0.16em] text-inkmuted">去观照</span>
+                <span className="shrink-0 font-sans text-[12px] tracking-[0.16em] text-inkmuted">去观照</span>
               </div>
             </motion.div>
           </div>

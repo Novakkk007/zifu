@@ -70,7 +70,7 @@ export default function ConfidenceBadge({
         >
           {meta.name}
           {tier === 'single' && (
-            <span className="ml-2 rounded-sm border border-[#B07A44]/60 px-1 py-px align-middle font-sans text-[10px] font-normal tracking-[0.2em] text-[#C98F58]">
+            <span className="ml-2 rounded-sm border border-[#B07A44]/60 px-1 py-px align-middle font-sans text-[12px] font-normal tracking-[0.2em] text-[#C98F58]">
               存疑
             </span>
           )}

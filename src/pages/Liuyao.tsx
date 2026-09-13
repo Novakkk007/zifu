@@ -274,7 +274,7 @@ export default function Liuyao() {
               />
             </div>
             <div className="mt-8 flex justify-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-golddim/40 bg-silk2 px-3.5 py-1.5 text-[11.5px] font-medium tracking-[0.14em] text-golddim">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-golddim/40 bg-silk2 px-3.5 py-1.5 text-[12px] font-medium tracking-[0.14em] text-golddim">
                 <Zap className="h-3.5 w-3.5" aria-hidden />
                 加密安全随机源 · CSPRNG
               </span>

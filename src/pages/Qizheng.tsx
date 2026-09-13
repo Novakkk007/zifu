@@ -462,7 +462,7 @@ export default function Qizheng() {
           <div className="relative mx-auto w-full max-w-[860px] px-6 md:px-10">
             <SectionHeading eyebrow="Star Positions" title="星曜躔度" />
             <div className="mt-12 overflow-hidden rounded-xl border border-golddim/25 bg-silk2 shadow-card">
-              <p className="border-b border-golddim/15 px-4 py-2 text-[11px] tracking-[0.08em] text-inkmuted sm:hidden">
+              <p className="border-b border-golddim/15 px-4 py-2 text-[12px] tracking-[0.08em] text-inkmuted sm:hidden">
                 左右滑动查看完整表格 →
               </p>
               <div className="overflow-x-auto overscroll-x-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
@@ -494,7 +494,7 @@ export default function Qizheng() {
                         <td className="whitespace-nowrap px-5 py-3 font-serif text-[15px] font-bold text-inktext">
                           {s.name}
                           {s.precision === 'approximate' && (
-                            <span className="ml-1 align-super text-[10px] text-golddim" title="传统推法 approximate">
+                            <span className="ml-1 align-super text-[12px] text-golddim" title="传统推法 approximate">
                               *
                             </span>
                           )}

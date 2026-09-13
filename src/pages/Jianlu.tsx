@@ -3,14 +3,15 @@
  * 世界观：华山之巅，七大门派各踞一峰守关。问剑者自三流始，连胜登阶，可会尽天下高手。
  * 三模式：打擂闯关（主线）· 同盘对断（竞技）· 论道斗法（沉浸）
  */
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { BookOpen, Compass, Eye, Fan, ScrollText, Sparkles, Swords, Waves } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
 import JianluArena from '@/components/JianluArena'
 import JianluDuel from '@/components/JianluDuel'
+import RankUpOverlay from '@/components/RankUpOverlay'
 import { usePageMeta } from '@/lib/page-meta'
-import { loadRecord, rankOf, nextRank, RANKS, type JianluMode } from '@/lib/jianlu'
+import { loadRecord, rankOf, nextRank, RANKS, type JianluMode, type RankLevel } from '@/lib/jianlu'
 
 const GATES = [
   { name: '子平格局派', peak: '藏剑峰', Glyph: ScrollText, desc: '格局立论，纲举目张' },
@@ -38,9 +39,20 @@ export default function JianluPage() {
   const [r, setR] = useState(record)
   const [arena, setArena] = useState(false)
   const [duel, setDuel] = useState(false)
+  const prevRankIdx = useRef(rankOf(record).index)
+  const [rankUp, setRankUp] = useState<RankLevel | null>(null)
   const rank = rankOf(r)
   const next = nextRank(r)
   const winRate = r.total > 0 ? Math.round((r.wins / r.total) * 100) : 0
+
+  const handleRecordChange = (next: ReturnType<typeof loadRecord>) => {
+    const newIdx = rankOf(next).index
+    if (newIdx > prevRankIdx.current) {
+      setRankUp(rankOf(next))
+    }
+    prevRankIdx.current = newIdx
+    setR(next)
+  }
 
   const play = (mode: JianluMode, ready: boolean) => {
     if (!ready) return
@@ -70,9 +82,9 @@ export default function JianluPage() {
 
       <div className="relative z-10 mx-auto max-w-4xl px-4 py-14">
         {arena ? (
-          <JianluArena record={r} onRecordChange={setR} onExit={() => setArena(false)} />
+          <JianluArena record={r} onRecordChange={handleRecordChange} onExit={() => setArena(false)} />
         ) : duel ? (
-          <JianluDuel record={r} onRecordChange={setR} onExit={() => setDuel(false)} />
+          <JianluDuel record={r} onRecordChange={handleRecordChange} onExit={() => setDuel(false)} />
         ) : (
           <>
         {/* 剑庐门额 */}
@@ -82,7 +94,7 @@ export default function JianluPage() {
           transition={{ duration: 0.9 }}
           className="text-center"
         >
-          <p className="font-latin text-[11px] uppercase tracking-[0.42em] text-gold">Mount Hua · Ask the Sword</p>
+          <p className="font-latin text-[12px] uppercase tracking-[0.42em] text-gold">Mount Hua · Ask the Sword</p>
           <h1 className="mt-4 font-serif text-[38px] font-bold tracking-[0.22em] text-goldbright sm:text-[46px]">
             华山问剑
           </h1>
@@ -100,9 +112,9 @@ export default function JianluPage() {
           transition={{ duration: 0.8, delay: 0.25 }}
           className="mx-auto mt-10 max-w-md rounded-2xl border border-gold/35 bg-gold/[0.06] px-7 py-6 text-center"
         >
-          <p className="text-[11px] tracking-[0.3em] text-golddim">当前段位</p>
+          <p className="text-[12px] tracking-[0.3em] text-golddim">当前段位</p>
           <p className="mt-2 font-serif text-[26px] font-bold tracking-[0.18em] text-goldbright">{rank.name}</p>
-          <p className="mt-1 text-[11.5px] tracking-[0.14em] text-silkmuted">{rank.desc}</p>
+          <p className="mt-1 text-[12px] tracking-[0.14em] text-silkmuted">{rank.desc}</p>
           <div className="mt-4 flex items-center justify-center gap-6 text-[12px] text-silkmuted">
             <span>胜场 <b className="text-golddim">{r.wins}</b></span>
             <span>胜率 <b className="text-golddim">{winRate}%</b></span>
@@ -127,7 +139,7 @@ export default function JianluPage() {
           {RANKS.map((lv) => (
             <span
               key={lv.index}
-              className={`shrink-0 rounded-full border px-3 py-1 text-[11px] tracking-[0.08em] ${
+              className={`shrink-0 rounded-full border px-3 py-1 text-[12px] tracking-[0.08em] ${
                 lv.index <= rank.index
                   ? 'border-gold/60 bg-gold/10 text-golddim'
                   : 'border-golddim/25 text-inkfaint'
@@ -158,9 +170,9 @@ export default function JianluPage() {
                 <m.Glyph className="h-20 w-20" strokeWidth={0.8} />
               </span>
               <p className="font-serif text-[20px] font-bold tracking-[0.14em] text-inktext">{m.title}</p>
-              <p className="mt-1 text-[10.5px] tracking-[0.2em] text-golddim">{m.sub}</p>
+              <p className="mt-1 text-[12px] tracking-[0.2em] text-golddim">{m.sub}</p>
               <p className="mt-3 text-[12px] leading-[1.95] tracking-[0.04em] text-inkmuted">{m.desc}</p>
-              <p className={`mt-4 font-sans text-[11px] tracking-[0.2em] transition-colors ${m.ready ? 'text-golddim/90 group-hover:text-goldbright' : 'text-inkfaint'}`}>
+              <p className={`mt-4 font-sans text-[12px] tracking-[0.2em] transition-colors ${m.ready ? 'text-golddim/90 group-hover:text-goldbright' : 'text-inkfaint'}`}>
                 {m.ready ? '请 战' : '锻造中 · 不日开锋'}
               </p>
             </motion.button>
@@ -174,7 +186,7 @@ export default function JianluPage() {
           transition={{ duration: 0.8, delay: 1.05 }}
           className="mt-14"
         >
-          <p className="text-center text-[11px] tracking-[0.3em] text-golddim">七峰守关</p>
+          <p className="text-center text-[12px] tracking-[0.3em] text-golddim">七峰守关</p>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-7">
             {GATES.map((g, i) => {
               const state = i < r.gatesCleared ? 'cleared' : i === r.gatesCleared ? 'next' : 'locked'
@@ -198,7 +210,7 @@ export default function JianluPage() {
                   <p className={`mt-2 text-[12px] leading-tight tracking-[0.04em] ${
                     state === 'locked' ? 'text-silktext' : 'text-silktext'
                   }`}>{g.name}</p>
-                  <p className={`mt-1.5 text-[11px] tracking-[0.14em] ${
+                  <p className={`mt-1.5 text-[12px] tracking-[0.14em] ${
                     state === 'cleared'
                       ? 'text-golddim'
                       : state === 'next'
@@ -216,12 +228,14 @@ export default function JianluPage() {
           </div>
         </motion.div>
 
-        <p className="mt-12 text-center text-[10.5px] tracking-[0.2em] text-inkfaint">
+        <p className="mt-12 text-center text-[12px] tracking-[0.2em] text-inkfaint">
           问剑乃文化研习之戏——断命之准，不系于胜负；照人之心，方为剑道。
         </p>
           </>
         )}
       </div>
+
+      {rankUp && <RankUpOverlay rank={rankUp} onDone={() => setRankUp(null)} />}
 
       <style>{`
         @keyframes zifu-breathe {

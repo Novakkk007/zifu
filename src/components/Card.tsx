@@ -33,7 +33,7 @@ export function CardTitle({
   return (
     <div className={className}>
       {eyebrow && (
-        <p className="mb-1 font-latin text-[11px] font-medium tracking-[0.3em] text-golddim">
+        <p className="mb-1 font-latin text-[12px] font-medium tracking-[0.3em] text-golddim">
           {eyebrow}
         </p>
       )}

@@ -151,7 +151,7 @@ export default function ZiweiAiReading({
                 {aiReading.isPending ? '参详中…' : '开始参详'}
               </GoldButton>
             </div>
-            <p className="mt-3 text-center text-[11.5px] text-silkmuted/80">
+            <p className="mt-3 text-center text-[12px] text-silkmuted/80">
               live 参详每次消耗 1 灵签；失败或降级不扣费
             </p>
 
@@ -173,7 +173,7 @@ export default function ZiweiAiReading({
                   <div className="mb-4 flex justify-center">
                     <span
                       className={cn(
-                        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11.5px] tracking-[0.12em]',
+                        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] tracking-[0.12em]',
                         reading.source === 'live'
                           ? 'border-gold/60 bg-gold/10 text-goldbright'
                           : 'border-silkmuted/40 bg-silkmuted/10 text-silkmuted',

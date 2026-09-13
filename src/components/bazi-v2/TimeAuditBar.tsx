@@ -39,7 +39,7 @@ export default function TimeAuditBar({ chart }: { chart: BaziChartV2 }) {
 
   return (
     <div className="rounded-lg border border-golddim/30 bg-silk2/70 px-5 py-4">
-      <p className="mb-2.5 font-sans text-[11px] font-medium uppercase tracking-[0.22em] text-golddim">
+      <p className="mb-2.5 font-sans text-[12px] font-medium uppercase tracking-[0.22em] text-golddim">
         排盘依据 · Time Audit
       </p>
       <dl className="flex flex-wrap gap-x-8 gap-y-2">

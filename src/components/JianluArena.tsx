@@ -99,7 +99,7 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
           </button>
           {gateIdx + 1}/7
           {combo >= 2 && (
-            <span className="ml-2 rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 text-[10.5px] tracking-[0.14em] text-goldbright">
+            <span className="ml-2 rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 text-[12px] tracking-[0.14em] text-goldbright">
               连断 {combo} 题
             </span>
           )}
@@ -122,7 +122,7 @@ export default function JianluArena({ record, onRecordChange, onExit }: ArenaVie
           transition={{ duration: 0.5 }}
           className="mt-8 rounded-2xl border border-golddim/28 bg-silk2/60 p-7"
         >
-          <p className="text-[11px] tracking-[0.24em] text-golddim">
+          <p className="text-[12px] tracking-[0.24em] text-golddim">
             第 {qIdx + 1} 题 · 断命要点
           </p>
           <p className="mt-4 font-serif text-[18px] leading-[1.9] text-silktext">{q.q}</p>

@@ -244,7 +244,7 @@ export default function Hecan() {
                 <span className="font-serif text-[64px] font-black leading-none text-gold">
                   {c.glyph}
                 </span>
-                <span className="mt-5 text-[11.5px] leading-[1.8] tracking-[0.06em] text-inkmuted">
+                <span className="mt-5 text-[12px] leading-[1.8] tracking-[0.06em] text-inkmuted">
                   {c.note}
                 </span>
               </div>

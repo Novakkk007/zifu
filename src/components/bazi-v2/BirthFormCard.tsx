@@ -300,7 +300,7 @@ export default function BirthFormCard({ value, onChange, loading, error, onSubmi
           />
         </div>
         <div>
-          <label htmlFor="bazi-city-search" className="mb-1.5 block font-sans text-[11.5px] font-medium tracking-[0.14em] text-inkmuted">
+          <label htmlFor="bazi-city-search" className="mb-1.5 block font-sans text-[12px] font-medium tracking-[0.14em] text-inkmuted">
             出生城市（决定经度 · 全国 {CITIES.length} 城）
           </label>
           <input
@@ -336,7 +336,7 @@ export default function BirthFormCard({ value, onChange, loading, error, onSubmi
             ))}
             <option value="自定义经度…">手动输入经度</option>
           </datalist>
-          <p className="mt-1.5 text-[11px] leading-[1.6] text-inkmuted/70">
+          <p className="mt-1.5 text-[12px] leading-[1.6] text-inkmuted/70">
             未找到城市？选「自定义经度…」手动输入精确经度。
           </p>
         </div>
@@ -374,7 +374,7 @@ export default function BirthFormCard({ value, onChange, loading, error, onSubmi
             <option value={FIXED_OFFSET}>不使用 IANA 时区（用右侧固定 UTC 偏移）</option>
           </FormSelect>
           {value.ianaTimezone !== FIXED_OFFSET && (
-            <p className="mt-1.5 text-[11.5px] leading-[1.6] text-inkmuted">
+            <p className="mt-1.5 text-[12px] leading-[1.6] text-inkmuted">
               按出生当日该时区的历史偏移换算，自动处理历史夏令时（如中国 1986–1991、欧美夏令时）。
             </p>
           )}

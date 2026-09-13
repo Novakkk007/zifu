@@ -224,7 +224,7 @@ function QimenAiReading({ chartId }: { chartId: number | null }) {
             局盘已保存在本机；当前为 AI 降级模式。请在服务可用且已登录时重新起局，以启用直连参详。
           </p>
         )}
-        <p className="mt-3 text-[11.5px] text-silkmuted">
+        <p className="mt-3 text-[12px] text-silkmuted">
           live 参详每次消耗 1 灵签；模板参详（非 AI，fallback）免费；参详失败不扣费。
         </p>
         {errState && (
@@ -261,12 +261,12 @@ function QimenAiReading({ chartId }: { chartId: number | null }) {
                 {depth === 'pro' ? '专业级' : '通俗级'}
               </p>
               {result.source === 'live' ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-goldbright">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-[12px] font-medium tracking-[0.12em] text-goldbright">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-goldbright" />
                   live · 模型 {result.model ?? '未知'} · 消耗 1 灵签
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-silkmuted/40 bg-silktext/5 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-silkmuted">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-silkmuted/40 bg-silktext/5 px-3 py-1 text-[12px] font-medium tracking-[0.12em] text-silkmuted">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-silkmuted" />
                   fallback · 模板参详（非 AI 生成，免费）
                 </span>
@@ -622,11 +622,11 @@ export default function Qimen() {
                               : 'border-gold/15 bg-deep3/60 text-silkmuted',
                           )}
                         >
-                          <span className="text-[10px] tracking-[0.08em]">{p.gua}</span>
+                          <span className="text-[12px] tracking-[0.08em]">{p.gua}</span>
                           <span className="mt-0.5 font-serif text-[13px] font-semibold">
                             {p.door ? `${p.door}门` : '中宫'}
                           </span>
-                          <span className="text-[10px]">{p.god || p.star}</span>
+                          <span className="text-[12px]">{p.god || p.star}</span>
                         </motion.div>
                       )
                     })}

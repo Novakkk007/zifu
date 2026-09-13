@@ -198,7 +198,7 @@ export default function ClassicReader({
 
       <div className="mt-8 grid items-start gap-10 lg:grid-cols-[240px_minmax(0,1fr)]">
         <aside className="sticky top-24 hidden max-h-[calc(100vh-7rem)] overflow-y-auto rounded-xl border border-golddim/20 bg-white/45 p-4 lg:block">
-          <p className="mb-3 px-3 text-[11px] font-medium tracking-[0.16em] text-golddim">
+          <p className="mb-3 px-3 text-[12px] font-medium tracking-[0.16em] text-golddim">
             全文目录
           </p>
           <nav aria-label="全文目录">{tableOfContents}</nav>

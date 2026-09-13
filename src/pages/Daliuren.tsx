@@ -187,7 +187,7 @@ function AiReadingSection({ chartId }: { chartId: number | null }) {
             课传已保存在本机；当前为 AI 降级模式。请在服务可用且已登录时重新起课，以启用直连参详。
           </p>
         )}
-        <p className="mt-3 text-[11.5px] text-silkmuted">
+        <p className="mt-3 text-[12px] text-silkmuted">
           live 参详每次消耗 1 灵签；模板参详（非 AI，fallback）免费；参详失败不扣费。
         </p>
         {reading.isError && (
@@ -227,12 +227,12 @@ function AiReadingSection({ chartId }: { chartId: number | null }) {
                 {depth === 'pro' ? '专业级' : '通俗级'}
               </p>
               {result.source === 'live' ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-goldbright">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-[12px] font-medium tracking-[0.12em] text-goldbright">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-goldbright" />
                   live · 模型 {result.model ?? '未知'} · 消耗 1 灵签
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-silkmuted/40 bg-silktext/5 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-silkmuted">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-silkmuted/40 bg-silktext/5 px-3 py-1 text-[12px] font-medium tracking-[0.12em] text-silkmuted">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-silkmuted" />
                   fallback · 模板参详（非 AI 生成，免费）
                 </span>
@@ -443,11 +443,11 @@ export default function Daliuren() {
                   {chart.method.condition}
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-[11.5px] font-medium tracking-[0.12em] text-golddim">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/10 px-3 py-1 text-[12px] font-medium tracking-[0.12em] text-golddim">
                     <span className="inline-block h-1.5 w-1.5 rounded-full bg-goldbright" />
                     {meta.precision === 'validated' ? '真实算法（已校验）' : meta.precision} · {meta.ruleVariant}
                   </span>
-                  <span className="inline-flex items-center rounded-full border border-golddim/30 px-3 py-1 text-[11.5px] tracking-[0.12em] text-inkmuted">
+                  <span className="inline-flex items-center rounded-full border border-golddim/30 px-3 py-1 text-[12px] tracking-[0.12em] text-inkmuted">
                     {chart.xunShou}（旬空 {chart.xunkong.join('')}）
                   </span>
                 </div>
@@ -467,7 +467,7 @@ export default function Daliuren() {
                   {/* 四课 */}
                   <div>
                     <h3 className="font-serif text-[17px] font-bold tracking-[0.14em] text-inktext">
-                      四课 <span className="ml-2 font-latin text-[11px] font-medium uppercase tracking-[0.3em] text-gold">Four Lessons</span>
+                      四课 <span className="ml-2 font-latin text-[12px] font-medium uppercase tracking-[0.3em] text-gold">Four Lessons</span>
                     </h3>
                     <div className="mt-5 grid grid-cols-2 gap-3 sm:flex sm:items-stretch sm:gap-0">
                       {chart.lessons.map((l, i) => (
@@ -478,14 +478,14 @@ export default function Daliuren() {
                             transition={{ delay: 0.2 + i * 0.1, duration: 0.5, ease: 'easeOut' }}
                             className="min-w-0 flex-1 rounded-lg border border-golddim/25 bg-silk2 px-3 py-4 text-center"
                           >
-                            <p className="text-[11px] tracking-[0.14em] text-inkmuted">第{['一', '二', '三', '四'][i]}课</p>
+                            <p className="text-[12px] tracking-[0.14em] text-inkmuted">第{['一', '二', '三', '四'][i]}课</p>
                             <p className="mt-2 font-serif text-[19px] font-bold leading-snug text-inktext">
                               {l.shang}
                               <span className="mx-1 text-golddim/70">/</span>
                               <span className="text-[15px] font-semibold text-inkmuted">{l.xia}</span>
                             </p>
-                            <p className="mt-1 text-[11px] text-inkmuted">上神 / 下神</p>
-                            <p className="mt-1 text-[11px] tracking-[0.14em] text-golddim">{l.general}</p>
+                            <p className="mt-1 text-[12px] text-inkmuted">上神 / 下神</p>
+                            <p className="mt-1 text-[12px] tracking-[0.14em] text-golddim">{l.general}</p>
                           </motion.div>
                           {i < 3 && <span className="mx-1 hidden h-px w-3 shrink-0 self-center bg-gold/50 sm:block md:w-4" />}
                         </div>
@@ -496,7 +496,7 @@ export default function Daliuren() {
                   {/* 三传 */}
                   <div>
                     <h3 className="font-serif text-[17px] font-bold tracking-[0.14em] text-inktext">
-                      三传 <span className="ml-2 font-latin text-[11px] font-medium uppercase tracking-[0.3em] text-gold">Three Passages</span>
+                      三传 <span className="ml-2 font-latin text-[12px] font-medium uppercase tracking-[0.3em] text-gold">Three Passages</span>
                     </h3>
                     <div className="mt-5 flex items-start gap-5">
                       <div className="flex w-full max-w-[300px] flex-col items-stretch">
@@ -522,16 +522,16 @@ export default function Daliuren() {
                               )}
                             >
                               <div className="flex items-baseline justify-between">
-                                <span className="text-[11.5px] tracking-[0.16em] text-inkmuted">
+                                <span className="text-[12px] tracking-[0.16em] text-inkmuted">
                                   {CHUAN_LABEL[i]}
                                 </span>
-                                <span className="text-[11.5px] text-golddim">{c.general}</span>
+                                <span className="text-[12px] text-golddim">{c.general}</span>
                               </div>
                               <div className="mt-1.5 flex items-baseline justify-between">
                                 <span className="font-serif text-[22px] font-bold tracking-[0.1em] text-inktext">
                                   {c.ganzhi}
                                   {c.isXunkong && (
-                                    <span className="ml-1.5 align-middle text-[11px] font-normal tracking-[0.1em] text-[#B04A3A]">
+                                    <span className="ml-1.5 align-middle text-[12px] font-normal tracking-[0.1em] text-[#B04A3A]">
                                       旬空
                                     </span>
                                   )}
@@ -554,7 +554,7 @@ export default function Daliuren() {
                         始 → 中 → 末
                       </motion.p>
                     </div>
-                    <p className="mt-4 text-[11.5px] leading-[1.8] tracking-[0.06em] text-inkmuted">
+                    <p className="mt-4 text-[12px] leading-[1.8] tracking-[0.06em] text-inkmuted">
                       干支为旬遁遁干 · 六亲以日干「{chart.dayGanzhi[0]}」为纲 · 将即所乘十二天将
                     </p>
                   </div>

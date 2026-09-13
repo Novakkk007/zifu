@@ -96,7 +96,7 @@ export default function PalacePanel({ chart }: PalacePanelProps) {
                 <h3 className="truncate font-serif text-[15px] font-bold tracking-[0.08em] text-inktext sm:text-[16px]">
                   {palaceLabel(palace.name)}
                 </h3>
-                <span className="shrink-0 text-[10.5px] text-inkmuted/75">
+                <span className="shrink-0 text-[12px] text-inkmuted/75">
                   {palace.ganzhi}
                 </span>
               </div>
@@ -107,7 +107,7 @@ export default function PalacePanel({ chart }: PalacePanelProps) {
                 {joinedStars(palace.majors, "无正曜")}
               </p>
               <p
-                className="mt-1.5 truncate text-[11.5px] text-inkmuted"
+                className="mt-1.5 truncate text-[12px] text-inkmuted"
                 title={joinedStars(palace.minors, "暂无小星")}
               >
                 {joinedStars(palace.minors, "暂无小星")}

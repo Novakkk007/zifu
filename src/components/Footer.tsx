@@ -13,7 +13,7 @@ function VersionLine() {
   const deploy = useDeployInfo()
   if (!deploy) return null
   return (
-    <p className="font-latin text-[11px] tracking-[0.12em] text-silkmuted/50">
+    <p className="font-latin text-[12px] tracking-[0.12em] text-silkmuted/50">
       {deploy.preview ? 'PREVIEW · ' : ''}build {deploy.commitSha}
     </p>
   )

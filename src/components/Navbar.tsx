@@ -160,7 +160,7 @@ export default function Navbar() {
                       <div key={group.group}>
                         <div className="flex items-center gap-1.5 border-t border-gold/10 px-5 pt-2 pb-1 first:border-t-0">
                           <ZifuIcon name={group.icon} size={12} strokeWidth={1} className="text-golddim" />
-                          <span className="font-serif text-[11px] tracking-[0.24em] text-golddim">{group.group}</span>
+                          <span className="font-serif text-[12px] tracking-[0.24em] text-golddim">{group.group}</span>
                         </div>
                         {group.items.map((item) => (
                           <NavLink

@@ -125,7 +125,7 @@ function BookCard({ book, onOpen }: { book: Book; onOpen: () => void }) {
     >
       {/* 左：信息 */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className="w-fit rounded-sm border border-golddim/40 px-1.5 py-0.5 font-serif text-[11px] tracking-[0.2em] text-golddim">
+        <span className="w-fit rounded-sm border border-golddim/40 px-1.5 py-0.5 font-serif text-[12px] tracking-[0.2em] text-golddim">
           {book.category}
         </span>
         <p className="mt-3 font-sans text-[12.5px] tracking-[0.12em] text-inkmuted">
@@ -165,7 +165,7 @@ function ThreeHallsNav() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease: easeOut }}
-            className="text-center font-sans text-[11.5px] tracking-[0.34em] text-golddim"
+            className="text-center font-sans text-[12px] tracking-[0.34em] text-golddim"
           >
             宝 · 术 · 藏经阁
           </motion.p>

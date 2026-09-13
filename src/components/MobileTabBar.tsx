@@ -23,7 +23,7 @@ export default function MobileTabBar() {
             to={to}
             end={end}
             className={({ isActive }) =>
-              `flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 py-1.5 text-[10px] tracking-[0.08em] transition-colors ${
+              `flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 py-1.5 text-[12px] tracking-[0.08em] transition-colors ${
                 isActive ? 'text-goldbright' : 'text-silkmuted/80'
               }`
             }

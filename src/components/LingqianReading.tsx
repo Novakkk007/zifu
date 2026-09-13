@@ -128,7 +128,7 @@ export default function LingqianReading({
           <p className="whitespace-pre-line text-center font-serif text-[15px] leading-[2.05] text-inktext">
             {content}
           </p>
-          <p className="mt-5 text-center text-[11px] tracking-[0.2em] text-inkmuted">
+          <p className="mt-5 text-center text-[12px] tracking-[0.2em] text-inkmuted">
             —— 先生详批 · 本次消耗 {LINGQIAN_COST} 灵签
           </p>
         </motion.div>
