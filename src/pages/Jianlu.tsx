@@ -12,7 +12,7 @@ import JianluDuel from '@/components/JianluDuel'
 import RankUpOverlay from '@/components/RankUpOverlay'
 import { usePageMeta } from '@/lib/page-meta'
 import { loadRecord, rankOf, nextRank, RANKS, type JianluMode, type RankLevel } from '@/lib/jianlu'
-import { ACHIEVEMENTS, unlockedCount } from '@/lib/jianlu-meta'
+import { ACHIEVEMENTS, answerDaily, dailyQuestion, insightTitle, loadInsight, todayKey, unlockedCount } from '@/lib/jianlu-meta'
 
 const GATES = [
   { name: '子平格局派', peak: '藏剑峰', Glyph: ScrollText, desc: '格局立论，纲举目张' },
@@ -42,6 +42,9 @@ export default function JianluPage() {
   const [duel, setDuel] = useState(false)
   const prevRankIdx = useRef(rankOf(record).index)
   const [rankUp, setRankUp] = useState<RankLevel | null>(null)
+  const [dailyOpen, setDailyOpen] = useState(false)
+  const [dailyPicked, setDailyPicked] = useState<number | null>(null)
+  const [dailySolved, setDailySolved] = useState(loadInsight().lastDate === todayKey())
   const rank = rankOf(r)
   const next = nextRank(r)
   const winRate = r.total > 0 ? Math.round((r.wins / r.total) * 100) : 0
@@ -191,6 +194,94 @@ export default function JianluPage() {
               )
             })}
           </div>
+        </motion.div>
+
+        {/* 今日研剑（悟性轴——每日一题） */}
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.5 }}
+          className="mt-8 rounded-2xl border border-golddim/25 bg-silk2/50 p-6"
+        >
+          <div className="flex items-baseline justify-between">
+            <p className="font-serif text-[16px] font-bold tracking-[0.14em] text-silktext">今日研剑</p>
+            <p className="text-[12px] tracking-[0.1em] text-silkmuted">
+              悟性 {(() => loadInsight().insight)()} · {insightTitle(loadInsight().insight)}
+            </p>
+          </div>
+          <p className="mt-2 text-[12.5px] leading-[1.9] tracking-[0.04em] text-silkmuted">
+            每日一题，与天下同参同断——答对悟性 +10，连签不断，剑心自明。
+          </p>
+          {!dailyOpen ? (
+            <button
+              type="button"
+              onClick={() => {
+                setDailyOpen(true)
+                setDailyPicked(null)
+              }}
+              disabled={dailySolved}
+              className={`mt-4 rounded-full border px-6 py-2 font-serif text-[13.5px] tracking-[0.14em] transition ${
+                dailySolved
+                  ? 'cursor-default border-golddim/20 bg-silk2/30 text-silkmuted'
+                  : 'border-gold/50 bg-gold/10 text-goldbright hover:bg-gold/20'
+              }`}
+            >
+              {dailySolved ? '今日已断 · 明日再来' : '拔剑 · 答今日一题'}
+            </button>
+          ) : (
+            <div className="mt-4 rounded-xl border border-golddim/25 bg-deep3/70 p-5">
+              {(() => {
+                const dq = dailyQuestion()
+                if (!dq) return null
+                const gate = ARENA_GATES.find((g) => g.questions[dq.qIndex])
+                const q = gate?.questions[dq.qIndex]
+                if (!q) return null
+                return (
+                  <>
+                    <p className="text-[12px] tracking-[0.2em] text-golddim">{dq.gateName} · 今日之题</p>
+                    <p className="mt-2 font-serif text-[15px] leading-[1.9] text-silktext">{q.q}</p>
+                    <div className="mt-4 space-y-2">
+                      {q.options.map((op, i) => {
+                        const isRight = dailyPicked !== null && i === q.answer
+                        const isWrong = dailyPicked === i && i !== q.answer
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            disabled={dailyPicked !== null}
+                            onClick={() => {
+                              setDailyPicked(i)
+                              const ok = i === q.answer
+                              answerDaily(ok)
+                              if (ok) setDailySolved(true)
+                              setR({ ...r })
+                            }}
+                            className={`block w-full rounded-lg border px-4 py-2.5 text-left text-[13px] transition-colors ${
+                              dailyPicked === null
+                                ? 'border-golddim/25 bg-silk2/30 text-silktext hover:border-gold/50'
+                                : isRight
+                                  ? 'border-gold bg-gold/15 text-goldbright'
+                                  : isWrong
+                                    ? 'border-[#c96a5a]/50 bg-[#7a2e2e]/15 text-[#e0a8a0]'
+                                    : 'border-golddim/15 text-silkmuted'
+                            }`}
+                          >
+                            {['甲', '乙', '丙', '丁'][i]} · {op}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    {dailyPicked !== null && (
+                      <p className="mt-3 text-[12.5px] leading-[1.9] text-silkmuted">
+                        {dailyPicked === q.answer ? '✓ 断得准，悟性 +10。' : `差一层——正确为「${['甲', '乙', '丙', '丁'][q.answer]}」。`}
+                        {q.explain}
+                      </p>
+                    )}
+                  </>
+                )
+              })()}
+            </div>
+          )}
         </motion.div>
 
         {/* 三模式 */}
