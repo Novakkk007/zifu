@@ -153,11 +153,11 @@ function BookCard({ book, onOpen }: { book: Book; onOpen: () => void }) {
   )
 }
 
-/* ---------------- 三馆入口导航卡 ---------------- */
+/* ---------------- 宝 · 术 · 藏经阁导航卡 ---------------- */
 
 function ThreeHallsNav() {
   return (
-    <section aria-label="三馆入口" className="relative bg-deep2">
+    <section aria-label="宝 · 术 · 藏经阁" className="relative bg-deep2">
       <div className="zf-container">
         <div className="mx-auto max-w-[880px] pb-16 pt-14">
           <motion.p
@@ -167,10 +167,10 @@ function ThreeHallsNav() {
             transition={{ duration: 0.6, ease: easeOut }}
             className="text-center font-sans text-[11.5px] tracking-[0.34em] text-golddim"
           >
-            三馆入口
+            宝 · 术 · 藏经阁
           </motion.p>
-          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
-            {/* ① 五运六气 · 平滑滚动至页内 S2.6 */}
+          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
+            {/* ① 藏经阁 · 典藏电子书 → 页内书目 */}
             <motion.div
               initial={{ opacity: 0, y: 26 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -180,13 +180,13 @@ function ThreeHallsNav() {
               <button
                 type="button"
                 onClick={() =>
-                  document.getElementById('wiki-yunqi')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  document.getElementById('wiki-books')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                 }
                 className="group flex h-full w-full flex-col rounded-2xl border border-golddim/25 bg-silk2/50 p-7 text-left transition-all duration-300 hover:border-gold/55 hover:bg-silk2/80 hover:shadow-[0_0_36px_rgba(201,164,92,0.18)]"
               >
-                <p className="font-serif text-[21px] font-bold tracking-[0.18em] text-goldbright">五运六气</p>
+                <p className="font-serif text-[21px] font-bold tracking-[0.18em] text-goldbright">藏经阁</p>
                 <p className="mt-3 flex-1 text-[13px] leading-[2] tracking-[0.06em] text-silkmuted">
-                  古人以干支推年度气候节律与养生方向
+                  十二部公版典籍 · 典藏电子书
                 </p>
                 <span className="mt-6 inline-flex self-end text-golddim transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-goldbright">
                   <ArrowUpRight className="h-4 w-4" aria-hidden />
@@ -194,20 +194,44 @@ function ThreeHallsNav() {
               </button>
             </motion.div>
 
-            {/* ② 今日盘 · 跳转 /daily */}
+            {/* ② 术 · 五运六气 → 页内 S2.6 */}
             <motion.div
               initial={{ opacity: 0, y: 26 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.16, ease: easeOut }}
             >
+              <button
+                type="button"
+                onClick={() =>
+                  document.getElementById('wiki-yunqi')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+                className="group flex h-full w-full flex-col rounded-2xl border border-golddim/25 bg-silk2/50 p-7 text-left transition-all duration-300 hover:border-gold/55 hover:bg-silk2/80 hover:shadow-[0_0_36px_rgba(201,164,92,0.18)]"
+              >
+                <p className="font-serif text-[21px] font-bold tracking-[0.18em] text-goldbright">术</p>
+                <p className="mt-3 flex-1 text-[13px] leading-[2] tracking-[0.06em] text-silkmuted">
+                  五运六气——干支推年度气候节律与养生方向
+                </p>
+                <span className="mt-6 inline-flex self-end text-golddim transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-goldbright">
+                  <ArrowUpRight className="h-4 w-4" aria-hidden />
+                </span>
+              </button>
+            </motion.div>
+
+            {/* ③ 宝 · 百宝袋 → /toolkit */}
+            <motion.div
+              initial={{ opacity: 0, y: 26 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.26, ease: easeOut }}
+            >
               <Link
-                to="/daily"
+                to="/toolkit"
                 className="group flex h-full w-full flex-col rounded-2xl border border-golddim/25 bg-silk2/50 p-7 transition-all duration-300 hover:border-gold/55 hover:bg-silk2/80 hover:shadow-[0_0_36px_rgba(201,164,92,0.18)]"
               >
-                <p className="font-serif text-[21px] font-bold tracking-[0.18em] text-goldbright">今日盘</p>
+                <p className="font-serif text-[21px] font-bold tracking-[0.18em] text-goldbright">宝</p>
                 <p className="mt-3 flex-1 text-[13px] leading-[2] tracking-[0.06em] text-silkmuted">
-                  每日时令与当日宜忌
+                  百宝袋——顺手的小工具与收藏
                 </p>
                 <span className="mt-6 inline-flex self-end text-golddim transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-goldbright">
                   <ArrowUpRight className="h-4 w-4" aria-hidden />
@@ -228,8 +252,8 @@ export default function Wiki() {
   const [opened, setOpened] = useState<Book | null>(null)
 
   usePageMeta(
-    '藏经阁 · 紫府',
-    '紫府藏经阁——汇聚《周易》《滴天髓》《三命通会》等十二部公版术数典籍原文节选，句有出处、可溯源查阅。',
+    '藏宝阁 · 紫府',
+    '紫府藏宝阁——宝·术·藏经阁三分：典藏电子书（公版典籍原文节选）、术数参详、百宝袋，句有出处、可溯源查阅。',
   )
 
   const list = useMemo(() => (cat === '全部' ? BOOKS : BOOKS.filter((b) => b.category === cat)), [cat])
@@ -238,23 +262,23 @@ export default function Wiki() {
     <div>
       {/* S1 · PageHero */}
       <PageHero
-        breadcrumb="藏经阁"
-        glyph="藏"
-        title="藏经阁"
-        latin="Sutra Library"
-        subtitle="紫府参详所据之典籍，皆在此阁——句有出处，方敢落笔"
+        breadcrumb="藏宝阁"
+        glyph="宝"
+        title="藏宝阁"
+        latin="Treasure Library"
+        subtitle="宝 · 术 · 藏经阁，三分一阁——典藏电子书在此，句有出处，方敢落笔"
         pool={HERO_POOL}
         minH="min-h-[38vh]"
       />
 
-      {/* S1.5 · 三馆入口导航卡（五运六气锚点 + 今日盘路由） */}
+      {/* S1.5 · 宝 · 术 · 藏经阁导航卡（五运六气锚点 + 今日盘路由） */}
       <ThreeHallsNav />
 
       {/* 深 → 浅 过渡 */}
       <div className="zf-fade-to-silk h-[160px]" />
 
       {/* S2 · 类别筛选 + 书目网格 */}
-      <section className="relative bg-silk pb-28 pt-16">
+      <section id="wiki-books" className="relative bg-silk pb-28 pt-16 scroll-mt-16">
         <div className="zf-paper-grain pointer-events-none absolute inset-0 opacity-[0.03]" />
         <div className="relative zf-container">
           <SectionHeading

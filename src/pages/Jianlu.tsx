@@ -4,6 +4,7 @@
  * 三模式：打擂闯关（主线）· 同盘对断（竞技）· 论道斗法（沉浸）
  */
 import { useMemo, useState } from 'react'
+import { BookOpen, Compass, Eye, Fan, ScrollText, Sparkles, Swords, Waves } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
 import JianluArena from '@/components/JianluArena'
@@ -12,19 +13,19 @@ import { usePageMeta } from '@/lib/page-meta'
 import { loadRecord, rankOf, nextRank, RANKS, type JianluMode } from '@/lib/jianlu'
 
 const GATES = [
-  { name: '子平格局派', peak: '藏剑峰', glyph: '📜', desc: '格局立论，纲举目张' },
-  { name: '三命通会派', peak: '通会峰', glyph: '📚', desc: '博览群书，融会贯通' },
-  { name: '神峰通考派', peak: '神峰', glyph: '🧭', desc: '考据精严，实务见长' },
-  { name: '渊海子平派', peak: '渊海峰', glyph: '🌊', desc: '古法真传，渊深如海' },
-  { name: '盲派', peak: '听风峰', glyph: '🕯️', desc: '耳闻断事，快剑无影' },
-  { name: '千里命稿派', peak: '千里峰', glyph: '🧧', desc: '老练江湖，火候十足' },
-  { name: '金口诀', peak: '口诀峰', glyph: '🔮', desc: '立课如风，当下见机' },
+  { name: '子平格局派', peak: '藏剑峰', Glyph: ScrollText, desc: '格局立论，纲举目张' },
+  { name: '三命通会派', peak: '通会峰', Glyph: BookOpen, desc: '博览群书，融会贯通' },
+  { name: '神峰通考派', peak: '神峰', Glyph: Compass, desc: '考据精严，实务见长' },
+  { name: '渊海子平派', peak: '渊海峰', Glyph: Waves, desc: '古法真传，渊深如海' },
+  { name: '盲派', peak: '听风峰', Glyph: Eye, desc: '耳闻断事，快剑无影' },
+  { name: '千里命稿派', peak: '千里峰', Glyph: Fan, desc: '老练江湖，火候十足' },
+  { name: '金口诀', peak: '口诀峰', Glyph: Sparkles, desc: '立课如风，当下见机' },
 ]
 
-const MODES: Array<{ key: JianluMode; title: string; sub: string; desc: string; badge: string; ready: boolean }> = [
-  { key: 'arena', title: '打擂闯关', sub: '主线 · 金标裁判', desc: '七大门派各守一关，每关三题断命要点——连过七关，登顶华山。', badge: '闯', ready: true },
-  { key: 'duel', title: '同盘对断', sub: '竞技 · 高手过招', desc: '系统出一盘，你与门派高手同台对断，金标定胜负——胜负留榜。', badge: '断', ready: true },
-  { key: 'debate', title: '论道斗法', sub: '沉浸 · 三回合攻防', desc: '与门派高手当面论命，三回合问答——被问倒即败，问倒对方即胜。', badge: '论', ready: false },
+const MODES: Array<{ key: JianluMode; title: string; sub: string; desc: string; badge: string; ready: boolean; Glyph: typeof Swords }> = [
+  { key: 'arena', title: '打擂闯关', sub: '主线 · 金标裁判', desc: '七大门派各守一关，每关三题断命要点——连过七关，登顶华山。', badge: '闯', Glyph: Swords, ready: true },
+  { key: 'duel', title: '同盘对断', sub: '竞技 · 高手过招', desc: '系统出一盘，你与门派高手同台对断，金标定胜负——胜负留榜。', badge: '断', Glyph: Eye, ready: true },
+  { key: 'debate', title: '论道斗法', sub: '沉浸 · 三回合攻防', desc: '与门派高手当面论命，三回合问答——被问倒即败，问倒对方即胜。', badge: '论', Glyph: Sparkles, ready: false },
 ]
 
 export default function JianluPage() {
@@ -151,8 +152,8 @@ export default function JianluPage() {
                   : 'cursor-default border-golddim/15 bg-silk2/30'
               }`}
             >
-              <span className="pointer-events-none absolute -right-3 -top-4 font-serif text-[76px] leading-none text-gold/[0.06]">
-                {m.badge}
+              <span className="pointer-events-none absolute -right-4 -top-4 text-gold/[0.07]">
+                <m.Glyph className="h-20 w-20" strokeWidth={0.8} />
               </span>
               <p className="font-serif text-[20px] font-bold tracking-[0.14em] text-inktext">{m.title}</p>
               <p className="mt-1 text-[10.5px] tracking-[0.2em] text-golddim">{m.sub}</p>
@@ -173,24 +174,43 @@ export default function JianluPage() {
         >
           <p className="text-center text-[11px] tracking-[0.3em] text-golddim">七峰守关</p>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-7">
-            {GATES.map((g, i) => (
-              <div
-                key={g.name}
-                className={`rounded-xl border px-3 py-4 text-center transition-all ${
-                  i < r.gatesCleared
-                    ? 'border-gold/50 bg-gold/[0.08]'
-                    : i === r.gatesCleared
-                      ? 'border-gold/40 bg-gold/[0.04]'
-                      : 'border-golddim/20 bg-silk2/40'
-                }`}
-              >
-                <p className="text-[19px]">{g.glyph}</p>
-                <p className="mt-1.5 text-[11px] leading-tight tracking-[0.04em] text-silktext">{g.name}</p>
-                <p className="mt-0.5 text-[9px] tracking-[0.12em] text-inkfaint">
-                  {i < r.gatesCleared ? '已破' : i === r.gatesCleared ? '下一战' : '未至'}
-                </p>
-              </div>
-            ))}
+            {GATES.map((g, i) => {
+              const state = i < r.gatesCleared ? 'cleared' : i === r.gatesCleared ? 'next' : 'locked'
+              return (
+                <div
+                  key={g.name}
+                  className={`relative overflow-hidden rounded-xl border px-3 py-5 text-center transition-all duration-300 ${
+                    state === 'cleared'
+                      ? 'border-gold/55 bg-gradient-to-b from-gold/[0.12] to-gold/[0.04]'
+                      : state === 'next'
+                        ? 'border-gold/70 bg-gradient-to-b from-gold/[0.16] to-gold/[0.06] shadow-[0_0_26px_rgba(201,164,92,0.18)]'
+                        : 'border-golddim/25 bg-silk2/60'
+                  }`}
+                >
+                  <g.Glyph
+                    className={`mx-auto h-5 w-5 ${
+                      state === 'locked' ? 'text-silkmuted/70' : 'text-goldbright'
+                    }`}
+                    strokeWidth={1.5}
+                  />
+                  <p className={`mt-2 text-[11.5px] leading-tight tracking-[0.04em] ${
+                    state === 'locked' ? 'text-silkmuted' : 'text-silktext'
+                  }`}>{g.name}</p>
+                  <p className={`mt-1.5 text-[11px] tracking-[0.14em] ${
+                    state === 'cleared'
+                      ? 'text-golddim'
+                      : state === 'next'
+                        ? 'font-serif font-bold text-goldbright'
+                        : 'text-inkfaint'
+                  }`}>
+                    {state === 'cleared' ? '已破' : state === 'next' ? '下一战' : '未至'}
+                  </p>
+                  {state === 'next' && (
+                    <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold to-transparent" />
+                  )}
+                </div>
+              )
+            })}
           </div>
         </motion.div>
 

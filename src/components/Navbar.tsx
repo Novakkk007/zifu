@@ -6,18 +6,17 @@ import { useAuth } from '@/hooks/useAuth'
 import BrandLogo from '@/components/BrandLogo'
 
 /** 藏 · 收纳低频（三层·阁——不占门面，深处寻访） */
-const YAN_MENU: { group: '典籍 · 藏' | '术数 · 藏'; items: { to: string; label: string }[] }[] = [
+const YAN_MENU: { group: '宝' | '术' | '藏经阁'; items: { to: string; label: string }[] }[] = [
   {
-    group: '典籍 · 藏',
+    group: '藏经阁',
     items: [
-      { to: '/wiki', label: '藏经阁（含五运六气）' },
+      { to: '/wiki', label: '典藏电子书' },
       { to: '/daily', label: '今日盘' },
-      { to: '/toolkit', label: '百宝袋' },
       { to: '/column', label: '先生专栏' },
     ],
   },
   {
-    group: '术数 · 藏',
+    group: '术',
     items: [
       { to: '/ziwei', label: '紫微斗数' },
       { to: '/daliuren', label: '大六壬' },
@@ -25,6 +24,12 @@ const YAN_MENU: { group: '典籍 · 藏' | '术数 · 藏'; items: { to: string;
       { to: '/bazi/hepan', label: '八字合盘' },
       { to: '/scenario/fengshui', label: '风水参详' },
       { to: '/hecan', label: '三术合参' },
+    ],
+  },
+  {
+    group: '宝',
+    items: [
+      { to: '/toolkit', label: '百宝袋' },
     ],
   },
 ]
@@ -121,7 +126,7 @@ export default function Navbar() {
                 }
               }}
             >
-              藏经阁
+              藏宝阁
               <ChevronDown
                 className={cn('h-3.5 w-3.5 transition-transform', dropOpen && 'rotate-180')}
               />
@@ -130,7 +135,7 @@ export default function Navbar() {
                 <div className="absolute left-1/2 top-full w-40 -translate-x-1/2 animate-in fade-in slide-in-from-top-2 pt-3 duration-150">
                   <div
                     role="menu"
-                    aria-label="藏"
+                    aria-label="藏宝阁"
                     className="overflow-hidden rounded-xl border border-gold/20 bg-deep3 shadow-card"
                     onKeyDown={(e) => {
                       // 方向键在菜单项间移动
