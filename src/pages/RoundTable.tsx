@@ -346,7 +346,7 @@ export default function RoundTablePage() {
           {result.opening && (
             <div className="mx-auto max-w-2xl rounded-2xl border border-golddim/30 bg-silk2 p-5 text-center shadow-card">
               <p className="font-serif text-[13px] font-bold tracking-[0.18em] text-golddim">先生开场</p>
-              <p className="mt-2 whitespace-pre-line font-serif text-[14.5px] leading-[2] text-inktext">
+              <p className="mt-2 whitespace-pre-line font-serif text-[14.5px] leading-[2] text-inktext [overflow-wrap:anywhere]">
                 {result.opening}
               </p>
             </div>
@@ -387,7 +387,7 @@ export default function RoundTablePage() {
                     </span>
                   </div>
                   <span className="text-[12px] text-inkmuted">{meta?.school}</span>
-                  <p className="mt-1.5 line-clamp-3 text-[12px] leading-[1.7] text-inktext">
+                  <p className="mt-1.5 line-clamp-3 text-[12px] leading-[1.7] text-inktext [overflow-wrap:anywhere]">
                     {seat.content}
                   </p>
                   <button
@@ -420,7 +420,7 @@ export default function RoundTablePage() {
                         {f.busy ? "思量中……" : "深谈"}
                       </button>
                       {f.reply && (
-                        <p className="mt-1.5 whitespace-pre-line text-[12px] leading-[1.7] text-inkmuted">
+                        <p className="mt-1.5 whitespace-pre-line text-[12px] leading-[1.7] text-inkmuted [overflow-wrap:anywhere]">
                           {f.reply}
                         </p>
                       )}
@@ -438,12 +438,12 @@ export default function RoundTablePage() {
               const f = followUp[i];
               if (i >= 2 && !mobileExpanded) return null;
               return (
-                <div key={seat.school} className="rounded-2xl border border-golddim/20 bg-silk2 p-4 shadow-card">
+                <div key={seat.school} className="min-w-0 rounded-2xl border border-golddim/20 bg-silk2 p-4 shadow-card">
                   <span className="font-serif text-[14px] font-bold tracking-[0.1em] text-golddim">
                     第{i + 1}席 · {seat.school}
                   </span>
                   <span className="ml-2 text-[12px] text-inkmuted">{meta?.school}</span>
-                  <p className="mt-2 whitespace-pre-line font-serif text-[13px] leading-[1.85] text-inktext">
+                  <p className="mt-2 whitespace-pre-line font-serif text-[13px] leading-[1.85] text-inktext [overflow-wrap:anywhere]">
                     {seat.content}
                   </p>
                   <button
@@ -476,7 +476,7 @@ export default function RoundTablePage() {
                         {f.busy ? "思量中……" : "深谈"}
                       </button>
                       {f.reply && (
-                        <p className="mt-1.5 whitespace-pre-line text-[12px] leading-[1.75] text-inkmuted">
+                        <p className="mt-1.5 whitespace-pre-line text-[12px] leading-[1.75] text-inkmuted [overflow-wrap:anywhere]">
                           {f.reply}
                         </p>
                       )}
@@ -501,14 +501,14 @@ export default function RoundTablePage() {
               <p className="font-serif text-[14px] font-bold tracking-[0.14em] text-golddim">
                 共识与分歧
               </p>
-              <p className="mt-3 whitespace-pre-line text-[13.5px] leading-[1.9] text-inktext">
+              <p className="mt-3 whitespace-pre-line text-[13.5px] leading-[1.9] text-inktext [overflow-wrap:anywhere]">
                 {result.consensus}
               </p>
             </div>
           )}
           {result.closing && (
             <div className="mt-4 rounded-2xl border border-golddim/15 bg-silk p-5 text-center">
-              <p className="font-serif text-[13.5px] leading-[1.9] text-inktext">{result.closing}</p>
+              <p className="font-serif text-[13.5px] leading-[1.9] text-inktext [overflow-wrap:anywhere]">{result.closing}</p>
               <p className="mt-2 text-[12px] tracking-[0.2em] text-inkmuted">—— 先生收束</p>
             </div>
           )}
