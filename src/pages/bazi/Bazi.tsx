@@ -178,7 +178,7 @@ export default function Bazi() {
 
       {/* 深 → 浅过渡带 */}
       <div
-        className="h-40"
+        className="h-32 md:h-40"
         style={{
           background:
             "linear-gradient(to bottom, rgb(var(--deep)), rgb(var(--silk)))",
