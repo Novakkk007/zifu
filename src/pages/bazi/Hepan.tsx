@@ -170,14 +170,14 @@ export default function Hepan() {
 
   /* 总评数字 count-up */
   useEffect(() => {
-    if (!report) return
+    if (!report || reduce) return
     const controls = animate(0, overall, {
       duration: 1.2,
       ease: 'easeOut',
       onUpdate: (v) => setDisplayScore(Math.round(v)),
     })
     return () => controls.stop()
-  }, [report, overall])
+  }, [report, overall, reduce])
 
   const submit = () => {
     setResult(null)
@@ -197,7 +197,7 @@ export default function Hepan() {
 
       {/* 深 → 浅过渡带 */}
       <div
-        className="h-40"
+        className="h-32 md:h-40"
         style={{ background: 'linear-gradient(to bottom, rgb(var(--deep)), rgb(var(--silk)))' }}
       />
 
@@ -236,8 +236,8 @@ export default function Hepan() {
             className="absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 lg:block"
           >
             <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
+              animate={reduce ? { rotate: 0 } : { rotate: 360 }}
+              transition={reduce ? { duration: 0 } : { duration: 5, repeat: Infinity, ease: 'linear' }}
               className="flex h-12 w-12 items-center justify-center rounded-full border border-gold bg-deep shadow-card"
             >
               <span className="font-serif text-[20px] font-black text-goldbright">合</span>
@@ -353,7 +353,7 @@ export default function Hepan() {
 
                   <div className="mt-6 flex items-center justify-center gap-5 border-t border-golddim/20 pt-5">
                     <span className="font-serif text-[56px] font-black leading-none text-golddim">
-                      {displayScore}
+                      {reduce ? overall : displayScore}
                     </span>
                     <div>
                       <p className="text-[12px] tracking-[0.16em] text-inkmuted">总评 · 五维加权</p>
