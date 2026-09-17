@@ -1,0 +1,1 @@
+function o(c,t){if(typeof document>"u")return;document.title=c;const n=document.querySelector('meta[name="description"]');if(n)n.setAttribute("content",t);else{const e=document.createElement("meta");e.name="description",e.content=t,document.head.appendChild(e)}}export{o as s};

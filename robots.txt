@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /profile
+Disallow: /account
+
+Sitemap: https://zifu.pages.dev/sitemap.xml
