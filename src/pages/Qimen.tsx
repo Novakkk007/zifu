@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import PageHero from '@/components/sanshi/PageHero'
 import SectionHeading from '@/components/SectionHeading'
 import QuoteStrip from '@/components/QuoteStrip'
@@ -306,6 +306,7 @@ export default function Qimen() {
   const [ysIdx, setYsIdx] = useState(0)
   const [favoriteStatus, setFavoriteStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const plateRef = useRef<HTMLElement | null>(null)
+  const reduce = useReducedMotion()
 
   // 浏览器直跑引擎（静态托管无后端）；返回形状与 trpc.qimen.qiju 一致
   const qiju = useEngine(qijuQimen, {
@@ -384,7 +385,7 @@ export default function Qimen() {
         pool={HERO_POOL}
       />
 
-      <div className="zf-fade-to-silk h-[180px]" />
+      <div className="zf-fade-to-silk h-[148px] md:h-[180px]" />
 
       {/* 真实算法标注：拆补法 · validated */}
       <div role="note" className="zf-container pt-5">
@@ -611,9 +612,9 @@ export default function Qimen() {
                       return (
                         <motion.div
                           key={`${runId}-${ysIdx}-${num}`}
-                          animate={active ? { opacity: [1, 0.35, 1] } : { opacity: 1 }}
+                          animate={active && !reduce ? { opacity: [1, 0.35, 1] } : { opacity: 1 }}
                           transition={
-                            active ? { duration: 1.6, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }
+                            active && !reduce ? { duration: 1.6, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }
                           }
                           className={cn(
                             'flex aspect-square flex-col items-center justify-center rounded-md border text-center',
