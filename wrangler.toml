@@ -5,3 +5,7 @@ compatibility_date = "2025-01-01"
 [[kv_namespaces]]
 binding = "ZIFU_BOARD"
 id = "9fc69be93f004f91a009fa0ce1ff1c1b"
+
+[[kv_namespaces]]
+binding = "AI_PROXY_KV"
+id = "dc47252154a444c2b6f093cc45989781"
