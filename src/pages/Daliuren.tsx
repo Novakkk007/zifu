@@ -346,7 +346,7 @@ export default function Daliuren() {
         pool={HERO_POOL}
       />
 
-      <div className="zf-fade-to-silk h-[180px]" />
+      <div className="zf-fade-to-silk h-[148px] md:h-[180px]" />
 
       {/* ===== S2 · 起课表单 ===== */}
       <section className="relative bg-silk pb-24 pt-4">
@@ -357,7 +357,7 @@ export default function Daliuren() {
             title="起 课"
             sub="心中有事，起一课参详——默认此时此刻，也可自定时刻"
           />
-          <div className="mt-12 w-full max-w-[680px] rounded-xl border border-golddim/25 bg-silk2 p-4 shadow-card sm:p-8 md:p-10">
+          <div className="mt-8 w-full max-w-[680px] rounded-xl border border-golddim/25 bg-silk2 p-4 shadow-card sm:mt-12 sm:p-8 md:p-10">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
               <FormSelect label="起课年" value={year} onChange={(e) => setYear(e.target.value)}>
                 {YEARS.map((y) => (
