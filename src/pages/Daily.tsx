@@ -851,7 +851,7 @@ export default function Daily() {
       </PageHero>
 
       {/* 深 → 浅 过渡 */}
-      <div className="zf-fade-to-silk h-[160px]" />
+      <div className="zf-fade-to-silk h-[128px] md:h-[160px]" />
 
       {/* 真实度标注：干支/建除/宜忌/时柱/节气已接 daily-core；农历近似；「今日与你·逐日详参」仍为演示 */}
       <FeatureStatusBadge
