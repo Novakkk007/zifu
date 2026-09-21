@@ -24,6 +24,9 @@ coverage/
 # Logs
 *.log
 
+# Local secrets (never commit)
+functions/api/_xskey.ts
+
 # Playwright
 playwright-report/
 test-results/
