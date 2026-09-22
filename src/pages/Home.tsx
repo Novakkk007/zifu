@@ -52,7 +52,7 @@ export default function Home() {
       />
       {/* 漂移光斑已清场（总纲P0：同视口循环运动≤1，呼吸光为唯一常驻光源） */}
 
-      <div className="zf-container relative z-10 flex min-h-screen flex-col items-center justify-center py-20">
+      <div className="zf-container relative z-10 flex min-h-screen flex-col items-center justify-center py-14 md:py-20">
         {/* 门额 */}
         <motion.div
           initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16 }}
@@ -88,7 +88,7 @@ export default function Home() {
           initial={reduce ? { opacity: 0 } : { opacity: 0, y: 22 }}
           animate={{ opacity: entered ? 1 : 0, y: entered ? 0 : 22 }}
           transition={{ duration: 0.9, delay: 0.9 }}
-          className="mt-12 grid w-full max-w-[720px] grid-cols-1 gap-5 sm:grid-cols-5"
+          className="mt-8 sm:mt-12 grid w-full max-w-[720px] grid-cols-1 gap-5 sm:grid-cols-5"
         >
           {/* 主入口 · 六爻 */}
           <Link
@@ -148,7 +148,7 @@ export default function Home() {
           initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: entered ? 1 : 0 }}
           transition={{ duration: 1.2, delay: 2.2 }}
-          className="mt-12 flex flex-col items-center gap-1.5 text-golddim/70"
+          className="mt-8 sm:mt-12 flex flex-col items-center gap-1.5 text-golddim/70"
         >
           <span className="text-[12px] tracking-[0.3em] text-inkmuted">往下看</span>
           <span aria-hidden className="block h-8 w-px animate-pulse bg-gradient-to-b from-gold/60 to-transparent" />
@@ -159,7 +159,7 @@ export default function Home() {
           initial={reduce ? { opacity: 0 } : { opacity: 0 }}
           animate={{ opacity: entered ? 1 : 0 }}
           transition={{ duration: 1.4, delay: 1.5 }}
-          className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3"
+          className="mt-10 sm:mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3"
         >
           {TRUST_VERSE.map((v) => (
             <span key={v.line} className="flex items-baseline gap-2 font-serif">
