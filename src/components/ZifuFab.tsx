@@ -55,7 +55,7 @@ export default function ZifuFab() {
   }
 
   return (
-    <div ref={rootRef} className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-[70] flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
+    <div ref={rootRef} className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] right-4 z-[70] flex flex-col items-end gap-3 sm:right-6 md:bottom-6">
       {/* 气泡提示 */}
       {bubble && !menuOpen && (
           <div className="animate-in max-w-[76vw] rounded-xl border border-gold/30 bg-deep2 px-4 py-2.5 shadow-card fade-in slide-in-from-bottom-2 zoom-in-95 duration-300">
