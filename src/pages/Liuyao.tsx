@@ -238,7 +238,7 @@ export default function Liuyao() {
         </div>
       </section>
 
-      <div className="zf-fade-to-deep h-40 rotate-180" />
+      <div className="zf-fade-to-deep h-32 md:h-40 rotate-180" />
 
       {/* 全站统一真实度标注：已验证算法（服务端真实起卦，非演示） */}
       <div role="note" className="zf-container pt-5">
