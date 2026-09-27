@@ -4,6 +4,7 @@ import { GhostButton, GoldButton } from '@/components/Buttons'
 import YaoLine from '@/components/liuyao/YaoLine'
 import type { Toss } from '@/components/liuyao/logic'
 import { YAO_NAMES, yaoLabel } from '@/components/liuyao/logic'
+import { getMotionTier, reportFrameRate, sampleFrames, useMotionTier } from '@/lib/motion-tier'
 import { cn } from '@/lib/utils'
 
 /* ============================================================
@@ -12,6 +13,7 @@ import { cn } from '@/lib/utils'
  * 铜钱：三轴翻滚 + 腾空抛物线 + 落地冲击环 / 金火星
  * 爻位：落爻金光扫过、下一爻位提示、成卦脉冲
  * 约束：仅 transform/opacity 动画，无新增依赖
+ * 分级：lite 档（低端/掉帧设备）关闭无限循环与高密度特效
  * ============================================================ */
 
 const TRIGRAMS = ['☰', '☱', '☲', '☳', '☴', '☵', '☶', '☷'] as const
@@ -30,6 +32,7 @@ function safeVibrate(ms: number) {
 /** 八卦罗盘：铜钱幕后天盘（常时缓转，摇卦时加速 + 漩涡） */
 function BaguaRing({ tossing, spin }: { tossing: boolean; spin: number }) {
   const reduce = useReducedMotion()
+  const lite = useMotionTier()
   return (
     <div
       aria-hidden
@@ -52,7 +55,7 @@ function BaguaRing({ tossing, spin }: { tossing: boolean; spin: number }) {
             background:
               'conic-gradient(from 0deg, transparent 0deg, rgb(var(--gold-bright) / 0.45) 52deg, transparent 118deg, transparent 180deg, rgb(var(--gold-bright) / 0.36) 250deg, transparent 312deg)',
           }}
-          animate={{ opacity: tossing ? 0.9 : 0 }}
+          animate={{ opacity: tossing && !lite ? 0.9 : 0 }}
           transition={{ duration: 0.35 }}
         />
         {/* 中圈虚线 */}
@@ -89,7 +92,7 @@ function BaguaRing({ tossing, spin }: { tossing: boolean; spin: number }) {
                     style={{ textShadow: '0 0 16px rgb(var(--gold-bright) / 0.95), 0 0 4px rgb(255 246 216 / 0.8)' }}
                     initial={{ opacity: 0, scale: 0.7 }}
                     animate={{ opacity: [0, 1, 0], scale: [0.7, 1.4, 1.05] }}
-                    transition={reduce ? { duration: 0.15, delay: 0 } : { duration: 0.55, delay: 0.78 + i * 0.045, times: [0, 0.3, 1] }}
+                    transition={reduce || lite ? { duration: 0.15, delay: 0 } : { duration: 0.55, delay: 0.78 + i * 0.045, times: [0, 0.3, 1] }}
                   >
                     {t}
                   </motion.span>
@@ -116,6 +119,7 @@ function Coin({
   tossing: boolean
 }) {
   const reduce = useReducedMotion()
+  const lite = useMotionTier()
   const reveal = face === 'bei' ? 180 : 0
   const rotY = spin * 1080 + index * 360 + reveal
   const dir = spin % 2 === 0 ? 1 : -1
@@ -159,8 +163,8 @@ function Coin({
         aria-hidden
         className="absolute -inset-2 rounded-full"
         style={{ background: 'radial-gradient(circle, rgb(var(--gold-bright) / 0.4) 0%, transparent 66%)' }}
-        animate={!tossing && spin > 0 && !reduce ? { opacity: [0, 0.42, 0] } : { opacity: 0 }}
-        transition={!tossing && spin > 0 && !reduce ? { duration: 3.4, repeat: Infinity, delay: index * 0.35 } : { duration: 0.3 }}
+        animate={!tossing && spin > 0 && !reduce && !lite ? { opacity: [0, 0.42, 0] } : { opacity: 0 }}
+        transition={!tossing && spin > 0 && !reduce && !lite ? { duration: 3.4, repeat: Infinity, delay: index * 0.35 } : { duration: 0.3 }}
       />
       {/* 落地影 */}
       <motion.div
@@ -213,20 +217,20 @@ function Coin({
 /** 落地冲击层：中央闪光 + 三环冲击波 + 金火星（每次摇卦重放） */
 function ImpactBurst() {
   const reduce = useReducedMotion()
-  const sparks = useMemo(
-    () =>
-      Array.from({ length: 30 }, (_, i) => {
-        const angle = (i / 30) * Math.PI * 2 + (i % 3) * 0.18
-        const dist = 56 + ((i * 31) % 56)
-        return {
-          x: Math.cos(angle) * dist,
-          y: Math.sin(angle) * dist * 0.62 + 6,
-          size: 3 + (i % 6),
-          delay: 0.8 + (i % 5) * 0.02,
-        }
-      }),
-    [],
-  )
+  const lite = useMotionTier()
+  const sparks = useMemo(() => {
+    const count = lite ? 10 : 30
+    return Array.from({ length: count }, (_, i) => {
+      const angle = (i / count) * Math.PI * 2 + (i % 3) * 0.18
+      const dist = 56 + ((i * 31) % 56)
+      return {
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist * 0.62 + 6,
+        size: 3 + (i % 6),
+        delay: 0.8 + (i % 5) * 0.02,
+      }
+    })
+  }, [lite])
   if (reduce) return null
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 z-20">
@@ -262,7 +266,7 @@ function ImpactBurst() {
           transition={{ duration: 0.5, delay: 0.76 + i * 0.05, ease: 'easeOut' }}
         />
       ))}
-      {[16.7, 50, 83.3].map((left, i) => (
+      {!lite && [16.7, 50, 83.3].map((left, i) => (
         <motion.span
           key={'w2-' + left}
           className="absolute top-1/2 h-16 w-16 rounded-full border border-gold/70"
@@ -281,7 +285,7 @@ function ImpactBurst() {
         transition={{ duration: 0.6, delay: 0.78, ease: 'easeOut' }}
       />
       {/* 地面冲击线 */}
-      {[16.7, 50, 83.3].map((left, i) => (
+      {!lite && [16.7, 50, 83.3].map((left, i) => (
         <motion.span
           key={'streak-' + left}
           className="absolute top-1/2 h-[3px] w-24 rounded-full bg-[#F7E7AA]/90"
@@ -325,6 +329,7 @@ type CoinTossProps = {
 /** S2 · 摇卦交互：三枚铜钱 × 六摇 + 爻位堆栈（自下而上） */
 export default function CoinToss({ tosses, coins, spin, tossing, onToss, onReset, onReveal }: CoinTossProps) {
   const reduce = useReducedMotion()
+  const lite = useMotionTier()
   const done = tosses.length >= 6
 
   // 落定瞬间的轻震（与冲击层同拍）
@@ -333,6 +338,13 @@ export default function CoinToss({ tosses, coins, spin, tossing, onToss, onReset
     const t = window.setTimeout(() => safeVibrate(22), 780)
     return () => window.clearTimeout(t)
   }, [spin, reduce])
+
+  // 帧率分级：摇卦负载期间采样；均帧 <50fps 永久降档 lite（低端移动端初始化时已静态降档）
+  useEffect(() => {
+    if (!tossing || reduce || getMotionTier() === 'lite') return
+    const stop = sampleFrames()
+    return () => reportFrameRate(stop())
+  }, [tossing, reduce])
 
   return (
     <div className="flex flex-col items-center gap-12 lg:flex-row lg:items-start lg:justify-center lg:gap-20">
@@ -359,8 +371,8 @@ export default function CoinToss({ tosses, coins, spin, tossing, onToss, onReset
               <motion.span
                 aria-hidden
                 className="pointer-events-none absolute inset-0 rounded-full border border-goldbright/60"
-                animate={reduce ? { opacity: 0 } : { scale: [1, 1.45], opacity: [0.6, 0] }}
-                transition={reduce ? { duration: 0.2 } : { duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
+                animate={reduce || lite ? { opacity: 0 } : { scale: [1, 1.45], opacity: [0.6, 0] }}
+                transition={reduce || lite ? { duration: 0.2 } : { duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
               />
               <GoldButton onClick={onReveal} className="animate-gold-breathe">
                 成卦 · 参看
@@ -372,8 +384,8 @@ export default function CoinToss({ tosses, coins, spin, tossing, onToss, onReset
                 <motion.span
                   aria-hidden
                   className="pointer-events-none absolute inset-0 rounded-full border border-goldbright/50"
-                  animate={reduce ? { opacity: 0 } : { scale: [1, 1.4], opacity: [0.5, 0] }}
-                  transition={reduce ? { duration: 0.2 } : { duration: 1.8, repeat: Infinity, ease: 'easeOut' }}
+                  animate={reduce || lite ? { opacity: 0 } : { scale: [1, 1.4], opacity: [0.5, 0] }}
+                  transition={reduce || lite ? { duration: 0.2 } : { duration: 1.8, repeat: Infinity, ease: 'easeOut' }}
                 />
               )}
               <GoldButton
