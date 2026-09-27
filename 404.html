@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>紫府 · 正在跳转</title>
+  <script>
+    // GitHub Pages SPA fallback：把访问路径暂存，跳回入口后由 SPA 恢复路由
+    (function () {
+      var base = '/zifu/';
+      var path = location.pathname;
+      if (path.indexOf(base) === 0) {
+        var rest = path.slice(base.length);
+        if (rest && rest !== 'index.html') {
+          sessionStorage.setItem('zifu:redirect', rest);
+        }
+      }
+      location.replace(base);
+    })();
+  </script>
+</head>
+<body style="background:#0d0a1e;color:#e8e2d4;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
+  <p>正在前往紫府…</p>
+</body>
+</html>
