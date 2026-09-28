@@ -237,8 +237,8 @@ function WuxingStrip({ stem, branch }: { stem: DayStem; branch: string }) {
     <Reveal className="mx-auto mt-6 w-full max-w-[960px]">
       <div className="flex flex-col items-center gap-4 rounded-xl border border-golddim/25 bg-silk2 px-7 py-5 sm:flex-row sm:justify-between">
         <div className="flex items-center gap-3">
-          {els.map((el) => (
-            <span key={el} className="flex items-center gap-1.5">
+          {els.map((el, i) => (
+            <span key={`${el}-${i}`} className="flex items-center gap-1.5">
               <span
                 className="h-4 w-4 rounded-full border border-inktext/10"
                 style={{ backgroundColor: WUXING_SWATCH[el] }}
@@ -929,7 +929,7 @@ export default function Daily() {
       </section>
 
       {/* 浅 → 深 过渡 */}
-      <div className="zf-fade-to-deep h-[160px]" />
+      <div className="zf-fade-to-deep h-[128px] md:h-[160px]" />
 
       {/* S5 · 合本命（深色） */}
       <section className="bg-deep2 py-24">

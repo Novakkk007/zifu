@@ -56,7 +56,6 @@ describe("大六壬金标：公版原文 ↔ 引擎常量", () => {
     const bad: string[] = [];
     let idx = 0;
     for (const c of clauses) {
-      const stemPart = [...c.slice(0, 2)];
       const branch = c[2];
       if (idx === 0) {
         // 「甲课寅兮乙课辰」一 clause 两干
