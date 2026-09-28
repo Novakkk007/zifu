@@ -11,8 +11,17 @@ export type Precision = 'validated' | 'approximate' | 'demo';
 export interface RuleProvenance {
   ruleId: string;
   variant: string;
-  /** 传统出处（仅后台保留） */
+  /** 传统出处（仅后台保留）。注意：本字段为「出处+说明」合写，准确定义见 basis/quote/convention */
   source: string;
+  /**
+   * 依据性质（课题13b §4 可核对性缺口 → 规则化，见 masters-rules/citation-basis.ts）
+   * 原文=公版原文逐字照录；约定=算法约定/现代自述；混合=两者兼有
+   */
+  basis?: '原文' | '约定' | '混合';
+  /** basis 含「原文」时必填：逐字照录的原文句（供与公版语料对拍，防引文漂移） */
+  quote?: string;
+  /** basis 含「约定」时必填：算法约定说明（不得让读者以为出自原书） */
+  convention?: string;
 }
 
 export interface EngineMeta {

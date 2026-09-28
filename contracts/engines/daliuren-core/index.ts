@@ -33,6 +33,7 @@ import {
 } from '../../bazi-core/calendar'
 import type { Wuxing } from '../../bazi-core/types'
 import { wrapResult, type EngineResult, type RuleProvenance } from '../engine-result'
+import { applyCitationNotes } from '../masters-rules/citation-basis'
 
 export const DALIUREN_RULESET_VERSION = '1.0.0'
 export const DALIUREN_ALGORITHM_VERSION = 'daliuren-core@1.0.0'
@@ -504,14 +505,15 @@ export function dunGanOf(dayJiaziIdx: number, branchIdx: number): number | null 
   return offset <= 9 ? offset : null
 }
 
-const PROVENANCE: RuleProvenance[] = [
+// 依据分流（课题13b §4 可核对性缺口 → 规则化）：每条 source 标注 原文/约定/混合，并逐字留 quote
+const PROVENANCE: RuleProvenance[] = applyCitationNotes([
   { ruleId: 'daliuren.yuejiang.zhongqi', variant: DALIUREN_RULE_VARIANT, source: `${SOURCE_DAQUAN}：太阳过宫，中气换将（雨水亥将登明……大寒子将神后）` },
   { ruleId: 'daliuren.tiandipan.jiashi', variant: DALIUREN_RULE_VARIANT, source: `${SOURCE_DAQUAN}：月将加占时，顺布十二辰成天盘` },
   { ruleId: 'daliuren.sike.jigong', variant: DALIUREN_RULE_VARIANT, source: `${SOURCE_DAQUAN}：十干寄宫歌「甲课寅兮乙课辰……」；干上神为一二课，支上神为三四课` },
   { ruleId: 'daliuren.sanchuan.jiuzongmen', variant: DALIUREN_RULE_VARIANT, source: `${SOURCE_DAQUAN}课经九宗门：贼克、比用、涉害、遥克、昴星、别责、八专、伏吟、返吟` },
   { ruleId: 'daliuren.tianjiang.guiren', variant: DALIUREN_RULE_VARIANT, source: `${SOURCE_DAQUAN}贵人诀「甲戊庚牛羊、乙己鼠猴乡、丙丁猪鸡位、壬癸兔蛇藏、六辛逢马虎」；贵人居天门（亥至辰）顺行、居地户（巳至戌）逆行` },
   { ruleId: 'daliuren.liuqin.dungan', variant: DALIUREN_RULE_VARIANT, source: `${SOURCE_ZHINAN}：六亲生克以日干五行为纲；遁干依旬遁（旬首起甲子）` },
-]
+])
 
 /**
  * 大六壬起课主函数：公历时刻（+可选 IANA 时区）→ 完整课传。

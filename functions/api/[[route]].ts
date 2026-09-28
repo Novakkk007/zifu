@@ -4,12 +4,61 @@
  * 逻辑同 zifu-ai-proxy Worker；先生 key 存 Pages secret（前端零 key）
  * 端点：POST /api/guest-reading | /api/roundtable | /api/guanzhao；GET /api/stats
  */
-const KIMI_URL = 'https://api.moonshot.cn/v1/chat/completions'
-const MODEL = 'kimi-k2.6'
+/* ================ 供应商配置（S1）================
+ * 铁律：地址 / 模型 / 密钥必须同源，禁止跨供应商混用；
+ *       密钥缺失时报明确的配置错误，绝不回退到别家密钥、也绝不静默换模型。
+ * DeepSeek 现行模型 ID：deepseek-flash（V4.1-Flash）、deepseek-v4-pro（V4-Pro）；
+ *   旧名 deepseek-chat / deepseek-reasoner 已于 2026-07-24 停用，不得沿用。
+ * 模型可经环境变量覆盖（集中管理，不在源码散落多份）。
+ */
+interface ProviderCfg {
+  url: string
+  model: string
+  /**
+   * 同源密钥候选名（按序取第一个有值的）。
+   * 只允许同一供应商的变量名，绝不跨供应商回退（DeepSeek 的请求永远只带 DeepSeek 的 key）。
+   */
+  keyNames: string[]
+  /** 是否支持 temperature 参数（kimi-k2.6 思考模型不支持，传了会报错） */
+  supportsTemperature: boolean
+}
+
+const PROVIDERS: Record<'deepseek' | 'moonshot', ProviderCfg> = {
+  deepseek: {
+    url: 'https://api.deepseek.com/chat/completions',
+    model: 'deepseek-v4-pro',
+    keyNames: ['DEEPSEEK_XIANSHENG_KEY', 'DEEPSEEK_API_KEY'],
+    supportsTemperature: true,
+  },
+  moonshot: {
+    url: 'https://api.moonshot.cn/v1/chat/completions',
+    model: 'kimi-k2.6',
+    keyNames: ['KIMI_MR_KEY'],
+    supportsTemperature: false,
+  },
+}
+
+/** 路由 → 供应商（本轮仅 guest-reading 切 DeepSeek；圆桌/观照保持既有 Moonshot 行为不变） */
+const ROUTE_PROVIDER: Record<string, 'deepseek' | 'moonshot'> = {
+  'guest-reading': 'deepseek',
+  roundtable: 'moonshot',
+  guanzhao: 'moonshot',
+}
+
+function providerFor(kind: string, env: Env): ProviderCfg | null {
+  const name = ROUTE_PROVIDER[kind]
+  if (!name) return null
+  const base = PROVIDERS[name]
+  const override = name === 'deepseek' ? env.DEEPSEEK_MODEL : undefined
+  return { ...base, model: override && override.trim() ? override.trim() : base.model }
+}
 
 const SYSTEM: Record<string, string> = {
   'guest-reading':
-    '你是紫府的先生：通晓命理典籍，温和如春风，有分寸，无论如何给访客希望。逐句引经，法度示人。',
+    '你是紫府的先生。语气温厚、简明、有分寸，始终给访客希望与准备。' +
+    '你只负责解释服务端已核定好的盘面结构（四柱、十神、大运、流年、卦象等），不得重新推算四柱或大运，不得把结构关系说成必然发生的人生预测。' +
+    '只在确有可核对原文时引用典籍原句，否则明确说明这是通识解释，不得编造出处或书名页码。' +
+    '盘面缺少哪一项数据就照实说明缺哪一项，不要补造。不给医疗、法律、投资等专业结论。',
   roundtable:
     '你是紫府论命圆桌的主持人，通晓各家命理，温厚克制，绝不恐吓、绝不断言必然，始终给人希望与准备。',
   guanzhao:
@@ -18,7 +67,10 @@ const SYSTEM: Record<string, string> = {
 
 interface Env {
   DEEPSEEK_XIANSHENG_KEY?: string
+  DEEPSEEK_API_KEY?: string
   KIMI_MR_KEY?: string
+  /** 可选：覆盖 DeepSeek 模型 ID（集中管理；缺省用 PROVIDERS.deepseek.model） */
+  DEEPSEEK_MODEL?: string
   AI_PROXY_KV?: KVNamespace
   ZIFU_BOARD?: KVNamespace
 }
@@ -328,11 +380,20 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const d = dayKey()
   const ipKey = `ip:${d}:${ip}`
   const gKey = `global:${d}`
-  if (env.AI_PROXY_KV) {
+  if (!env.AI_PROXY_KV) {
+    /* S3：限流存储缺失 → 显式不可用，不静默无限放行 */
+    return new Response(JSON.stringify({ error: '服务未就绪（限流存储缺失）', code: 'RL_STORAGE_MISSING' }), {
+      status: 503,
+      headers: { ...cors, 'Content-Type': 'application/json' },
+    })
+  }
+  {
+    /* 注：此处为 KV 读改写近似计数（非原子），用于体验额度与防滥用；
+       它不是严格并发限额，也不构成计费依据（严格配额需原子机制，本版未做）。 */
     const ipCount = Number((await env.AI_PROXY_KV.get(ipKey)) ?? 0)
     const gCount = Number((await env.AI_PROXY_KV.get(gKey)) ?? 0)
     if (ipCount >= 30) {
-      return new Response(JSON.stringify({ error: '今日体验次数已用完（单设备 30 次），明日再来' }), {
+      return new Response(JSON.stringify({ error: '今日体验次数已用完（本线路 30 次），明日再来' }), {
         status: 429,
         headers: { ...cors, 'Content-Type': 'application/json' },
       })
@@ -356,63 +417,132 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       headers: { ...cors, 'Content-Type': 'application/json' },
     })
   }
-  const prompt = body.prompt ?? ''
-  if (!prompt || prompt.length > 8000) {
-    return new Response(JSON.stringify({ error: '内容长度不合法' }), {
+  /* S2：字段类型 + 长度双向校验（旧写法 `!prompt || prompt.length > 8000` 会漏过数字/对象等错误类型） */
+  const prompt = body.prompt
+  if (typeof prompt !== 'string' || prompt.trim().length === 0 || prompt.length > 8000) {
+    return new Response(JSON.stringify({ error: '内容不合法（需为 1–8000 字文本）', code: 'BAD_PROMPT' }), {
       status: 400,
       headers: { ...cors, 'Content-Type': 'application/json' },
     })
   }
 
-  const key = env.KIMI_MR_KEY ?? env.DEEPSEEK_XIANSHENG_KEY ?? ''
-  if (!key) {
-    return new Response(JSON.stringify({ error: '服务未就绪（密钥缺失）' }), {
+  /* S1：供应商同源解析——密钥缺失报明确配置错误，绝不回退别家密钥、不静默换模型 */
+  const provider = providerFor(kind, env)
+  if (!provider) {
+    return new Response(JSON.stringify({ error: '路由未配置供应商', code: 'NO_PROVIDER' }), {
       status: 500,
       headers: { ...cors, 'Content-Type': 'application/json' },
     })
   }
+  let key = ''
+  let usedKeyName = ''
+  for (const n of provider.keyNames) {
+    const v = (env as unknown as Record<string, string | undefined>)[n]
+    if (v) {
+      key = v
+      usedKeyName = n
+      break
+    }
+  }
+  const providerName = provider.keyNames[0] === 'KIMI_MR_KEY' ? 'moonshot' : 'deepseek'
+  if (!key) {
+    return new Response(
+      JSON.stringify({
+        error: '服务未就绪（先生凭据未配置）',
+        code: 'KEY_MISSING',
+        provider: providerName,
+        keyNames: provider.keyNames,
+      }),
+      { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  /* S2/S3：输出规模由服务端掌控（不信任前端 model / temperature / 上游地址） */
+  const MAX_TOKENS_CAP = 12000
+  const reqMax = Number(body.maxTokens)
+  const maxTokens = Number.isFinite(reqMax) && reqMax > 0 ? Math.min(Math.floor(reqMax), MAX_TOKENS_CAP) : 9000
+  const temperature = provider.supportsTemperature ? 0.8 : undefined
+
+  const requestId =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : 'req-' + Date.now().toString(36)
+  const startedAt = Date.now()
+  /* S3：脱敏日志——只记 requestId / 路由 / 供应商 / 模型 / 耗时 / 状态 / token；不记 key、完整生辰、完整私密提问 */
+  const logLine = (status: number, tokens: number, note?: string) => {
+    console.log(
+      JSON.stringify({ requestId, route: kind, provider: providerName, model: provider.model, keyName: usedKeyName, ms: Date.now() - startedAt, status, tokens, ...(note ? { note } : {}) })
+    )
+  }
+  const json = (payload: unknown, status = 200) =>
+    new Response(JSON.stringify(payload), {
+      status,
+      headers: { ...cors, 'Content-Type': 'application/json', 'X-Request-Id': requestId },
+    })
+
+  /* S3：上游超时 25s，超时给可恢复状态 */
+  const ac = new AbortController()
+  const timer = setTimeout(() => ac.abort(), 25000)
 
   try {
-    const upstream = await fetch(KIMI_URL, {
+    const payload: Record<string, unknown> = {
+      model: provider.model,
+      messages: [
+        { role: 'system', content: SYSTEM[kind] },
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: maxTokens,
+    }
+    if (temperature !== undefined) payload.temperature = temperature
+
+    const upstream = await fetch(provider.url, {
       method: 'POST',
+      signal: ac.signal,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${key}`,
       },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [
-          { role: 'system', content: SYSTEM[kind] },
-          { role: 'user', content: prompt },
-        ],
-        max_tokens: body.maxTokens ?? 9000,
-        // kimi-k2.6 思考模型不支持 temperature 参数——不传
-      }),
+      body: JSON.stringify(payload),
     })
     if (!upstream.ok) {
       await upstream.text()
-      return new Response(JSON.stringify({ error: `上游错误 ${upstream.status}` }), {
-        status: 502,
-        headers: { ...cors, 'Content-Type': 'application/json' },
-      })
+      logLine(upstream.status, 0, 'upstream-error')
+      const map: Record<number, string> = {
+        401: '先生服务凭据无效（配置问题），请联系管理员',
+        403: '先生服务暂不可用（权限受限）',
+        429: '先生今日繁忙，请稍后再试',
+      }
+      const msg =
+        map[upstream.status] ||
+        (upstream.status >= 500 ? '先生服务暂时繁忙，请稍后再试' : '先生服务请求未成功，请稍后再试')
+      return json({ error: msg, code: 'UPSTREAM_' + upstream.status }, 503)
     }
     const data = (await upstream.json()) as {
       choices?: Array<{ message?: { content?: string } }>
       usage?: { total_tokens?: number }
+      model?: string
     }
     const content = data.choices?.[0]?.message?.content ?? ''
     const tokens = data.usage?.total_tokens ?? 0
+    if (!content.trim()) {
+      logLine(200, tokens, 'empty-content')
+      return json({ error: '先生未给出回复，请再试一次', code: 'EMPTY_CONTENT' }, 502)
+    }
     if (env.AI_PROXY_KV) {
       const tk = Number((await env.AI_PROXY_KV.get(`tokens:${d}`)) ?? 0)
       await env.AI_PROXY_KV.put(`tokens:${d}`, String(tk + tokens), { expirationTtl: 86400 })
     }
-    return new Response(JSON.stringify({ content, source: 'zifu-pages-api', model: MODEL, tokens }), {
-      headers: { ...cors, 'Content-Type': 'application/json' },
-    })
+    logLine(200, tokens)
+    /* 兼容既有前端契约：content 必返；model 反映真实上游返回（非硬写常量） */
+    return json({ content, source: 'zifu-pages-api', model: data.model || provider.model, tokens, requestId })
   } catch {
-    return new Response(JSON.stringify({ error: '服务暂不可用，请稍后再试' }), {
-      status: 502,
-      headers: { ...cors, 'Content-Type': 'application/json' },
-    })
+    const aborted = ac.signal.aborted
+    logLine(aborted ? 504 : 502, 0, aborted ? 'timeout' : 'exception')
+    return json(
+      { error: aborted ? '先生思考超时，请稍后再试' : '服务暂不可用，请稍后再试', code: aborted ? 'TIMEOUT' : 'UPSTREAM_EXCEPTION' },
+      aborted ? 504 : 502
+    )
+  } finally {
+    clearTimeout(timer)
   }
 }
