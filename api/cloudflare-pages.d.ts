@@ -16,9 +16,10 @@
  *      并只在该项目里引官方 workers-types，而不是把官方全局灌进整个 server 项目。
  */
 
-/** KV 命名空间（Pages/Workers 绑定）。get 的泛型默认 any：与官方签名一致，仅默认值不同。 */
+/** KV 命名空间（Pages/Workers 绑定）。get 的泛型默认 string：与官方签名一致，仅默认值不同
+ *（官方默认 any，但本仓库 eslint 禁止显式 any；调用侧需要结构化值时自行传泛型或断言）。 */
 declare type KVNamespace = {
-  get<ExpectedValue = any>(key: string, type?: 'text' | 'json'): Promise<ExpectedValue | null>
+  get<ExpectedValue = string>(key: string, type?: 'text' | 'json'): Promise<ExpectedValue | null>
   put(
     key: string,
     value: string,
