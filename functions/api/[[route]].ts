@@ -410,7 +410,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   let body: { prompt?: string; maxTokens?: number; temperature?: number }
   try {
-    body = await request.json()
+    body = (await request.json()) as typeof body
   } catch {
     return new Response(JSON.stringify({ error: '请求体无效' }), {
       status: 400,
