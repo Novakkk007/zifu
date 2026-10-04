@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { Link } from 'react-router'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import FloatingGlyphs from '@/components/FloatingGlyphs'
 import QuoteStrip from '@/components/QuoteStrip'
 import SectionHeading from '@/components/SectionHeading'
@@ -54,6 +54,7 @@ function readRestoredZiwei(): {
 }
 
 export default function Ziwei() {
+  const reduce = useReducedMotion()
   const [restored] = useState(readRestoredZiwei)
   const [name, setName] = useState('')
   const [gender, setGender] = useState<'male' | 'female'>('male')
@@ -191,9 +192,9 @@ export default function Ziwei() {
         <FloatingGlyphs count={36} onDeep />
         <div className="zf-container relative flex flex-1 flex-col items-center justify-center py-16 text-center">
           <motion.nav
-            initial={{ opacity: 0, y: 10 }}
+            initial={reduce ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: reduce ? 0 : 0.5 }}
             className="absolute left-6 top-6 flex items-center gap-2 text-[12px] tracking-[0.14em] text-silkmuted md:left-10"
           >
             <Link to="/" className="transition-colors hover:text-goldbright">首页</Link>
@@ -203,9 +204,9 @@ export default function Ziwei() {
             <span className="text-goldbright">紫微斗数</span>
           </motion.nav>
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={reduce ? false : { opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: 'easeOut' }}
+            transition={{ duration: reduce ? 0 : 0.7, ease: 'easeOut' }}
             className="flex flex-col items-center"
           >
             <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-gold/40 font-serif text-[30px] font-black text-goldbright">
@@ -231,10 +232,10 @@ export default function Ziwei() {
       <section className="bg-silk py-14 md:py-28">
         <div className="zf-container">
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={reduce ? false : { opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: reduce ? 0 : 0.9, ease: [0.16, 1, 0.3, 1] }}
           >
             <SectionHeading
               eyebrow="BIRTH DATA"
@@ -446,7 +447,7 @@ export default function Ziwei() {
                     <motion.span
                       layoutId="zw-tab-pill"
                       className="absolute inset-0 rounded-full [background:linear-gradient(135deg,rgb(var(--gold-bright)),rgb(var(--gold)))]"
-                      transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                      transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 34 }}
                     />
                   )}
                   <span className="relative z-10">{t.label}</span>
@@ -460,10 +461,10 @@ export default function Ziwei() {
               {tab === 'daxian' ? (
                 <motion.div
                   key="daxian"
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={reduce ? false : { opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -12 }}
-                  transition={{ duration: 0.24 }}
+                  exit={reduce ? { opacity: 0 } : { opacity: 0, y: -12 }}
+                  transition={{ duration: reduce ? 0 : 0.24 }}
                 >
                   {chart ? (
                     <>
@@ -475,10 +476,10 @@ export default function Ziwei() {
                             <motion.button
                               key={s.branchIdx}
                               onClick={() => setDxIdx(i)}
-                              initial={{ opacity: 0, y: 20 }}
+                              initial={reduce ? false : { opacity: 0, y: 20 }}
                               whileInView={{ opacity: 1, y: 0 }}
                               viewport={{ once: true }}
-                              transition={{ delay: i * 0.05, duration: 0.5 }}
+                              transition={{ delay: reduce ? 0 : i * 0.05, duration: reduce ? 0 : 0.5 }}
                               className={cn(
                                 'relative rounded-lg border px-3 py-4 text-center transition-colors',
                                 selected
@@ -523,10 +524,10 @@ export default function Ziwei() {
               ) : (
                 <motion.div
                   key="liunian"
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={reduce ? false : { opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -12 }}
-                  transition={{ duration: 0.24 }}
+                  exit={reduce ? { opacity: 0 } : { opacity: 0, y: -12 }}
+                  transition={{ duration: reduce ? 0 : 0.24 }}
                   className="flex flex-col items-center"
                 >
                   {chart && lnInfo ? (
@@ -590,10 +591,10 @@ export default function Ziwei() {
 
             {/* S6 · 典籍依据 */}
             <motion.div
-              initial={{ opacity: 0, y: 40 }}
+              initial={reduce ? false : { opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: reduce ? 0 : 0.9, ease: [0.16, 1, 0.3, 1] }}
               className="mx-auto mt-24 max-w-3xl"
             >
               <QuoteStrip book="紫微斗数全书" quote="紫微居垣，众星朝拱。" source="宋 · 陈抟 传" />
