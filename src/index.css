@@ -246,9 +246,20 @@
 
   /* 首页折叠线下动效：原生 IntersectionObserver + CSS，避免首屏加载 GSAP。 */
   @media (prefers-reduced-motion: no-preference) {
+    /* 兜底：若 JS 未执行或 IO 未触发（无 JS 环境、截图工具、极慢网络），
+       3s 后强制显示，避免首页主体永久停留在 opacity:0 的不可见状态。 */
+    @keyframes zf-reveal-failsafe {
+      to {
+        opacity: 1;
+        transform: none;
+        filter: none;
+      }
+    }
+
     .zf-reveal-pending:not(.gs-chars) {
       opacity: 0;
       transform: translateY(32px);
+      animation: zf-reveal-failsafe 1ms ease 3s forwards;
     }
 
     .zf-reveal-pending.gs-cta-btn,
@@ -266,6 +277,7 @@
       opacity: 0;
       filter: blur(6px);
       transform: translateY(26px);
+      animation: zf-reveal-failsafe 1ms ease 3s forwards;
     }
 
     .gs-chars.zf-reveal-pending.zf-in-view .gs-char {
