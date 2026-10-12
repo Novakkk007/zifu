@@ -145,9 +145,9 @@ export default function Home() {
 
         {/* 首屏滚动提示 */}
         <motion.div
-          initial={reduce ? false : { opacity: 0 }}
+          initial={false}
           animate={{ opacity: entered ? 1 : 0 }}
-          transition={{ duration: 1.2, delay: 2.2 }}
+          transition={{ duration: 1.2, delay: reduce ? 0 : 2.2 }}
           className="mt-8 sm:mt-12 flex flex-col items-center gap-1.5 text-golddim/70"
         >
           <span className="text-[12px] tracking-[0.3em] text-inkmuted">往下看</span>
