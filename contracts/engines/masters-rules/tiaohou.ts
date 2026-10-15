@@ -28,6 +28,15 @@ const spring = (stem: DayStem, branch: MonthBranch): TiaohouEntry => ({
   reason: `${stem}日主生于${branch}月，春木渐旺，依蒸馏原则取火温养调候`,
 })
 
+/**
+ * 正月（寅月）精确调候 —— 依《穷通宝鉴》原文直引（课题14，T-20261015）。
+ *
+ * 现表 `need` 为单一五行，而原文正月甲木为「丙癸」双用；故此处**只精化 reason 依据**，
+ * 不改 need 取值与表结构（扩为多值属接口变更，须独立课题评审）。
+ * 引文依据等级：缓存索引（次级）——维基文库 10/12-10/15 延续 404。
+ */
+const zhengYue = (reason: string, need: Wuxing): TiaohouEntry => ({ need, reason })
+
 const autumn = (stem: DayStem, branch: MonthBranch): TiaohouEntry => ({
   need: '水',
   reason: `${stem}日主生于${branch}月，秋气偏燥，依“秋金得水方精”取水润燥`,
@@ -36,7 +45,10 @@ const autumn = (stem: DayStem, branch: MonthBranch): TiaohouEntry => ({
 /** 十天干 × 十二月令调候五行映射。 */
 export const TIAOHOU_TABLE: TiaohouTable = {
   甲: {
-    寅: spring('甲', '寅'),
+    寅: zhengYue(
+      '正月甲木初春尚有余寒，得丙癸逢富贵双全；癸藏丙透名寒木向阳（《穷通宝鉴·论木·正月甲木》）',
+      '火',
+    ),
     卯: spring('甲', '卯'),
     辰: spring('甲', '辰'),
     巳: { need: '水', reason: '甲木生于巳月，夏木易燥，首取壬水润局' },
@@ -120,7 +132,10 @@ export const TIAOHOU_TABLE: TiaohouTable = {
     丑: { need: '火', reason: '己土生于丑月，冬土寒湿，首取丙火暖局' },
   },
   庚: {
-    寅: spring('庚', '寅'),
+    寅: zhengYue(
+      '正月庚金木旺土死不能生金，且金寒未除，先用丙暖庚性，又虑土厚埋金须甲疏泄；丙甲两透科甲显荣（《穷通宝鉴·论金·正月庚金》）',
+      '火',
+    ),
     卯: spring('庚', '卯'),
     辰: spring('庚', '辰'),
     巳: { need: '水', reason: '庚金生于巳月，火炼真金，首取壬水润局' },
@@ -134,7 +149,10 @@ export const TIAOHOU_TABLE: TiaohouTable = {
     丑: { need: '火', reason: '庚金生于丑月，冬金偏寒，首取丁火温炼' },
   },
   辛: {
-    寅: spring('辛', '寅'),
+    寅: zhengYue(
+      '正月辛金阳气舒而寒气未除，忌甲木司权致辛金失令，取己土为生身之本，欲得辛金发现全赖壬水之功；己壬两透科甲定然（《穷通宝鉴·论金·正月辛金》）',
+      '水',
+    ),
     卯: spring('辛', '卯'),
     辰: spring('辛', '辰'),
     巳: { need: '水', reason: '辛金生于巳月，夏金受火，首取壬水润局' },
