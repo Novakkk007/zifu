@@ -109,14 +109,14 @@ describe('analyzeWithMasters（名家参详提示）', () => {
     expect(hint?.text).toContain('首取戊土制水')
   })
 
-  it('LXR-02：丁火夏月按日干细分取庚金，与木相克 → 三轨冲突', () => {
+  it('LXR-02：丁火五月时归建禄不宜乱用甲木，与火相克 → 三轨冲突', () => {
     const c = makeChart()
     c.dayMaster = '丁'
     c.pillars = { ...(c.pillars as object), month: { branch: '午', stem: '丙' } } as never
-    c.yongshen = { ...c.yongshen, yongshen: '木' }
+    c.yongshen = { ...c.yongshen, yongshen: '火' }
     const hints = analyzeWithMasters(c)
     const hint = hints.find((h) => h.ruleId === 'LXR-02')
-    expect(hint?.text).toContain('首取庚金发水源')
+    expect(hint?.text).toContain('五月丁火时归建禄，不宜乱用甲木')
   })
 
   it('LXR-04：旺衰偏强/偏弱 → 限定说明；中和则无', () => {
