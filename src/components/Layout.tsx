@@ -21,6 +21,14 @@ export default function Layout({ children }: { children: ReactNode }) {
     window.scrollTo(0, 0)
   }, [location.pathname])
 
+  // 观居实验自带顶栏与返回。只在 DEV 去掉全站导航，生产构建会删掉这个分支。
+  if (
+    import.meta.env.DEV &&
+    location.pathname.replace(/\/+$/, "") === "/experiments/guanju"
+  ) {
+    return <div className="min-h-[100dvh] bg-silk text-inktext">{children}</div>
+  }
+
   return (
     <div className="flex min-h-[100dvh] flex-col bg-silk">
       <PreviewBanner />

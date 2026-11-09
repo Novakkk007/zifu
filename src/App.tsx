@@ -33,6 +33,10 @@ const Login = lazy(() => import("@/pages/Login"));
 const WealthScenario = lazy(() => import("@/pages/scenario/WealthScenario"));
 const LoveScenario = lazy(() => import("@/pages/scenario/LoveScenario"));
 const HealthScenario = lazy(() => import("@/pages/scenario/HealthScenario"));
+/** DEV 构建才会打进包；生产构建里这个分支会被去掉。 */
+const GuanjuExperiment = import.meta.env.DEV
+  ? lazy(() => import("@/experiments/guanju/GuanjuExperiment"))
+  : null;
 
 export default function App() {
   return (
@@ -79,6 +83,9 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/account" element={<Account />} />
           <Route path="/profile" element={<Profile />} />
+          {GuanjuExperiment ? (
+            <Route path="/experiments/guanju" element={<GuanjuExperiment />} />
+          ) : null}
           <Route path="*" element={<NotFound />} />
         </Routes>
         </Suspense>
